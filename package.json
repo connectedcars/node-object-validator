@@ -1,0 +1,30 @@
+{
+  "name": "@connectedcars/object-validator",
+  "version": "0.1.0",
+  "description": "Object validator",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha \"src/**/*.test.js\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/connectedcars/node-object-validator.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/connectedcars/node-object-validator/issues"
+  },
+  "homepage": "https://github.com/connectedcars/node-object-validator#readme",
+  "devDependencies": {
+    "@types/mocha": "^5.2.3",
+    "@types/node": "^10.3.5",
+    "eslint": "^5.1.0",
+    "eslint-config-prettier": "^2.9.0",
+    "eslint-plugin-prettier": "^2.6.1",
+    "mocha": "^5.2.0",
+    "prettier": "^1.13.5",
+    "sinon": "^5.1.1",
+    "unexpected": "^10.38.0"
+  }
+}
