@@ -3,17 +3,17 @@ const { ValidationError } = require('../lib/errors')
 function ExactString(expectedStr, required = true) {
   return {
     type: 'ExactString',
-    validate: function(key, str) {
-      if (str == null) {
+    validate: function(key, val) {
+      if (val == null) {
         if (required) {
-          throw new ValidationError(`${this.type}: Field \`${key}\` is required`)
+          return new ValidationError(`Field \`${key}\` (${this.type}) is required`)
         } else {
           return
         }
       }
-      if (str !== expectedStr) {
-        throw new ValidationError(
-          `${this.type}: Field \`${key}\` must strictly equal "${expectedStr}" (received "${str}")`
+      if (val !== expectedStr) {
+        return new ValidationError(
+          `Field \`${key}\` (${this.type}) must strictly equal "${expectedStr}" (received "${val}")`
         )
       }
     }

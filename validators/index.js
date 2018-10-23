@@ -1,3 +1,6 @@
 module.exports = {
-  ExactString: require('./exact-string')
+  DateTime: require('./date-time'),
+  ExactString: require('./exact-string'),
+  Integer: require('./integer'),
+  StringValue: require('./string-value')
 }

@@ -4,7 +4,8 @@
   "description": "Object validator",
   "main": "src/index.js",
   "scripts": {
-    "test": "mocha \"src/**/*.test.js\""
+    "test": "mocha \"validators/**/*.test.js\"",
+    "benchmark": "node benchmark.js"
   },
   "repository": {
     "type": "git",

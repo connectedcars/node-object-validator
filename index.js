@@ -4,9 +4,14 @@ class ObjectValidator {
   }
 
   validate(obj) {
+    let errors = []
     for (const key in this.schema) {
-      this.schema[key].validate(key, obj[key])
+      const err = this.schema[key].validate(key, obj[key])
+      if (err) {
+        errors.push(err)
+      }
     }
+    return errors
   }
 }
 
