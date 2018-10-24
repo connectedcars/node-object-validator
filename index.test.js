@@ -15,7 +15,10 @@ describe('ObjectValidator', function() {
       position: {
         latitude: Float(-90, 90),
         longitude: Float(-180, 180),
-        accuracy: Integer(0, 20)
+        accuracy: Integer(0, 20),
+        extra: {
+          tag: StringValue(1, 50)
+        }
       },
       optionalPosition: {
         latitude: Float(-90, 90),
@@ -37,7 +40,10 @@ describe('ObjectValidator', function() {
         position: {
           latitude: 55.332131,
           longitude: 12.54454,
-          accuracy: 18
+          accuracy: 18,
+          extra: {
+            tag: 'yes'
+          }
         }
       }),
       'to equal',
@@ -67,11 +73,14 @@ describe('ObjectValidator', function() {
         position: {
           latitude: 55.332131,
           longitude: 12.54454,
-          accuracy: 21
+          accuracy: 18,
+          extra: {
+            tag: ''
+          }
         }
       }),
       'to equal',
-      [new ValidationError('Field `accuracy` (Integer) must at most be 20 (received "21")')]
+      [new ValidationError('Field `tag` (StringValue) must at least contain 1 characters (received "")')]
     )
   })
 })

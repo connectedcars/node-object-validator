@@ -1,24 +1,11 @@
 const NestedObject = require('./lib/nested-object')
 
-const validate = (schema, obj) => {
-  let errors = []
-  for (const key in schema) {
-    const validator = schema[key]
-    const err = validator.validate(key, obj[key])
-    if (err) {
-      errors.push(err)
-    } else if (key in obj) {
-      if (validator.type === 'NestedObject') {
-        errors.push(...validate(validator.children, obj[key]))
-      }
-    }
-  }
-  return errors
-}
-
 class ObjectValidator {
   constructor(schema) {
-    this.schema = {}
+    this.schema = this._parseSchema(schema)
+  }
+  _parseSchema(schema) {
+    let result = {}
     for (const key in schema) {
       if (key.indexOf('$') !== -1) {
         continue
@@ -28,16 +15,32 @@ class ObjectValidator {
         if (!type) {
           type = NestedObject()
         }
-        type.children = schema[key]
-        this.schema[key] = type
+        type.children = this._parseSchema(schema[key])
+        result[key] = type
         continue
       }
-      this.schema[key] = schema[key]
+      result[key] = schema[key]
     }
+    return result
   }
 
   validate(obj) {
-    return validate(this.schema, obj)
+    return this._validate(this.schema, obj)
+  }
+  _validate(schema, obj) {
+    let errors = []
+    for (const key in schema) {
+      const validator = schema[key]
+      const err = validator.validate(key, obj[key])
+      if (err) {
+        errors.push(err)
+      } else if (key in obj) {
+        if (validator.type === 'NestedObject') {
+          errors.push(...this._validate(validator.children, obj[key]))
+        }
+      }
+    }
+    return errors
   }
 }
 
