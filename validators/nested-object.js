@@ -1,4 +1,4 @@
-const { ValidationError } = require('./errors')
+const { ValidationError } = require('../lib/errors')
 
 function NestedObject(required = true) {
   return {

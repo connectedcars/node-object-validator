@@ -1,6 +1,5 @@
 const ObjectValidator = require('./index')
-const NestedObject = require('./lib/nested-object')
-const { DateTime, ExactString, Float, Integer, StringValue } = require('./validators')
+const { DateTime, ExactString, Float, Integer, NestedArray, NestedObject, StringValue } = require('./validators')
 
 const OPERATIONS = 10000000
 
@@ -15,17 +14,13 @@ let gpsOdometerKm = new ObjectValidator({
     longitude: Float(-180, 180),
     accuracy: Integer(0, 20)
   },
-  position$type: NestedObject(false)
-  // positions: {
-  //   latitude: Float(-90, 90),
-  //   longitude: Float(-180, 180),
-  //   accuracy: Integer(0, 20),
-  //   myList: {
-  //     hej: StringValue(0, 10)
-  //   },
-  //   myList$type: NestedArray(-1, -1, true)
-  // },
-  // positions$type: NestedArray(0, 10, true)
+  position$type: NestedObject(false),
+  positions: {
+    latitude: Float(-90, 90),
+    longitude: Float(-180, 180),
+    accuracy: Integer(0, 20)
+  },
+  positions$type: NestedArray(0, 10, true)
 })
 
 const benchmarks = {
@@ -39,7 +34,19 @@ const benchmarks = {
       latitude: 55.332131,
       longitude: 12.54454,
       accuracy: 18
-    }
+    },
+    positions: [
+      {
+        latitude: 55.332131,
+        longitude: 12.54454,
+        accuracy: 18
+      },
+      {
+        latitude: 55.332131,
+        longitude: 12.54454,
+        accuracy: 18
+      }
+    ]
   },
   failure_early: { type: null },
   failure_late: {
@@ -52,7 +59,8 @@ const benchmarks = {
       latitude: 55.332131,
       longitude: 12.54454,
       accuracy: 21
-    }
+    },
+    positions: []
   }
 }
 

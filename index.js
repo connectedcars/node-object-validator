@@ -1,4 +1,4 @@
-const NestedObject = require('./lib/nested-object')
+const { NestedObject } = require('./validators')
 
 class ObjectValidator {
   constructor(schema) {
@@ -37,6 +37,10 @@ class ObjectValidator {
       } else if (key in obj) {
         if (validator.type === 'NestedObject') {
           errors.push(...this._validate(validator.children, obj[key]))
+        } else if (validator.type === 'NestedArray') {
+          for (const item of obj[key]) {
+            errors.push(...this._validate(validator.children, item))
+          }
         }
       }
     }
