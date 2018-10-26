@@ -1,8 +1,11 @@
 const { NestedObject } = require('./validators')
 
 class ObjectValidator {
-  constructor(schema) {
+  constructor(schema, optimize = true) {
     this.schema = this._parseSchema(schema)
+    if (optimize) {
+      this.validate = this._generateValidateFunction()
+    }
   }
   _parseSchema(schema) {
     let result = {}
@@ -21,7 +24,43 @@ class ObjectValidator {
       }
       result[key] = schema[key]
     }
+
     return result
+  }
+
+  _generateValidateFunction() {
+    let validators = []
+    let lines = [`let errors = []`, `let err`]
+    let generateFunction = (schema, prefix = '', objName = 'obj') => {
+      for (const key in schema) {
+        let validatorName = `${key}Validator` + validators.length
+        validators.push(`let ${validatorName} = schema${prefix}['${key}']`)
+        lines.push(`err = ${validatorName}.validate('${key}', ${objName}['${key}'])`)
+        lines.push(`if (err) {`)
+        lines.push(`  errors.push(err)`)
+        lines.push(`}`)
+        if (schema[key].type === 'NestedObject') {
+          lines.push(`if (!err && ${objName}.hasOwnProperty('${key}')) {`)
+          lines.push(`let ${key}${objName} = ${objName}['${key}']`)
+          generateFunction(schema[key].children, `${prefix}['${key}'].children`, `${key}${objName}`)
+          lines.push(`}`)
+        } else if (schema[key].type === 'NestedArray') {
+          lines.push(`if (!err && ${objName}.hasOwnProperty('${key}')) {`)
+          lines.push(`for (let ${key}${objName} of ${objName}['${key}']) {`)
+          generateFunction(schema[key].children, `${prefix}['${key}'].children`, `${key}${objName}`)
+          lines.push(`}`)
+          lines.push(`}`)
+        }
+      }
+    }
+    generateFunction(this.schema)
+    lines.push(`return errors`)
+
+    let functionGenerator = new Function(
+      'schema',
+      validators.join('\n') + '\n' + 'return (obj) => {\n' + lines.join('\n') + '\n}'
+    )
+    return functionGenerator(this.schema)
   }
 
   validate(obj) {
