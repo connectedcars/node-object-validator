@@ -20,6 +20,7 @@ describe('DateTime', function() {
     expect(validator.validate('key', '2018-08-06T13:37:00.000Z'), 'to be', undefined)
     expect(validator.validate('key', '2018-08-06T13:37:00+00:00'), 'to be', undefined)
     expect(validator.validate('key', '2018-08-06T13:37:00.000+00:00'), 'to be', undefined)
+    expect(validator.validate('key', new Date('2018-08-06T13:37:00Z')), 'to be', undefined)
     expect(
       validator.validate('key', ''),
       'to have message',
