@@ -38,31 +38,31 @@ describe('StringValue', function() {
   })
 
   it('requires min value length', function() {
-    const validator = StringValue(5)
+    const validator = StringValue(5, 500)
     expect(
       validator.validate('key', ''),
       'to have message',
-      'Field `key` (StringValue) must at least contain 5 characters (received "")'
+      'Field `key` (StringValue) must contain between 5 and 500 characters (received "")'
     )
     expect(
       validator.validate('key', 'a'),
       'to have message',
-      'Field `key` (StringValue) must at least contain 5 characters (received "a")'
+      'Field `key` (StringValue) must contain between 5 and 500 characters (received "a")'
     )
     expect(
       validator.validate('key', 'ab'),
       'to have message',
-      'Field `key` (StringValue) must at least contain 5 characters (received "ab")'
+      'Field `key` (StringValue) must contain between 5 and 500 characters (received "ab")'
     )
     expect(
       validator.validate('key', 'abc'),
       'to have message',
-      'Field `key` (StringValue) must at least contain 5 characters (received "abc")'
+      'Field `key` (StringValue) must contain between 5 and 500 characters (received "abc")'
     )
     expect(
       validator.validate('key', 'abcd'),
       'to have message',
-      'Field `key` (StringValue) must at least contain 5 characters (received "abcd")'
+      'Field `key` (StringValue) must contain between 5 and 500 characters (received "abcd")'
     )
     expect(validator.validate('key', 'abcde'), 'to be', undefined)
     expect(validator.validate('key', 'abcdef'), 'to be', undefined)
@@ -80,17 +80,17 @@ describe('StringValue', function() {
     expect(
       validator.validate('key', 'abcdef'),
       'to have message',
-      'Field `key` (StringValue) must at most contain 5 characters (received "abcdef")'
+      'Field `key` (StringValue) must contain between 0 and 5 characters (received "abcdef")'
     )
     expect(
       validator.validate('key', 'abcdefg'),
       'to have message',
-      'Field `key` (StringValue) must at most contain 5 characters (received "abcdefg")'
+      'Field `key` (StringValue) must contain between 0 and 5 characters (received "abcdefg")'
     )
     expect(
       validator.validate('key', 'this is a long string'),
       'to have message',
-      'Field `key` (StringValue) must at most contain 5 characters (received "this is a long string")'
+      'Field `key` (StringValue) must contain between 0 and 5 characters (received "this is a long string")'
     )
   })
 })

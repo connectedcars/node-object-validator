@@ -37,37 +37,41 @@ describe('Float', function() {
   })
 
   it('requires min value', function() {
-    const validator = Float(0.5)
+    const validator = Float(0.5, 500)
     expect(
       validator.validate('key', -0.1),
       'to have message',
-      'Field `key` (Float) must at least be 0.5 (received "-0.1")'
+      'Field `key` (Float) must be between 0.5 and 500 (received "-0.1")'
     )
-    expect(validator.validate('key', 0), 'to have message', 'Field `key` (Float) must at least be 0.5 (received "0")')
+    expect(
+      validator.validate('key', 0),
+      'to have message',
+      'Field `key` (Float) must be between 0.5 and 500 (received "0")'
+    )
     expect(
       validator.validate('key', 0.1),
       'to have message',
-      'Field `key` (Float) must at least be 0.5 (received "0.1")'
+      'Field `key` (Float) must be between 0.5 and 500 (received "0.1")'
     )
     expect(
       validator.validate('key', 0.2),
       'to have message',
-      'Field `key` (Float) must at least be 0.5 (received "0.2")'
+      'Field `key` (Float) must be between 0.5 and 500 (received "0.2")'
     )
     expect(
       validator.validate('key', 0.3),
       'to have message',
-      'Field `key` (Float) must at least be 0.5 (received "0.3")'
+      'Field `key` (Float) must be between 0.5 and 500 (received "0.3")'
     )
     expect(
       validator.validate('key', 0.4),
       'to have message',
-      'Field `key` (Float) must at least be 0.5 (received "0.4")'
+      'Field `key` (Float) must be between 0.5 and 500 (received "0.4")'
     )
     expect(
       validator.validate('key', 0.49999999),
       'to have message',
-      'Field `key` (Float) must at least be 0.5 (received "0.49999999")'
+      'Field `key` (Float) must be between 0.5 and 500 (received "0.49999999")'
     )
     expect(validator.validate('key', 0.5), 'to be', undefined)
     expect(validator.validate('key', 0.6), 'to be', undefined)
@@ -75,7 +79,7 @@ describe('Float', function() {
   })
 
   it('requires max value', function() {
-    const validator = Float(Number.MIN_SAFE_INTEGER, 0.5)
+    const validator = Float(-500, 0.5)
     expect(validator.validate('key', -0.1), 'to be', undefined)
     expect(validator.validate('key', 0), 'to be', undefined)
     expect(validator.validate('key', 0.1), 'to be', undefined)
@@ -86,17 +90,17 @@ describe('Float', function() {
     expect(
       validator.validate('key', 0.500000001),
       'to have message',
-      'Field `key` (Float) must at most be 0.5 (received "0.500000001")'
+      'Field `key` (Float) must be between -500 and 0.5 (received "0.500000001")'
     )
     expect(
       validator.validate('key', 0.6),
       'to have message',
-      'Field `key` (Float) must at most be 0.5 (received "0.6")'
+      'Field `key` (Float) must be between -500 and 0.5 (received "0.6")'
     )
     expect(
       validator.validate('key', 0.7),
       'to have message',
-      'Field `key` (Float) must at most be 0.5 (received "0.7")'
+      'Field `key` (Float) must be between -500 and 0.5 (received "0.7")'
     )
   })
 })

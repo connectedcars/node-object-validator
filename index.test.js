@@ -111,7 +111,7 @@ describe('ObjectValidator', function() {
       }),
       'to equal',
       [
-        new ValidationError('Field `longitude` (Float) must at least be -180 (received "-181")', {
+        new ValidationError('Field `longitude` (Float) must be between -180 and 180 (received "-181")', {
           key: 'longitude',
           val: -181
         })
@@ -150,7 +150,7 @@ describe('ObjectValidator', function() {
       }),
       'to equal',
       [
-        new ValidationError('Field `tag` (StringValue) must at least contain 1 characters (received "")', {
+        new ValidationError('Field `tag` (StringValue) must contain between 1 and 50 characters (received "")', {
           key: 'tag',
           val: ''
         })
@@ -206,7 +206,7 @@ describe('ObjectValidator', function() {
       }),
       'to equal',
       [
-        new ValidationError('Field `positions` (NestedArray) must at least contain 2 entries (found 1)', {
+        new ValidationError('Field `positions` (NestedArray) must contain between 2 and 10 entries (found 1)', {
           key: 'positions',
           val: [
             {
@@ -251,7 +251,7 @@ describe('ObjectValidator', function() {
       }),
       'to equal',
       [
-        new ValidationError('Field `accuracy` (Integer) must at most be 20 (received "21")', {
+        new ValidationError('Field `accuracy` (Integer) must be between 0 and 20 (received "21")', {
           key: 'accuracy',
           val: 21
         })

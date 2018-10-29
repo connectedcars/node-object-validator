@@ -15,17 +15,11 @@ function NestedArray(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, require
       if (!Array.isArray(val)) {
         return new ValidationError(`Field \`${key}\` (${this.type}) must be an array (received "${val}")`, { key, val })
       }
-      if (minLength !== 0) {
-        if (val.length < minLength) {
-          return new ValidationError(
-            `Field \`${key}\` (${this.type}) must at least contain ${minLength} entries (found ${val.length})`,
-            { key, val }
-          )
-        }
-      }
-      if (val.length > maxLength) {
+      if ((minLength !== 0 && val.length < minLength) || val.length > maxLength) {
         return new ValidationError(
-          `Field \`${key}\` (${this.type}) must at most contain ${maxLength} entries (found ${val.length})`,
+          `Field \`${key}\` (${this.type}) must contain between ${minLength} and ${maxLength} entries (found ${
+            val.length
+          })`,
           { key, val }
         )
       }

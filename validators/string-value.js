@@ -14,17 +14,11 @@ function StringValue(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, require
       if (typeof val !== 'string') {
         return new ValidationError(`Field \`${key}\` (${this.type}) must be a string (received "${val}")`, { key, val })
       }
-      if (minLength !== 0) {
-        if (val.length < minLength) {
-          return new ValidationError(
-            `Field \`${key}\` (${this.type}) must at least contain ${minLength} characters (received "${val}")`,
-            { key, val }
-          )
-        }
-      }
-      if (val.length > maxLength) {
+      if ((minLength !== 0 && val.length < minLength) || val.length > maxLength) {
         return new ValidationError(
-          `Field \`${key}\` (${this.type}) must at most contain ${maxLength} characters (received "${val}")`,
+          `Field \`${key}\` (${
+            this.type
+          }) must contain between ${minLength} and ${maxLength} characters (received "${val}")`,
           { key, val }
         )
       }

@@ -14,17 +14,11 @@ function Float(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, req
       if (typeof val !== 'number' || isNaN(val) || !isFinite(val)) {
         return new ValidationError(`Field \`${key}\` (${this.type}) must be a float (received "${val}")`, { key, val })
       }
-      if (val < min) {
-        return new ValidationError(`Field \`${key}\` (${this.type}) must at least be ${min} (received "${val}")`, {
-          key,
-          val
-        })
-      }
-      if (val > max) {
-        return new ValidationError(`Field \`${key}\` (${this.type}) must at most be ${max} (received "${val}")`, {
-          key,
-          val
-        })
+      if (val < min || val > max) {
+        return new ValidationError(
+          `Field \`${key}\` (${this.type}) must be between ${min} and ${max} (received "${val}")`,
+          { key, val }
+        )
       }
     }
   }
