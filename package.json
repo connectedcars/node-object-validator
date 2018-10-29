@@ -1,6 +1,6 @@
 {
   "name": "@connectedcars/object-validator",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Object validator",
   "main": "src/index.js",
   "scripts": {
