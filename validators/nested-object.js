@@ -7,7 +7,7 @@ function NestedObject(required = true) {
     validate: function(key, val) {
       if (val == null) {
         if (required) {
-          return new ValidationError(`Field \`${key}\` (${this.type}) is required`)
+          return new ValidationError(`Field \`${key}\` (${this.type}) is required`, { key, val })
         } else {
           return
         }

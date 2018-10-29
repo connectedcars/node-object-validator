@@ -6,19 +6,28 @@ function Integer(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, r
     validate: function(key, val) {
       if (val == null) {
         if (required) {
-          return new ValidationError(`Field \`${key}\` (${this.type}) is required`)
+          return new ValidationError(`Field \`${key}\` (${this.type}) is required`, { key, val })
         } else {
           return
         }
       }
       if (typeof val !== 'number' || !Number.isInteger(val)) {
-        return new ValidationError(`Field \`${key}\` (${this.type}) must be an integer (received "${val}")`)
+        return new ValidationError(`Field \`${key}\` (${this.type}) must be an integer (received "${val}")`, {
+          key,
+          val
+        })
       }
       if (val < min) {
-        return new ValidationError(`Field \`${key}\` (${this.type}) must at least be ${min} (received "${val}")`)
+        return new ValidationError(`Field \`${key}\` (${this.type}) must at least be ${min} (received "${val}")`, {
+          key,
+          val
+        })
       }
       if (val > max) {
-        return new ValidationError(`Field \`${key}\` (${this.type}) must at most be ${max} (received "${val}")`)
+        return new ValidationError(`Field \`${key}\` (${this.type}) must at most be ${max} (received "${val}")`, {
+          key,
+          val
+        })
       }
     }
   }
