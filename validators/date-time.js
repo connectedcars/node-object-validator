@@ -13,9 +13,6 @@ function DateTime(required = true) {
           return
         }
       }
-      if (val instanceof Date) {
-        val = val.toISOString()
-      }
       if (!pattern.test(val)) {
         return new ValidationError(
           `Field \`${key}\` (${this.type}) must be formatted as an RFC 3339 timestamp (received "${val}")`,
