@@ -1,5 +1,5 @@
 const expect = require('unexpected')
-const DateObject = require('./date-object')
+const { DateObject } = require('./index')
 
 describe('DateObject', function() {
   it('accepts empty value', function() {

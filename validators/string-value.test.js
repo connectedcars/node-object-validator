@@ -1,5 +1,5 @@
 const expect = require('unexpected')
-const StringValue = require('./string-value')
+const { StringValue } = require('./index')
 
 describe('StringValue', function() {
   it('accepts empty value', function() {

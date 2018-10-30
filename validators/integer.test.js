@@ -1,5 +1,5 @@
 const expect = require('unexpected')
-const Integer = require('./integer')
+const { Integer } = require('./index')
 
 describe('Integer', function() {
   it('accepts empty value', function() {

@@ -1,4 +1,5 @@
 module.exports = {
+  DateObject: require('./date-object'),
   DateTime: require('./date-time'),
   ExactString: require('./exact-string'),
   Float: require('./float'),

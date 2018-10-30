@@ -1,5 +1,5 @@
 const expect = require('unexpected')
-const Float = require('./float')
+const { Float } = require('./index')
 
 describe('Float', function() {
   it('accepts empty value', function() {

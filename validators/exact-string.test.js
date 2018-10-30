@@ -1,5 +1,5 @@
 const expect = require('unexpected')
-const ExactString = require('./exact-string')
+const { ExactString } = require('./index')
 
 describe('ExactString', function() {
   it('accepts empty value', function() {
