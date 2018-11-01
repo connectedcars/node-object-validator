@@ -3,7 +3,7 @@ const { DateTime, ExactString, Float, Integer, NestedArray, NestedObject, String
 
 const OPERATIONS = 10000000
 
-let gpsOdometerKm = new ObjectValidator({
+let schema = {
   type: ExactString('gps_odometer_km'),
   unitId: StringValue(1, 32),
   recordedAt: DateTime(),
@@ -21,7 +21,10 @@ let gpsOdometerKm = new ObjectValidator({
     accuracy: Integer(0, 20)
   },
   positions$type: NestedArray(0, 10, true)
-})
+}
+
+let gpsOdometerKm = new ObjectValidator(schema, { optimize: false })
+let gpsOdometerKmOptimized = new ObjectValidator(schema)
 
 const benchmarks = {
   success: {
@@ -66,11 +69,22 @@ const benchmarks = {
 
 for (const benchmark in benchmarks) {
   const obj = benchmarks[benchmark]
+  let [duration, ops] = timeRun(() => {
+    gpsOdometerKm.validate(obj)
+  }, OPERATIONS)
+  console.log(`${benchmark} in ${duration / 1000} s (${ops} ops/s)`)
+  ;[duration, ops] = timeRun(() => {
+    gpsOdometerKmOptimized.validate(obj)
+  }, OPERATIONS)
+  console.log(`${benchmark} optimized in ${duration / 1000} s (${ops} ops/s)`)
+}
+
+function timeRun(cb, operations) {
   const start = Date.now()
   for (let i = 0; i < OPERATIONS; i++) {
-    gpsOdometerKm.validate(obj)
+    cb()
   }
   const duration = Date.now() - start
-  const ops = Math.round((OPERATIONS / duration) * 1000 * 1000) / 1000
-  console.log(`${benchmark} in ${duration / 1000} s (${ops} ops/s)`)
+  const ops = Math.round((operations / duration) * 1000 * 1000) / 1000
+  return [duration, ops]
 }

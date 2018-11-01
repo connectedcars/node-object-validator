@@ -5,6 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "test": "mocha index.test.js validators/**/*.test.js",
+    "cov": "nyc --reporter=lcov --reporter=text npm test",
     "benchmark": "node benchmark.js"
   },
   "repository": {
@@ -26,6 +27,20 @@
     "mocha": "^5.2.0",
     "prettier": "^1.13.5",
     "sinon": "^5.1.1",
-    "unexpected": "^10.38.0"
+    "unexpected": "^10.38.0",
+    "nyc": "^11.9.0"
+  },
+  "nyc": {
+    "include": [
+      "optimized.js",
+      "index.js",
+      "src/**",
+      "lib/**",
+      "validators/**"
+    ],
+    "exclude": [
+      "**/*.test.js"
+    ],
+    "all": true
   }
 }
