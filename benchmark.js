@@ -23,7 +23,7 @@ let schema = {
   positions$type: NestedArray(0, 10, true)
 }
 
-let gpsOdometerKm = new ObjectValidator(schema, false)
+let gpsOdometerKm = new ObjectValidator(schema, { optimize: false })
 let gpsOdometerKmOptimized = new ObjectValidator(schema)
 
 const benchmarks = {

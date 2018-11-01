@@ -3,7 +3,7 @@ const fs = require('fs')
 
 /**
  * @typedef ObjectValidatorOptions
- * @property {boolean} [optimize] Generate an optimized function for doing the validation
+ * @property {boolean} [optimize=true] Generate an optimized function for doing the validation (default: true)
  * @property {boolean} [cacheFile] Write the optimized function to a file and reuse this if it exists, no cache invalidation is done (Not recommended)
  */
 
@@ -15,7 +15,7 @@ class ObjectValidator {
    */
   constructor(schema, options = {}) {
     this.schema = this._parseSchema(schema)
-    if (options.optimize) {
+    if (options.optimize === undefined || options.optimize) {
       this.validate = this._generateValidateFunction(options.cacheFile)
     }
   }
