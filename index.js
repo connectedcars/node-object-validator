@@ -1,10 +1,22 @@
 const { NestedObject } = require('./validators')
+const fs = require('fs')
+
+/**
+ * @typedef ObjectValidatorOptions
+ * @property {boolean} [optimize] Generate an optimized function for doing the validation
+ * @property {boolean} [cacheFile] Write the optimized function to a file and reuse this if it exists, no cache invalidation is done (Not recommended)
+ */
 
 class ObjectValidator {
-  constructor(schema, optimize = true) {
+  /**
+   *
+   * @param {Object} schema
+   * @param {ObjectValidatorOptions} [options]
+   */
+  constructor(schema, options = {}) {
     this.schema = this._parseSchema(schema)
-    if (optimize) {
-      this.validate = this._generateValidateFunction()
+    if (options.optimize) {
+      this.validate = this._generateValidateFunction(options.cacheFile)
     }
   }
   _parseSchema(schema) {
@@ -28,7 +40,12 @@ class ObjectValidator {
     return result
   }
 
-  _generateValidateFunction() {
+  _generateValidateFunction(cacheFile = null) {
+    if (fs.existsSync(cacheFile)) {
+      let functionGenerator = require(cacheFile)
+      return functionGenerator(this.schema)
+    }
+
     let validators = []
     let lines = [`let errors = []`, `let err`]
     let generateFunction = (schema, prefix = '', objName = 'obj') => {
@@ -55,11 +72,16 @@ class ObjectValidator {
     }
     generateFunction(this.schema)
     lines.push(`return errors`)
+    let functionBody = validators.join('\n') + '\n' + 'return (obj) => {\n' + lines.join('\n') + '\n}'
 
-    let functionGenerator = new Function(
-      'schema',
-      validators.join('\n') + '\n' + 'return (obj) => {\n' + lines.join('\n') + '\n}'
-    )
+    let functionGenerator
+    if (cacheFile == null) {
+      functionGenerator = new Function('schema', functionBody)
+    } else {
+      fs.writeFileSync(cacheFile, `module.exports = (schema) => { ${functionBody} }`)
+      functionGenerator = require(cacheFile)
+    }
+
     return functionGenerator(this.schema)
   }
 
