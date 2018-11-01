@@ -8,14 +8,15 @@ function DateTime(required = true) {
     validate: function(key, val) {
       if (val == null) {
         if (required) {
-          return new ValidationError(`Field \`${key}\` (${this.type}) is required`)
+          return new ValidationError(`Field \`${key}\` (${this.type}) is required`, { key, val })
         } else {
           return
         }
       }
       if (!pattern.test(val)) {
         return new ValidationError(
-          `Field \`${key}\` (${this.type}) must be formatted as an RFC 3339 timestamp (received "${val}")`
+          `Field \`${key}\` (${this.type}) must be formatted as an RFC 3339 timestamp (received "${val}")`,
+          { key, val }
         )
       }
     }

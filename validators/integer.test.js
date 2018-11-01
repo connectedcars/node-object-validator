@@ -1,5 +1,5 @@
 const expect = require('unexpected')
-const Integer = require('./integer')
+const { Integer } = require('./index')
 
 describe('Integer', function() {
   it('accepts empty value', function() {
@@ -40,20 +40,44 @@ describe('Integer', function() {
   })
 
   it('requires min value', function() {
-    const validator = Integer(5)
-    expect(validator.validate('key', -1), 'to have message', 'Field `key` (Integer) must at least be 5 (received "-1")')
-    expect(validator.validate('key', 0), 'to have message', 'Field `key` (Integer) must at least be 5 (received "0")')
-    expect(validator.validate('key', 1), 'to have message', 'Field `key` (Integer) must at least be 5 (received "1")')
-    expect(validator.validate('key', 2), 'to have message', 'Field `key` (Integer) must at least be 5 (received "2")')
-    expect(validator.validate('key', 3), 'to have message', 'Field `key` (Integer) must at least be 5 (received "3")')
-    expect(validator.validate('key', 4), 'to have message', 'Field `key` (Integer) must at least be 5 (received "4")')
+    const validator = Integer(5, 500)
+    expect(
+      validator.validate('key', -1),
+      'to have message',
+      'Field `key` (Integer) must be between 5 and 500 (received "-1")'
+    )
+    expect(
+      validator.validate('key', 0),
+      'to have message',
+      'Field `key` (Integer) must be between 5 and 500 (received "0")'
+    )
+    expect(
+      validator.validate('key', 1),
+      'to have message',
+      'Field `key` (Integer) must be between 5 and 500 (received "1")'
+    )
+    expect(
+      validator.validate('key', 2),
+      'to have message',
+      'Field `key` (Integer) must be between 5 and 500 (received "2")'
+    )
+    expect(
+      validator.validate('key', 3),
+      'to have message',
+      'Field `key` (Integer) must be between 5 and 500 (received "3")'
+    )
+    expect(
+      validator.validate('key', 4),
+      'to have message',
+      'Field `key` (Integer) must be between 5 and 500 (received "4")'
+    )
     expect(validator.validate('key', 5), 'to be', undefined)
     expect(validator.validate('key', 6), 'to be', undefined)
     expect(validator.validate('key', 123), 'to be', undefined)
   })
 
   it('requires max value', function() {
-    const validator = Integer(Number.MIN_SAFE_INTEGER, 5)
+    const validator = Integer(-500, 5)
     expect(validator.validate('key', -1), 'to be', undefined)
     expect(validator.validate('key', 0), 'to be', undefined)
     expect(validator.validate('key', 1), 'to be', undefined)
@@ -61,7 +85,15 @@ describe('Integer', function() {
     expect(validator.validate('key', 3), 'to be', undefined)
     expect(validator.validate('key', 4), 'to be', undefined)
     expect(validator.validate('key', 5), 'to be', undefined)
-    expect(validator.validate('key', 6), 'to have message', 'Field `key` (Integer) must at most be 5 (received "6")')
-    expect(validator.validate('key', 7), 'to have message', 'Field `key` (Integer) must at most be 5 (received "7")')
+    expect(
+      validator.validate('key', 6),
+      'to have message',
+      'Field `key` (Integer) must be between -500 and 5 (received "6")'
+    )
+    expect(
+      validator.validate('key', 7),
+      'to have message',
+      'Field `key` (Integer) must be between -500 and 5 (received "7")'
+    )
   })
 })

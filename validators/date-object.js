@@ -1,9 +1,8 @@
 const { ValidationError } = require('../lib/errors')
 
-function NestedObject(required = true) {
+function DateObject(required = true) {
   return {
-    type: 'NestedObject',
-    children: {},
+    type: 'DateObject',
     validate: function(key, val) {
       if (val == null) {
         if (required) {
@@ -12,8 +11,11 @@ function NestedObject(required = true) {
           return
         }
       }
+      if (!(val instanceof Date)) {
+        return new ValidationError(`Field \`${key}\` (${this.type}) must be a Date object`, { key, val })
+      }
     }
   }
 }
 
-module.exports = NestedObject
+module.exports = DateObject

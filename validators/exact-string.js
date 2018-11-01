@@ -6,14 +6,15 @@ function ExactString(expectedStr, required = true) {
     validate: function(key, val) {
       if (val == null) {
         if (required) {
-          return new ValidationError(`Field \`${key}\` (${this.type}) is required`)
+          return new ValidationError(`Field \`${key}\` (${this.type}) is required`, { key, val })
         } else {
           return
         }
       }
       if (val !== expectedStr) {
         return new ValidationError(
-          `Field \`${key}\` (${this.type}) must strictly equal "${expectedStr}" (received "${val}")`
+          `Field \`${key}\` (${this.type}) must strictly equal "${expectedStr}" (received "${val}")`,
+          { key, val }
         )
       }
     }

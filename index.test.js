@@ -70,13 +70,13 @@ describe('ObjectValidator', function() {
 
   it('fails due to empty object', function() {
     expect(this.validator.validate({}), 'to equal', [
-      new ValidationError('Field `type` (ExactString) is required'),
-      new ValidationError('Field `unitId` (StringValue) is required'),
-      new ValidationError('Field `recordedAt` (DateTime) is required'),
-      new ValidationError('Field `tripId` (Integer) is required'),
-      new ValidationError('Field `value` (Integer) is required'),
-      new ValidationError('Field `position` (NestedObject) is required'),
-      new ValidationError('Field `positions` (NestedArray) is required')
+      new ValidationError('Field `type` (ExactString) is required', { key: 'type' }),
+      new ValidationError('Field `unitId` (StringValue) is required', { key: 'unitId' }),
+      new ValidationError('Field `recordedAt` (DateTime) is required', { key: 'recordedAt' }),
+      new ValidationError('Field `tripId` (Integer) is required', { key: 'tripId' }),
+      new ValidationError('Field `value` (Integer) is required', { key: 'value' }),
+      new ValidationError('Field `position` (NestedObject) is required', { key: 'position' }),
+      new ValidationError('Field `positions` (NestedArray) is required', { key: 'positions' })
     ])
   })
 
@@ -110,7 +110,12 @@ describe('ObjectValidator', function() {
         ]
       }),
       'to equal',
-      [new ValidationError('Field `longitude` (Float) must at least be -180 (received "-181")')]
+      [
+        new ValidationError('Field `longitude` (Float) must be between -180 and 180 (received "-181")', {
+          key: 'longitude',
+          val: -181
+        })
+      ]
     )
   })
 
@@ -144,7 +149,12 @@ describe('ObjectValidator', function() {
         ]
       }),
       'to equal',
-      [new ValidationError('Field `tag` (StringValue) must at least contain 1 characters (received "")')]
+      [
+        new ValidationError('Field `tag` (StringValue) must contain between 1 and 50 characters (received "")', {
+          key: 'tag',
+          val: ''
+        })
+      ]
     )
   })
 
@@ -166,7 +176,7 @@ describe('ObjectValidator', function() {
         }
       }),
       'to equal',
-      [new ValidationError('Field `positions` (NestedArray) is required')]
+      [new ValidationError('Field `positions` (NestedArray) is required', { key: 'positions' })]
     )
   })
 
@@ -195,7 +205,18 @@ describe('ObjectValidator', function() {
         ]
       }),
       'to equal',
-      [new ValidationError('Field `positions` (NestedArray) must at least contain 2 entries (found 1)')]
+      [
+        new ValidationError('Field `positions` (NestedArray) must contain between 2 and 10 entries (found 1)', {
+          key: 'positions',
+          val: [
+            {
+              latitude: 55.332131,
+              longitude: 12.54454,
+              accuracy: 18
+            }
+          ]
+        })
+      ]
     )
   })
 
@@ -229,7 +250,12 @@ describe('ObjectValidator', function() {
         ]
       }),
       'to equal',
-      [new ValidationError('Field `accuracy` (Integer) must at most be 20 (received "21")')]
+      [
+        new ValidationError('Field `accuracy` (Integer) must be between 0 and 20 (received "21")', {
+          key: 'accuracy',
+          val: 21
+        })
+      ]
     )
   })
 })
