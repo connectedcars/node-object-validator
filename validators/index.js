@@ -6,5 +6,6 @@ module.exports = {
   Integer: require('./integer'),
   NestedArray: require('./nested-array'),
   NestedObject: require('./nested-object'),
-  StringValue: require('./string-value')
+  StringValue: require('./string-value'),
+  RegexMatch: require('./regex-match')
 }

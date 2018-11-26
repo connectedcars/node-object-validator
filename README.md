@@ -6,11 +6,12 @@ Validate JSON data based on a defined schema.
 
 ``` javascript
 const ObjectValidator = require('object-validator')
-const { DateTime, ExactString, Float, Integer, NestedArray, NestedObject, StringValue } = require('object-validator/validators')
+const { DateTime, ExactString, Float, Integer, NestedArray, NestedObject, StringValue, RegexMatch } = require('object-validator/validators')
 
 let schema = {
   type: ExactString('gps_odometer_km'),
   unitId: StringValue(1, 32),
+  messageId: RegexMatch(/^MSG-\d+$/),
   recordedAt: DateTime(),
   tripId: Integer(0, 4294967295),
   value: Integer(0, 999999),
@@ -32,6 +33,7 @@ let gpsOdometerKm = new ObjectValidator(schema, { optimize: false })
 let errors = gpsOdometerKm.validate({
     type: 'gps_odometer_km',
     unitId: '1234567',
+    messageId: 'MSG-12345',
     recordedAt: '2018-08-06T13:37:00Z',
     tripId: 1337,
     value: 500,
