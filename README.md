@@ -5,8 +5,8 @@ Validate JSON data based on a defined schema.
 ## How to use
 
 ``` javascript
-const ObjectValidator = require('object-validator')
-const { DateTime, ExactString, Float, Integer, NestedArray, NestedObject, StringValue, RegexMatch } = require('object-validator/validators')
+const { ObjectValidator, Validators } = require('object-validator')
+const { DateTime, ExactString, Float, Integer, NestedArray, NestedObject, StringValue, RegexMatch } = Validators
 
 let schema = {
   type: ExactString('gps_odometer_km'),
