@@ -1,4 +1,4 @@
-const ObjectValidator = require('./index')
+const { ObjectValidator } = require('./index')
 const { DateTime, ExactString, Float, Integer, NestedArray, NestedObject, StringValue } = require('./validators')
 
 const OPERATIONS = 10000000

@@ -1,5 +1,5 @@
 const expect = require('unexpected')
-const ObjectValidator = require('./index')
+const { ObjectValidator } = require('./index')
 const { ValidationError } = require('./lib/errors')
 const { DateTime, ExactString, Float, Integer, NestedArray, NestedObject, StringValue } = require('./validators')
 const fs = require('fs')

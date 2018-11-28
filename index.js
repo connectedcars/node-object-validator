@@ -1,4 +1,6 @@
-const { NestedObject } = require('./validators')
+const Validators = require('./validators')
+const { ValidationError } = require('./lib/errors')
+const { NestedObject } = Validators
 const fs = require('fs')
 
 /**
@@ -109,4 +111,4 @@ class ObjectValidator {
   }
 }
 
-module.exports = ObjectValidator
+module.exports = { ObjectValidator, Validators, ValidationError }
