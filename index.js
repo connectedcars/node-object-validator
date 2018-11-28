@@ -25,7 +25,7 @@ class ObjectValidator {
       if (key.indexOf('$') !== -1) {
         continue
       }
-      if (!schema[key].hasOwnProperty('validate')) {
+      if (typeof schema[key].validate !== 'function') {
         let type = schema[`${key}$type`]
         if (!type) {
           type = NestedObject()
