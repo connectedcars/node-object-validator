@@ -1,4 +1,6 @@
-const { NestedObject } = require('./validators')
+const Validators = require('./validators')
+const { ValidationError } = require('./lib/errors')
+const { NestedObject } = Validators
 const fs = require('fs')
 
 /**
@@ -25,7 +27,7 @@ class ObjectValidator {
       if (key.indexOf('$') !== -1) {
         continue
       }
-      if (!schema[key].hasOwnProperty('validate')) {
+      if (typeof schema[key].validate !== 'function') {
         let type = schema[`${key}$type`]
         if (!type) {
           type = NestedObject()
@@ -109,4 +111,4 @@ class ObjectValidator {
   }
 }
 
-module.exports = ObjectValidator
+module.exports = { ObjectValidator, Validators, ValidationError }
