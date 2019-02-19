@@ -19,16 +19,16 @@
   },
   "homepage": "https://github.com/connectedcars/node-object-validator#readme",
   "devDependencies": {
-    "@types/mocha": "^5.2.3",
-    "@types/node": "^10.3.5",
-    "eslint": "^5.1.0",
-    "eslint-config-prettier": "^2.9.0",
-    "eslint-plugin-prettier": "^2.6.1",
-    "mocha": "^5.2.0",
-    "prettier": "^1.13.5",
-    "sinon": "^5.1.1",
-    "unexpected": "^10.38.0",
-    "nyc": "^11.9.0"
+    "@types/mocha": "^5.2.6",
+    "@types/node": "^11.9.4",
+    "eslint": "^5.14.1",
+    "eslint-config-prettier": "^4.0.0",
+    "eslint-plugin-prettier": "^3.0.1",
+    "mocha": "^6.0.0",
+    "prettier": "^1.16.4",
+    "sinon": "^7.2.4",
+    "unexpected": "^11.0.1",
+    "nyc": "^13.3.0"
   },
   "nyc": {
     "include": [
