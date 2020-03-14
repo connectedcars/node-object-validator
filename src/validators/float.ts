@@ -1,4 +1,4 @@
-import { NotFloatError, OutOfAllowedRange, RequiredError, ValidationError, ValidationErrorContext } from '../errors'
+import { NotFloatError, OutOfRangeError, RequiredError, ValidationErrorContext } from '../errors'
 
 export function validateFloat(
   value: number,
@@ -10,36 +10,43 @@ export function validateFloat(
     return new NotFloatError(`Must be a float (received "${value}")`, context)
   }
   if (value < min || value > max) {
-    return new OutOfAllowedRange(`Must be between ${min} and ${max} (received "${value}")`, context)
+    return new OutOfRangeError(`Must be between ${min} and ${max} (received "${value}")`, context)
   }
   return null
 }
 
 export class RequiredFloat {
   private type: 'RequiredFloat' = 'RequiredFloat'
-  private minLength: number
-  private maxLength: number
+  private min: number
+  private max: number
 
-  public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER) {
-    this.minLength = minLength
-    this.maxLength = maxLength
+  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER) {
+    this.min = min
+    this.max = max
   }
 
   public validate(value: number, context?: ValidationErrorContext<string>): Error | null {
     if (value == null) {
       return new RequiredError(`Is required`, context)
     }
-    return validateFloat(value, this.minLength, this.maxLength, context)
+    return validateFloat(value, this.min, this.max, context)
   }
 }
 
 export class OptionalFloat {
   private type: 'OptionalFloat' = 'OptionalFloat'
+  private min: number
+  private max: number
+
+  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER) {
+    this.min = min
+    this.max = max
+  }
 
   public validate(value: number, context?: ValidationErrorContext<string>): Error | null {
     if (value == null) {
       return null
     }
-    return validateFloat(value, this.minLength, this.maxLength, context)
+    return validateFloat(value, this.min, this.max, context)
   }
 }

@@ -1,6 +1,7 @@
 import { RequiredError, ValidationErrorContext } from '../errors'
 
 export function validateObject(value: number, context?: ValidationErrorContext<string>): Error | null {
+  // TODO: Validate that something is an object
   return null
 }
 

@@ -4,7 +4,7 @@ import { OptionalObject, RequiredObject } from './object'
 describe('Object', () => {
   describe('validateObject', () => {})
 
-  describe('OptionalObject', () => {
+  describe('RequiredObject', () => {
     it('accepts empty value', function() {
       const validator = new RequiredObject()
       expect(validator.validate((null as unknown) as number)).toStrictEqual(new RequiredError('Is required'))

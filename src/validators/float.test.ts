@@ -1,4 +1,4 @@
-import { NotFloatError, OutOfAllowedRange, RequiredError } from '../errors'
+import { NotFloatError, OutOfRangeError, RequiredError } from '../errors'
 import { OptionalFloat, RequiredFloat, validateFloat } from './float'
 
 describe('Float', () => {
@@ -26,25 +26,25 @@ describe('Float', () => {
 
     it('requires min value', function() {
       expect(validateFloat(-0.1, 0.5, 500)).toStrictEqual(
-        new OutOfAllowedRange('Must be between 0.5 and 500 (received "-0.1")')
+        new OutOfRangeError('Must be between 0.5 and 500 (received "-0.1")')
       )
       expect(validateFloat(0, 0.5, 500)).toStrictEqual(
-        new OutOfAllowedRange('Must be between 0.5 and 500 (received "0")')
+        new OutOfRangeError('Must be between 0.5 and 500 (received "0")')
       )
       expect(validateFloat(0.1, 0.5, 500)).toStrictEqual(
-        new OutOfAllowedRange('Must be between 0.5 and 500 (received "0.1")')
+        new OutOfRangeError('Must be between 0.5 and 500 (received "0.1")')
       )
       expect(validateFloat(0.2, 0.5, 500)).toStrictEqual(
-        new OutOfAllowedRange('Must be between 0.5 and 500 (received "0.2")')
+        new OutOfRangeError('Must be between 0.5 and 500 (received "0.2")')
       )
       expect(validateFloat(0.3, 0.5, 500)).toStrictEqual(
-        new OutOfAllowedRange('Must be between 0.5 and 500 (received "0.3")')
+        new OutOfRangeError('Must be between 0.5 and 500 (received "0.3")')
       )
       expect(validateFloat(0.4, 0.5, 500)).toStrictEqual(
-        new OutOfAllowedRange('Must be between 0.5 and 500 (received "0.4")')
+        new OutOfRangeError('Must be between 0.5 and 500 (received "0.4")')
       )
       expect(validateFloat(0.49999999, 0.5, 500)).toStrictEqual(
-        new OutOfAllowedRange('Must be between 0.5 and 500 (received "0.49999999")')
+        new OutOfRangeError('Must be between 0.5 and 500 (received "0.49999999")')
       )
       expect(validateFloat(0.5, 0.5, 500)).toStrictEqual(null)
       expect(validateFloat(0.6, 0.5, 500)).toStrictEqual(null)
@@ -60,13 +60,13 @@ describe('Float', () => {
       expect(validateFloat(0.4, -500, 0.5)).toStrictEqual(null)
       expect(validateFloat(0.5, -500, 0.5)).toStrictEqual(null)
       expect(validateFloat(0.500000001, -500, 0.5)).toStrictEqual(
-        new OutOfAllowedRange('Must be between -500 and 0.5 (received "0.500000001")')
+        new OutOfRangeError('Must be between -500 and 0.5 (received "0.500000001")')
       )
       expect(validateFloat(0.6, -500, 0.5)).toStrictEqual(
-        new OutOfAllowedRange('Must be between -500 and 0.5 (received "0.6")')
+        new OutOfRangeError('Must be between -500 and 0.5 (received "0.6")')
       )
       expect(validateFloat(0.7, -500, 0.5)).toStrictEqual(
-        new OutOfAllowedRange('Must be between -500 and 0.5 (received "0.7")')
+        new OutOfRangeError('Must be between -500 and 0.5 (received "0.7")')
       )
     })
   })

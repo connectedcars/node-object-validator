@@ -27,4 +27,4 @@ export class NotIntegerError extends ValidationError<string> {}
 export class NotArrayError extends ValidationError<string> {}
 export class NotObjectError extends ValidationError<string> {}
 export class DoesNotMatchRegexError extends ValidationError<string> {}
-export class OutOfAllowedRange extends ValidationError<string> {}
+export class OutOfRangeError extends ValidationError<string> {}
