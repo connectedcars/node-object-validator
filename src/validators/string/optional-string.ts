@@ -1,4 +1,4 @@
-import { ValidationErrorContext } from '../errors'
+import { ValidationErrorContext } from '../../errors'
 import { validateString } from './validate-string'
 
 export class OptionalString {

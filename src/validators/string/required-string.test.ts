@@ -1,4 +1,4 @@
-import { RequiredError } from '../errors'
+import { RequiredError } from '../../errors'
 import { RequiredString } from './required-string'
 
 describe('RequiredStringValue', () => {

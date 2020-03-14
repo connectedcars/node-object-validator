@@ -1,4 +1,4 @@
-import { RequiredError, ValidationErrorContext } from '../errors'
+import { RequiredError, ValidationErrorContext } from '../../errors'
 import { validateString } from './validate-string'
 
 export class RequiredString {

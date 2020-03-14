@@ -1,7 +1,7 @@
-import { NotStringError, WrongLengthError } from '../errors'
+import { NotStringError, WrongLengthError } from '../../errors'
 import { validateString } from './validate-string'
 
-describe('StringValue', () => {
+describe('validateString', () => {
   it('requires value to be a string', () => {
     expect(validateString('foo')).toStrictEqual(null)
     expect(validateString('')).toStrictEqual(null)

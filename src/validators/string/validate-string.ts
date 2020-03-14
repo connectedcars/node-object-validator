@@ -1,4 +1,4 @@
-import { NotStringError, ValidationErrorContext, WrongLengthError } from '../errors'
+import { NotStringError, ValidationErrorContext, WrongLengthError } from '../../errors'
 
 export function validateString(
   value: string,
