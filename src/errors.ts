@@ -20,3 +20,4 @@ export class RequiredError extends ValidationError<string> {}
 export class NotStringError extends ValidationError<string> {}
 export class WrongLengthError extends ValidationError<string> {}
 export class NotDateError extends ValidationError<string> {}
+export class NotRfc3339Error extends ValidationError<string> {}
