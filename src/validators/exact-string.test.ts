@@ -37,21 +37,17 @@ describe('validateExactString', () => {
 
   describe('RequiredExactString', () => {
     it('requires empty value', function() {
-      const validator = new RequiredExactString()
-      expect(validator.validate((null as unknown) as string, 'MyString')).toStrictEqual(
-        new RequiredError('Is required')
-      )
-      expect(validator.validate((undefined as unknown) as string, 'MyString')).toStrictEqual(
-        new RequiredError('Is required')
-      )
+      const validator = new RequiredExactString('MyString')
+      expect(validator.validate((null as unknown) as string)).toStrictEqual(new RequiredError('Is required'))
+      expect(validator.validate((undefined as unknown) as string)).toStrictEqual(new RequiredError('Is required'))
     })
   })
 
   describe('OptionalExactString', () => {
     it('requires empty value', function() {
-      const validator = new OptionalExactString()
-      expect(validator.validate((undefined as unknown) as string, 'MyString')).toStrictEqual(null)
-      expect(validator.validate((undefined as unknown) as string, 'MyString')).toStrictEqual(null)
+      const validator = new OptionalExactString('MyString')
+      expect(validator.validate((undefined as unknown) as string)).toStrictEqual(null)
+      expect(validator.validate((undefined as unknown) as string)).toStrictEqual(null)
     })
   })
 })
