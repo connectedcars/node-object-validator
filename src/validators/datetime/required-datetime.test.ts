@@ -1,7 +1,7 @@
 import { RequiredError } from '../../errors'
 import { RequiredDateTime } from './required-datetime'
 
-describe('RequiredStringValue', () => {
+describe('RequiredDateTime', () => {
   it('requires empty value', function() {
     const validator = new RequiredDateTime()
     expect(validator.validate((null as unknown) as string)).toStrictEqual(new RequiredError('Is required'))
