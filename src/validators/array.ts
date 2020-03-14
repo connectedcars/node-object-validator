@@ -57,3 +57,19 @@ export class OptionalArray<T> {
     return validateArray(value, this.minLength, this.maxLength, context)
   }
 }
+
+export function NestedArray<T>(
+  array: Array<T>,
+  minLength: number,
+  maxLength: number,
+  required?: false
+): OptionalArray<T>
+export function NestedArray<T>(array: Array<T>, minLength: number, maxLength: number, required: true): RequiredArray<T>
+export function NestedArray<T>(
+  array: Array<T>,
+  minLength = 0,
+  maxLength = Number.MAX_SAFE_INTEGER,
+  required = false
+): OptionalArray<T> | RequiredArray<T> {
+  return required ? new RequiredArray(array, minLength, maxLength) : new OptionalArray(array, minLength, maxLength)
+}

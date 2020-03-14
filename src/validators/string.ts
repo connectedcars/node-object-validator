@@ -53,3 +53,9 @@ export class OptionalString {
     return validateString(value, this.minLength, this.maxLength, context)
   }
 }
+
+export function StringValue(required?: false): OptionalString
+export function StringValue(required: true): RequiredString
+export function StringValue(required = false): OptionalString | RequiredString {
+  return required ? new RequiredString() : new OptionalString()
+}

@@ -1,7 +1,11 @@
 import { DoesNotMatchRegexError, RequiredError, ValidationErrorContext } from '../errors'
 import { validateString } from './string'
 
-export function validateRegex(value: string, regex: RegExp, context?: ValidationErrorContext<string>): Error | null {
+export function validateRegexMatch(
+  value: string,
+  regex: RegExp,
+  context?: ValidationErrorContext<string>
+): Error | null {
   const stringError = validateString(value, 0, Number.MAX_SAFE_INTEGER, context)
   if (stringError) {
     return stringError
@@ -12,7 +16,7 @@ export function validateRegex(value: string, regex: RegExp, context?: Validation
   return null
 }
 
-export class RequiredRegex {
+export class RequiredRegexMatch {
   private type: 'RequiredRegex' = 'RequiredRegex'
   private regex: RegExp
 
@@ -24,11 +28,11 @@ export class RequiredRegex {
     if (value == null) {
       return new RequiredError(`Is required`, context)
     }
-    return validateRegex(value, this.regex, context)
+    return validateRegexMatch(value, this.regex, context)
   }
 }
 
-export class OptionalRegex {
+export class OptionalRegexMatch {
   private type: 'OptionalRegex' = 'OptionalRegex'
   private regex: RegExp
 
@@ -40,6 +44,12 @@ export class OptionalRegex {
     if (value == null) {
       return null
     }
-    return validateRegex(value, this.regex, context)
+    return validateRegexMatch(value, this.regex, context)
   }
+}
+
+export function RegexMatch(regex: RegExp, required?: false): OptionalRegexMatch
+export function RegexMatch(regex: RegExp, required: true): RequiredRegexMatch
+export function RegexMatch(regex: RegExp, required = false): OptionalRegexMatch | RequiredRegexMatch {
+  return required ? new RequiredRegexMatch(regex) : new OptionalRegexMatch(regex)
 }

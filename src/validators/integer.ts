@@ -50,3 +50,9 @@ export class OptionalInteger {
     return validateInteger(value, this.min, this.max, context)
   }
 }
+
+export function Integer(required?: false): OptionalInteger
+export function Integer(required: true): RequiredInteger
+export function Integer(required = false): OptionalInteger | RequiredInteger {
+  return required ? new RequiredInteger() : new OptionalInteger()
+}

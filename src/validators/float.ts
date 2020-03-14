@@ -50,3 +50,9 @@ export class OptionalFloat {
     return validateFloat(value, this.min, this.max, context)
   }
 }
+
+export function Float(required?: false): OptionalFloat
+export function Float(required: true): RequiredFloat
+export function Float(required = false): OptionalFloat | RequiredFloat {
+  return required ? new RequiredFloat() : new OptionalFloat()
+}

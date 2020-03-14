@@ -30,3 +30,9 @@ export class OptionalDateTime {
     return validateDateTime(value, context)
   }
 }
+
+export function DateTime(required?: false): OptionalDateTime
+export function DateTime(required: true): RequiredDateTime
+export function DateTime(required = false): OptionalDateTime | RequiredDateTime {
+  return required ? new RequiredDateTime() : new OptionalDateTime()
+}
