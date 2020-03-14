@@ -22,3 +22,9 @@ export class WrongLengthError extends ValidationError<string> {}
 export class NotDateError extends ValidationError<string> {}
 export class NotRfc3339Error extends ValidationError<string> {}
 export class NotExactStringError extends ValidationError<string> {}
+export class NotFloatError extends ValidationError<string> {}
+export class NotIntegerError extends ValidationError<string> {}
+export class NotArrayError extends ValidationError<string> {}
+export class NotObjectError extends ValidationError<string> {}
+export class DoesNotMatchRegexError extends ValidationError<string> {}
+export class OutOfAllowedRange extends ValidationError<string> {}
