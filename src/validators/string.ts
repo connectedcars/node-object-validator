@@ -1,10 +1,10 @@
 import { NotStringError, RequiredError, ValidationErrorContext, WrongLengthError } from '../errors'
 
 export function validateString(
-  value: string,
+  value: string | unknown,
   minLength = 0,
   maxLength: number = Number.MAX_SAFE_INTEGER,
-  context?: ValidationErrorContext<string>
+  context?: ValidationErrorContext
 ): Error | null {
   if (typeof value !== 'string') {
     return new NotStringError(`Must be a string (received "${value}")`, context)
@@ -28,7 +28,7 @@ export class RequiredString {
     this.maxLength = maxLength
   }
 
-  public validate(value: string, context?: ValidationErrorContext<string>): Error | null {
+  public validate(value: string, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return new RequiredError(`Is required`, context)
     }
@@ -46,7 +46,7 @@ export class OptionalString {
     this.maxLength = maxLength
   }
 
-  public validate(value: string, context?: ValidationErrorContext<string>): Error | null {
+  public validate(value: string | unknown, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return null
     }

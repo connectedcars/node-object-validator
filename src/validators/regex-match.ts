@@ -1,11 +1,7 @@
 import { DoesNotMatchRegexError, RequiredError, ValidationErrorContext } from '../errors'
 import { validateString } from './string'
 
-export function validateRegexMatch(
-  value: string,
-  regex: RegExp,
-  context?: ValidationErrorContext<string>
-): Error | null {
+export function validateRegexMatch(value: string, regex: RegExp, context?: ValidationErrorContext): Error | null {
   const stringError = validateString(value, 0, Number.MAX_SAFE_INTEGER, context)
   if (stringError) {
     return stringError
@@ -24,7 +20,7 @@ export class RequiredRegexMatch {
     this.regex = regex
   }
 
-  public validate(value: string, context?: ValidationErrorContext<string>): Error | null {
+  public validate(value: string, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return new RequiredError(`Is required`, context)
     }
@@ -40,7 +36,7 @@ export class OptionalRegexMatch {
     this.regex = regex
   }
 
-  public validate(value: string, context?: ValidationErrorContext<string>): Error | null {
+  public validate(value: string, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return null
     }

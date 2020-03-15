@@ -1,10 +1,11 @@
 import { NotIntegerError, OutOfRangeError, RequiredError, ValidationErrorContext } from '../errors'
+import { Validator } from './common'
 
 export function validateInteger(
   value: number,
   min = 0,
   max = Number.MAX_SAFE_INTEGER,
-  context?: ValidationErrorContext<string>
+  context?: ValidationErrorContext
 ): Error | null {
   if (typeof value !== 'number' || !Number.isInteger(value)) {
     return new NotIntegerError(`Must be an integer (received "${value}")`, context)
@@ -15,7 +16,7 @@ export function validateInteger(
   return null
 }
 
-export class RequiredInteger {
+export class RequiredInteger implements Validator {
   private type: 'RequiredInteger' = 'RequiredInteger'
   private min: number
   private max: number
@@ -25,7 +26,7 @@ export class RequiredInteger {
     this.max = max
   }
 
-  public validate(value: number, context?: ValidationErrorContext<string>): Error | null {
+  public validate(value: number, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return new RequiredError(`Is required`, context)
     }
@@ -33,7 +34,7 @@ export class RequiredInteger {
   }
 }
 
-export class OptionalInteger {
+export class OptionalInteger implements Validator {
   private type: 'OptionalInteger' = 'OptionalInteger'
   private min: number
   private max: number
@@ -43,7 +44,7 @@ export class OptionalInteger {
     this.max = max
   }
 
-  public validate(value: number, context?: ValidationErrorContext<string>): Error | null {
+  public validate(value: number, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return null
     }

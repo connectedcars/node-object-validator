@@ -1,10 +1,11 @@
 import { NotArrayError, RequiredError, ValidationErrorContext, WrongLengthError } from '../errors'
+import { Schema, Validator } from './common'
 
 export function validateArray<T>(
   value: Array<T>,
   minLength = 0,
   maxLength = Number.MAX_SAFE_INTEGER,
-  context?: ValidationErrorContext<string>
+  context?: ValidationErrorContext
 ): Error | null {
   if (!Array.isArray(value)) {
     return new NotArrayError(`Must be an array (received "${value}")`, context)
@@ -18,19 +19,23 @@ export function validateArray<T>(
   return null
 }
 
-export class RequiredArray<T> {
+export function isArray<T>(value: unknown): value is Array<T> {
+  return validateArray(value as T[]) ? false : true
+}
+
+export class RequiredArray implements Validator {
+  public schema: Schema
   private type: 'RequiredArray' = 'RequiredArray'
   private minLength: number
   private maxLength: number
-  private array: Array<T>
 
-  public constructor(array: Array<T>, minLength = 0, maxLength = Number.MAX_SAFE_INTEGER) {
-    this.array = array
+  public constructor(schema: Schema, minLength = 0, maxLength = Number.MAX_SAFE_INTEGER) {
+    this.schema = schema
     this.minLength = minLength
     this.maxLength = maxLength
   }
 
-  public validate(value: Array<T>, context?: ValidationErrorContext<string>): Error | null {
+  public validate(value: Array<unknown>, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return new RequiredError(`Is required`, context)
     }
@@ -38,19 +43,19 @@ export class RequiredArray<T> {
   }
 }
 
-export class OptionalArray<T> {
+export class OptionalArray implements Validator {
+  public schema: Schema
   private type: 'OptionalArray' = 'OptionalArray'
   private minLength: number
   private maxLength: number
-  private array: Array<T>
 
-  public constructor(array: Array<T>, minLength = 0, maxLength = Number.MAX_SAFE_INTEGER) {
-    this.array = array
+  public constructor(schema: Schema, minLength = 0, maxLength = Number.MAX_SAFE_INTEGER) {
+    this.schema = schema
     this.minLength = minLength
     this.maxLength = maxLength
   }
 
-  public validate(value: Array<T>, context?: ValidationErrorContext<string>): Error | null {
+  public validate(value: Array<unknown>, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return null
     }
@@ -58,18 +63,13 @@ export class OptionalArray<T> {
   }
 }
 
-export function NestedArray<T>(
-  array: Array<T>,
-  minLength: number,
-  maxLength: number,
-  required?: false
-): OptionalArray<T>
-export function NestedArray<T>(array: Array<T>, minLength: number, maxLength: number, required: true): RequiredArray<T>
-export function NestedArray<T>(
-  array: Array<T>,
+export function NestedArray(schema: Schema, minLength: number, maxLength: number, required?: false): OptionalArray
+export function NestedArray(schema: Schema, minLength: number, maxLength: number, required: true): RequiredArray
+export function NestedArray(
+  schema: Schema,
   minLength = 0,
   maxLength = Number.MAX_SAFE_INTEGER,
   required = false
-): OptionalArray<T> | RequiredArray<T> {
-  return required ? new RequiredArray(array, minLength, maxLength) : new OptionalArray(array, minLength, maxLength)
+): OptionalArray | RequiredArray {
+  return required ? new RequiredArray(schema, minLength, maxLength) : new OptionalArray(schema, minLength, maxLength)
 }

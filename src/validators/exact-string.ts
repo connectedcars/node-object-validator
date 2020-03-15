@@ -1,12 +1,8 @@
 import { NotExactStringError, RequiredError, ValidationErrorContext } from '../errors'
 
-export function validateExactString(
-  value: string,
-  expectedStr: string,
-  context?: ValidationErrorContext<string>
-): Error | null {
-  if (value !== expectedStr) {
-    return new NotExactStringError(`Must strictly equal "${expectedStr}" (received "${value}")`, context)
+export function validateExactString(value: string, expected: string, context?: ValidationErrorContext): Error | null {
+  if (value !== expected) {
+    return new NotExactStringError(`Must strictly equal "${expected}" (received "${value}")`, context)
   }
   return null
 }
@@ -19,7 +15,7 @@ export class RequiredExactString {
     this.expectedStr = expectedStr
   }
 
-  public validate(value: string, context?: ValidationErrorContext<string>): Error | null {
+  public validate(value: string, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return new RequiredError(`Is required`, context)
     }
@@ -31,11 +27,11 @@ export class OptionalExactString {
   private type: 'OptionalExactString' = 'OptionalExactString'
   private expectedStr: string
 
-  public constructor(expectedStr: string) {
-    this.expectedStr = expectedStr
+  public constructor(expected: string) {
+    this.expectedStr = expected
   }
 
-  public validate(value: string, context?: ValidationErrorContext<string>): Error | null {
+  public validate(value: string, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return null
     }

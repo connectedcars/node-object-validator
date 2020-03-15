@@ -4,7 +4,7 @@ export function validateFloat(
   value: number,
   min = Number.MIN_SAFE_INTEGER,
   max = Number.MAX_SAFE_INTEGER,
-  context?: ValidationErrorContext<string>
+  context?: ValidationErrorContext
 ): Error | null {
   if (typeof value !== 'number' || isNaN(value) || !isFinite(value)) {
     return new NotFloatError(`Must be a float (received "${value}")`, context)
@@ -25,7 +25,7 @@ export class RequiredFloat {
     this.max = max
   }
 
-  public validate(value: number, context?: ValidationErrorContext<string>): Error | null {
+  public validate(value: number, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return new RequiredError(`Is required`, context)
     }
@@ -43,7 +43,7 @@ export class OptionalFloat {
     this.max = max
   }
 
-  public validate(value: number, context?: ValidationErrorContext<string>): Error | null {
+  public validate(value: number, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return null
     }

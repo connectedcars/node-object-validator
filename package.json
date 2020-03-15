@@ -7,7 +7,7 @@
     "test": "TZ=UTC jest",
     "cov": "TZ=UTC jest --coverage=true",
     "benchmark": "node benchmark.js",
-    "build": "npm run build:types && npm run build:js:src",
+    "build": "npm run build:types && npm run build:js",
     "build:js": "build src --skip-types",
     "build:types": "tsc --emitDeclarationOnly",
     "lint": "eslint './src/**/*.{ts,tsx}'",
@@ -20,10 +20,7 @@
     "type": "git",
     "url": "git+https://github.com/connectedcars/node-object-validator.git"
   },
-  "author": [
-    "Troels Liebe Bentsen<tlb@connectedcars.dk>",
-    "Michael Mungkol Storgaard<ms@connectedcars.dk>"
-  ],
+  "author": "Troels Liebe Bentsen<tlb@connectedcars.dk>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/connectedcars/node-object-validator/issues"

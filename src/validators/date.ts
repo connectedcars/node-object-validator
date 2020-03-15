@@ -1,6 +1,6 @@
 import { NotDateError, RequiredError, ValidationErrorContext } from '../errors'
 
-export function validateDate(value: Date, context?: ValidationErrorContext<string>): Error | null {
+export function validateDate(value: Date, context?: ValidationErrorContext): Error | null {
   if (!(value instanceof Date)) {
     return new NotDateError(`Must be a Date object`, context)
   }
@@ -10,7 +10,7 @@ export function validateDate(value: Date, context?: ValidationErrorContext<strin
 export class RequiredDate {
   private type: 'RequiredDate' = 'RequiredDate'
 
-  public validate(value: Date, context?: ValidationErrorContext<string>): Error | null {
+  public validate(value: Date, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return new RequiredError(`Is required`, context)
     }
@@ -21,7 +21,7 @@ export class RequiredDate {
 export class OptionalDate {
   private type: 'OptionalDate' = 'OptionalDate'
 
-  public validate(value: Date, context?: ValidationErrorContext<string>): Error | null {
+  public validate(value: Date, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return null
     }

@@ -1,12 +1,12 @@
-export interface ValidationErrorContext<T> {
+export interface ValidationErrorContext {
   key: string
-  value: T
+  value: unknown
 }
 
-export class ValidationError<T> extends Error {
+export class ValidationError extends Error {
   public key?: string
-  public value?: T
-  public constructor(message: string, context?: ValidationErrorContext<T>) {
+  public value?: unknown
+  public constructor(message: string, context?: ValidationErrorContext) {
     if (context) {
       message = `Field '${context.key}' ${message.charAt(0).toLowerCase() + message.slice(1)}`
     }
@@ -16,15 +16,23 @@ export class ValidationError<T> extends Error {
   }
 }
 
-export class RequiredError extends ValidationError<string> {}
-export class NotStringError extends ValidationError<string> {}
-export class WrongLengthError extends ValidationError<string> {}
-export class NotDateError extends ValidationError<string> {}
-export class NotRfc3339Error extends ValidationError<string> {}
-export class NotExactStringError extends ValidationError<string> {}
-export class NotFloatError extends ValidationError<string> {}
-export class NotIntegerError extends ValidationError<string> {}
-export class NotArrayError extends ValidationError<string> {}
-export class NotObjectError extends ValidationError<string> {}
-export class DoesNotMatchRegexError extends ValidationError<string> {}
-export class OutOfRangeError extends ValidationError<string> {}
+export class ValidationsError extends Error {
+  public errors: Error[]
+  public constructor(message: string, errors: Error[]) {
+    super(message)
+    this.errors = errors
+  }
+}
+
+export class RequiredError extends ValidationError {}
+export class NotStringError extends ValidationError {}
+export class WrongLengthError extends ValidationError {}
+export class NotDateError extends ValidationError {}
+export class NotRfc3339Error extends ValidationError {}
+export class NotExactStringError extends ValidationError {}
+export class NotFloatError extends ValidationError {}
+export class NotIntegerError extends ValidationError {}
+export class NotArrayError extends ValidationError {}
+export class NotObjectError extends ValidationError {}
+export class DoesNotMatchRegexError extends ValidationError {}
+export class OutOfRangeError extends ValidationError {}
