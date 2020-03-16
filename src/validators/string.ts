@@ -1,7 +1,9 @@
+import { ValidatorBase } from '../common'
 import { NotStringError, RequiredError, ValidationErrorContext, WrongLengthError } from '../errors'
+import { Validator } from '../types'
 
 export function validateString(
-  value: string | unknown,
+  value: unknown,
   minLength = 0,
   maxLength: number = Number.MAX_SAFE_INTEGER,
   context?: ValidationErrorContext
@@ -18,17 +20,18 @@ export function validateString(
   return null
 }
 
-export class RequiredString {
+export class RequiredString extends ValidatorBase implements Validator {
   private type: 'RequiredString' = 'RequiredString'
   private minLength: number
   private maxLength: number
 
   public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER) {
+    super()
     this.minLength = minLength
     this.maxLength = maxLength
   }
 
-  public validate(value: string, context?: ValidationErrorContext): Error | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return new RequiredError(`Is required`, context)
     }
@@ -36,17 +39,18 @@ export class RequiredString {
   }
 }
 
-export class OptionalString {
+export class OptionalString extends ValidatorBase implements Validator {
   private type: 'OptionalString' = 'OptionalString'
   private minLength: number
   private maxLength: number
 
   public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER) {
+    super()
     this.minLength = minLength
     this.maxLength = maxLength
   }
 
-  public validate(value: string | unknown, context?: ValidationErrorContext): Error | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return null
     }
@@ -54,8 +58,12 @@ export class OptionalString {
   }
 }
 
-export function StringValue(required?: false): OptionalString
-export function StringValue(required: true): RequiredString
-export function StringValue(required = false): OptionalString | RequiredString {
-  return required ? new RequiredString() : new OptionalString()
+export function StringValue(minLength: number, maxLength: number, required?: false): OptionalString
+export function StringValue(minLength: number, maxLength: number, required: true): RequiredString
+export function StringValue(
+  minLength = 0,
+  maxLength = Number.MAX_SAFE_INTEGER,
+  required = false
+): OptionalString | RequiredString {
+  return required ? new RequiredString(minLength, maxLength) : new OptionalString(minLength, maxLength)
 }

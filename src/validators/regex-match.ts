@@ -1,9 +1,11 @@
+import { isValidType, ValidatorBase } from '../common'
 import { DoesNotMatchRegexError, RequiredError, ValidationErrorContext } from '../errors'
+import { Validator } from '../types'
 import { validateString } from './string'
 
-export function validateRegexMatch(value: string, regex: RegExp, context?: ValidationErrorContext): Error | null {
+export function validateRegexMatch(value: unknown, regex: RegExp, context?: ValidationErrorContext): Error | null {
   const stringError = validateString(value, 0, Number.MAX_SAFE_INTEGER, context)
-  if (stringError) {
+  if (!isValidType<string>(value, stringError)) {
     return stringError
   }
   if (!value.match(regex)) {
@@ -12,15 +14,16 @@ export function validateRegexMatch(value: string, regex: RegExp, context?: Valid
   return null
 }
 
-export class RequiredRegexMatch {
+export class RequiredRegexMatch extends ValidatorBase implements Validator {
   private type: 'RequiredRegex' = 'RequiredRegex'
   private regex: RegExp
 
   public constructor(regex: RegExp) {
+    super()
     this.regex = regex
   }
 
-  public validate(value: string, context?: ValidationErrorContext): Error | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return new RequiredError(`Is required`, context)
     }
@@ -28,15 +31,16 @@ export class RequiredRegexMatch {
   }
 }
 
-export class OptionalRegexMatch {
+export class OptionalRegexMatch extends ValidatorBase implements Validator {
   private type: 'OptionalRegex' = 'OptionalRegex'
   private regex: RegExp
 
   public constructor(regex: RegExp) {
+    super()
     this.regex = regex
   }
 
-  public validate(value: string, context?: ValidationErrorContext): Error | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return null
     }

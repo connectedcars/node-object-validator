@@ -1,8 +1,9 @@
+import { ValidatorBase } from '../common'
 import { NotIntegerError, OutOfRangeError, RequiredError, ValidationErrorContext } from '../errors'
-import { Validator } from './common'
+import { Validator } from '../types'
 
 export function validateInteger(
-  value: number,
+  value: unknown,
   min = 0,
   max = Number.MAX_SAFE_INTEGER,
   context?: ValidationErrorContext
@@ -16,17 +17,18 @@ export function validateInteger(
   return null
 }
 
-export class RequiredInteger implements Validator {
+export class RequiredInteger extends ValidatorBase implements Validator {
   private type: 'RequiredInteger' = 'RequiredInteger'
   private min: number
   private max: number
 
   public constructor(min = 0, max = Number.MAX_SAFE_INTEGER) {
+    super()
     this.min = min
     this.max = max
   }
 
-  public validate(value: number, context?: ValidationErrorContext): Error | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return new RequiredError(`Is required`, context)
     }
@@ -34,17 +36,18 @@ export class RequiredInteger implements Validator {
   }
 }
 
-export class OptionalInteger implements Validator {
+export class OptionalInteger extends ValidatorBase implements Validator {
   private type: 'OptionalInteger' = 'OptionalInteger'
   private min: number
   private max: number
 
   public constructor(min = 0, max = Number.MAX_SAFE_INTEGER) {
+    super()
     this.min = min
     this.max = max
   }
 
-  public validate(value: number, context?: ValidationErrorContext): Error | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return null
     }
@@ -52,8 +55,8 @@ export class OptionalInteger implements Validator {
   }
 }
 
-export function Integer(required?: false): OptionalInteger
-export function Integer(required: true): RequiredInteger
-export function Integer(required = false): OptionalInteger | RequiredInteger {
-  return required ? new RequiredInteger() : new OptionalInteger()
+export function Integer(min: number, max: number, required?: false): OptionalInteger
+export function Integer(min: number, max: number, required: true): RequiredInteger
+export function Integer(min = 0, max = Number.MAX_SAFE_INTEGER, required = false): OptionalInteger | RequiredInteger {
+  return required ? new RequiredInteger(min, max) : new OptionalInteger(min, max)
 }

@@ -6,21 +6,13 @@ describe('Regex', () => {
     it('requires value to be a string', function() {
       expect(validateRegexMatch('foo', /^.*$/)).toStrictEqual(null)
       expect(validateRegexMatch('', /^.*$/)).toStrictEqual(null)
-      expect(validateRegexMatch((1 as unknown) as string, /^.*$/)).toStrictEqual(
-        new NotStringError('Must be a string (received "1")')
-      )
-      expect(validateRegexMatch(({} as unknown) as string, /^.*$/)).toStrictEqual(
+      expect(validateRegexMatch(1, /^.*$/)).toStrictEqual(new NotStringError('Must be a string (received "1")'))
+      expect(validateRegexMatch({}, /^.*$/)).toStrictEqual(
         new NotStringError('Must be a string (received "[object Object]")')
       )
-      expect(validateRegexMatch(([] as unknown) as string, /^.*$/)).toStrictEqual(
-        new NotStringError('Must be a string (received "")')
-      )
-      expect(validateRegexMatch((true as unknown) as string, /^.*$/)).toStrictEqual(
-        new NotStringError('Must be a string (received "true")')
-      )
-      expect(validateRegexMatch((false as unknown) as string, /^.*$/)).toStrictEqual(
-        new NotStringError('Must be a string (received "false")')
-      )
+      expect(validateRegexMatch([], /^.*$/)).toStrictEqual(new NotStringError('Must be a string (received "")'))
+      expect(validateRegexMatch(true, /^.*$/)).toStrictEqual(new NotStringError('Must be a string (received "true")'))
+      expect(validateRegexMatch(false, /^.*$/)).toStrictEqual(new NotStringError('Must be a string (received "false")'))
     })
 
     it('requires match', function() {
@@ -38,16 +30,16 @@ describe('Regex', () => {
   describe('OptionalRegex', () => {
     it('accepts empty value', function() {
       const validator = new RequiredRegexMatch(/^.*$/)
-      expect(validator.validate((null as unknown) as string)).toStrictEqual(new RequiredError('Is required'))
-      expect(validator.validate((undefined as unknown) as string)).toStrictEqual(new RequiredError('Is required'))
+      expect(validator.validate(null)).toStrictEqual(new RequiredError('Is required'))
+      expect(validator.validate(undefined)).toStrictEqual(new RequiredError('Is required'))
     })
   })
 
   describe('OptionalRegex', () => {
     it('accepts empty value', function() {
       const validator = new OptionalRegexMatch(/^.*$/)
-      expect(validator.validate((null as unknown) as string)).toStrictEqual(null)
-      expect(validator.validate((undefined as unknown) as string)).toStrictEqual(null)
+      expect(validator.validate(null)).toStrictEqual(null)
+      expect(validator.validate(undefined)).toStrictEqual(null)
     })
   })
 })

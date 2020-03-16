@@ -1,7 +1,9 @@
+import { ValidatorBase } from '../common'
 import { NotFloatError, OutOfRangeError, RequiredError, ValidationErrorContext } from '../errors'
+import { Validator } from '../types'
 
 export function validateFloat(
-  value: number,
+  value: unknown,
   min = Number.MIN_SAFE_INTEGER,
   max = Number.MAX_SAFE_INTEGER,
   context?: ValidationErrorContext
@@ -15,17 +17,18 @@ export function validateFloat(
   return null
 }
 
-export class RequiredFloat {
+export class RequiredFloat extends ValidatorBase implements Validator {
   private type: 'RequiredFloat' = 'RequiredFloat'
   private min: number
   private max: number
 
   public constructor(min = 0, max = Number.MAX_SAFE_INTEGER) {
+    super()
     this.min = min
     this.max = max
   }
 
-  public validate(value: number, context?: ValidationErrorContext): Error | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return new RequiredError(`Is required`, context)
     }
@@ -33,17 +36,18 @@ export class RequiredFloat {
   }
 }
 
-export class OptionalFloat {
+export class OptionalFloat extends ValidatorBase implements Validator {
   private type: 'OptionalFloat' = 'OptionalFloat'
   private min: number
   private max: number
 
   public constructor(min = 0, max = Number.MAX_SAFE_INTEGER) {
+    super()
     this.min = min
     this.max = max
   }
 
-  public validate(value: number, context?: ValidationErrorContext): Error | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return null
     }
@@ -51,8 +55,8 @@ export class OptionalFloat {
   }
 }
 
-export function Float(required?: false): OptionalFloat
-export function Float(required: true): RequiredFloat
-export function Float(required = false): OptionalFloat | RequiredFloat {
-  return required ? new RequiredFloat() : new OptionalFloat()
+export function Float(min: number, max: number, required?: false): OptionalFloat
+export function Float(min: number, max: number, required: true): RequiredFloat
+export function Float(min = 0, max = Number.MAX_SAFE_INTEGER, required = false): OptionalFloat | RequiredFloat {
+  return required ? new RequiredFloat(min, max) : new OptionalFloat(min, max)
 }

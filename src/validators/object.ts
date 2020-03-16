@@ -1,20 +1,22 @@
+import { ValidatorBase } from '../common'
 import { RequiredError, ValidationErrorContext } from '../errors'
-import { Schema } from './common'
+import { ObjectSchema, Validator } from '../types'
 
-export function validateObject<T extends {}>(value: T | unknown, context?: ValidationErrorContext): Error | null {
+export function validateObject(value: unknown, context?: ValidationErrorContext): Error | null {
   // TODO: Validate that something is an object
   return null
 }
 
-export class RequiredObject<T extends Schema> {
+export class RequiredObject<T extends ObjectSchema = ObjectSchema> extends ValidatorBase implements Validator {
   public schema: T
   private type: 'RequiredObject' = 'RequiredObject'
 
   public constructor(schema: T) {
+    super()
     this.schema = schema
   }
 
-  public validate(value: {} | unknown, context?: ValidationErrorContext): Error | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return new RequiredError(`Is required`, context)
     }
@@ -22,15 +24,16 @@ export class RequiredObject<T extends Schema> {
   }
 }
 
-export class OptionalObject<T extends Schema> {
+export class OptionalObject<T extends ObjectSchema = ObjectSchema> extends ValidatorBase implements Validator {
   public schema: T
   private type: 'OptionalObject' = 'OptionalObject'
 
   public constructor(schema: T) {
+    super()
     this.schema = schema
   }
 
-  public validate(value: {} | unknown, context?: ValidationErrorContext): Error | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return null
     }
@@ -38,8 +41,17 @@ export class OptionalObject<T extends Schema> {
   }
 }
 
-export function NestedObject<T extends Schema>(schema: Schema, required?: false): OptionalObject<T>
-export function NestedObject<T extends Schema>(schema: Schema, required: true): RequiredObject<T>
-export function NestedObject<T extends Schema>(schema: T, required = false): OptionalObject<T> | RequiredObject<T> {
+export function TypedObject<T extends ObjectSchema = ObjectSchema>(
+  schema: ObjectSchema,
+  required?: false
+): OptionalObject<T>
+export function TypedObject<T extends ObjectSchema = ObjectSchema>(
+  schema: ObjectSchema,
+  required: true
+): RequiredObject<T>
+export function TypedObject<T extends ObjectSchema = ObjectSchema>(
+  schema: T,
+  required = false
+): OptionalObject<T> | RequiredObject<T> {
   return required ? new RequiredObject(schema) : new OptionalObject(schema)
 }

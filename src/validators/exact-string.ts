@@ -1,21 +1,24 @@
+import { ValidatorBase } from '../common'
 import { NotExactStringError, RequiredError, ValidationErrorContext } from '../errors'
+import { Validator } from '../types'
 
-export function validateExactString(value: string, expected: string, context?: ValidationErrorContext): Error | null {
+export function validateExactString(value: unknown, expected: string, context?: ValidationErrorContext): Error | null {
   if (value !== expected) {
     return new NotExactStringError(`Must strictly equal "${expected}" (received "${value}")`, context)
   }
   return null
 }
 
-export class RequiredExactString {
+export class RequiredExactString extends ValidatorBase implements Validator {
   private type: 'RequiredExactString' = 'RequiredExactString'
   private expectedStr: string
 
   public constructor(expectedStr: string) {
+    super()
     this.expectedStr = expectedStr
   }
 
-  public validate(value: string, context?: ValidationErrorContext): Error | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return new RequiredError(`Is required`, context)
     }
@@ -23,15 +26,16 @@ export class RequiredExactString {
   }
 }
 
-export class OptionalExactString {
+export class OptionalExactString extends ValidatorBase implements Validator {
   private type: 'OptionalExactString' = 'OptionalExactString'
   private expectedStr: string
 
   public constructor(expected: string) {
+    super()
     this.expectedStr = expected
   }
 
-  public validate(value: string, context?: ValidationErrorContext): Error | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error | null {
     if (value == null) {
       return null
     }
