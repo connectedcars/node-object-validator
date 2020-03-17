@@ -40,10 +40,11 @@ describe('ObjectValidator', () => {
           int: 1
         },
         optionalArray: ['1'],
-        optionalArrayArray: [[1]]
+        optionalArrayArray: [1]
       }
       expect(objectValidator.validate(unknownValue)).toEqual([
-        new Error(`Field 'optionalArray' must be an integer (received "1")`)
+        new Error(`Field 'optionalArray' must be an integer (received "1")`),
+        new Error(`Field 'optionalArrayArray' must be an array (received "1")`)
       ])
     })
   })

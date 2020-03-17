@@ -1,5 +1,5 @@
 import { isObject, isObjectSchema, ValidatorBase } from './common'
-import { NotObjectError, ValidationErrorContext, ValidationsError } from './errors'
+import { NotArrayError, NotObjectError, ValidationErrorContext, ValidationsError } from './errors'
 import { ObjectSchema, Schema, SchemaToType } from './types'
 import { OptionalArray, RequiredArray } from './validators/array'
 import { OptionalObject, RequiredObject } from './validators/object'
@@ -8,6 +8,10 @@ function validate(schema: Schema, value: unknown, parentContext?: ValidationErro
   const errors: Error[] = []
 
   if (schema instanceof RequiredArray || schema instanceof OptionalArray) {
+    if (!Array.isArray(value)) {
+      errors.push(new NotArrayError(`Must be an array (received "${value}")`, parentContext))
+      return errors
+    }
     const validator = schema
     for (const item of value as Array<unknown>) {
       errors.push(...validate(validator.schema, item, parentContext))
@@ -20,7 +24,7 @@ function validate(schema: Schema, value: unknown, parentContext?: ValidationErro
     }
   } else if (isObjectSchema(schema)) {
     if (!isObject(value)) {
-      errors.push(new NotObjectError('Must be an object', parentContext))
+      errors.push(new NotObjectError(`Must be an object (received "${value}")`, parentContext))
       return errors
     }
     for (const key of Object.keys(schema)) {
