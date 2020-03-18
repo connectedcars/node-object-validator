@@ -19,6 +19,7 @@ type ExcludeNullableTypes<T extends object> = { [K in NotUndefinedKeys<T>]: T[K]
 type UndefinedToOptional<T extends object> = ExcludeNullableTypes<T> & Partial<IncludeNullableTypes<T>>
 
 // TODO: Add support for tuples at some point [RequiredDate, RequiredInteger, ..]
+// TODO: Use tuples for defining length of typed arrays [number, number]
 
 type ArrayTypes =
   | RequiredArray
