@@ -20,7 +20,7 @@ type UndefinedToOptional<T extends object> = ExcludeNullableTypes<T> & Partial<I
 // TODO: Add support for tuples at some point [RequiredDate, RequiredInteger, ..]
 // TODO: Use tuples for defining length of typed arrays [number, number]
 
-type ArrayTypes =
+export type ValidatorTypes =
   | RequiredArray
   | OptionalArray
   | RequiredDate
@@ -37,8 +37,8 @@ type ArrayTypes =
   | OptionalString
   | RequiredRegexMatch
   | OptionalRegexMatch
-
-export type ValidatorTypes = ArrayTypes | RequiredObject | OptionalObject
+  | RequiredObject
+  | OptionalObject
 
 // prettier-ignore
 type ValidatorToType<O> =
@@ -71,7 +71,3 @@ export type SchemaToType<T> = UndefinedToOptional<ObjectType<T>>
 export type ObjectSchema = {
   [key: string]: ValidatorTypes
 }
-
-export type ArraySchema = ObjectSchema | ArrayTypes
-
-export type Schema = ObjectSchema | ArraySchema | ValidatorTypes
