@@ -1,13 +1,13 @@
 import { ValidatorBase } from '../common'
 import { RequiredError, ValidationErrorContext } from '../errors'
-import { ObjectSchema, Validator } from '../types'
+import { ObjectSchema } from '../types'
 
 export function validateObject(value: unknown, context?: ValidationErrorContext): Error | null {
   // TODO: Validate that something is an object
   return null
 }
 
-export class RequiredObject<T extends ObjectSchema = ObjectSchema> extends ValidatorBase implements Validator {
+export class RequiredObject<T extends ObjectSchema = ObjectSchema> extends ValidatorBase {
   public schema: T
   private type: 'RequiredObject' = 'RequiredObject'
 
@@ -24,7 +24,7 @@ export class RequiredObject<T extends ObjectSchema = ObjectSchema> extends Valid
   }
 }
 
-export class OptionalObject<T extends ObjectSchema = ObjectSchema> extends ValidatorBase implements Validator {
+export class OptionalObject<T extends ObjectSchema = ObjectSchema> extends ValidatorBase {
   public schema: T
   private type: 'OptionalObject' = 'OptionalObject'
 

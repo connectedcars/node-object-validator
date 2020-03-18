@@ -1,4 +1,3 @@
-import { ValidationErrorContext } from './errors'
 import { OptionalArray, RequiredArray } from './validators/array'
 import { OptionalDate, RequiredDate } from './validators/date'
 import { OptionalDateTime, RequiredDateTime } from './validators/datetime'
@@ -69,13 +68,8 @@ type ObjectType<T> = {
 
 export type SchemaToType<T> = UndefinedToOptional<ObjectType<T>>
 
-export interface Validator {
-  schema?: ObjectSchema | ArraySchema
-  validate(value: unknown, context?: ValidationErrorContext): Error | null
-}
-
 export type ObjectSchema = {
-  [key: string]: Validator
+  [key: string]: ValidatorTypes
 }
 
 export type ArraySchema = ObjectSchema | ArrayTypes

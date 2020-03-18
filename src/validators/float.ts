@@ -1,6 +1,5 @@
 import { ValidatorBase } from '../common'
 import { NotFloatError, OutOfRangeError, RequiredError, ValidationErrorContext } from '../errors'
-import { Validator } from '../types'
 
 export function validateFloat(
   value: unknown,
@@ -17,7 +16,7 @@ export function validateFloat(
   return null
 }
 
-export class RequiredFloat extends ValidatorBase implements Validator {
+export class RequiredFloat extends ValidatorBase {
   private type: 'RequiredFloat' = 'RequiredFloat'
   private min: number
   private max: number
@@ -36,7 +35,7 @@ export class RequiredFloat extends ValidatorBase implements Validator {
   }
 }
 
-export class OptionalFloat extends ValidatorBase implements Validator {
+export class OptionalFloat extends ValidatorBase {
   private type: 'OptionalFloat' = 'OptionalFloat'
   private min: number
   private max: number

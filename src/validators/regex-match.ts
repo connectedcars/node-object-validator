@@ -1,6 +1,5 @@
 import { isValidType, ValidatorBase } from '../common'
 import { DoesNotMatchRegexError, RequiredError, ValidationErrorContext } from '../errors'
-import { Validator } from '../types'
 import { validateString } from './string'
 
 export function validateRegexMatch(value: unknown, regex: RegExp, context?: ValidationErrorContext): Error | null {
@@ -14,7 +13,7 @@ export function validateRegexMatch(value: unknown, regex: RegExp, context?: Vali
   return null
 }
 
-export class RequiredRegexMatch extends ValidatorBase implements Validator {
+export class RequiredRegexMatch extends ValidatorBase {
   private type: 'RequiredRegex' = 'RequiredRegex'
   private regex: RegExp
 
@@ -31,7 +30,7 @@ export class RequiredRegexMatch extends ValidatorBase implements Validator {
   }
 }
 
-export class OptionalRegexMatch extends ValidatorBase implements Validator {
+export class OptionalRegexMatch extends ValidatorBase {
   private type: 'OptionalRegex' = 'OptionalRegex'
   private regex: RegExp
 

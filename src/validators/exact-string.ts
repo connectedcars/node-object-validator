@@ -1,6 +1,5 @@
 import { ValidatorBase } from '../common'
 import { NotExactStringError, RequiredError, ValidationErrorContext } from '../errors'
-import { Validator } from '../types'
 
 export function validateExactString(value: unknown, expected: string, context?: ValidationErrorContext): Error | null {
   if (value !== expected) {
@@ -9,7 +8,7 @@ export function validateExactString(value: unknown, expected: string, context?: 
   return null
 }
 
-export class RequiredExactString extends ValidatorBase implements Validator {
+export class RequiredExactString extends ValidatorBase {
   private type: 'RequiredExactString' = 'RequiredExactString'
   private expectedStr: string
 
@@ -26,7 +25,7 @@ export class RequiredExactString extends ValidatorBase implements Validator {
   }
 }
 
-export class OptionalExactString extends ValidatorBase implements Validator {
+export class OptionalExactString extends ValidatorBase {
   private type: 'OptionalExactString' = 'OptionalExactString'
   private expectedStr: string
 

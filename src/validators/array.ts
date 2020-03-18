@@ -1,6 +1,7 @@
-import { ValidatorBase } from '../common'
+import { isObjectSchema, ValidatorBase } from '../common'
 import { NotArrayError, RequiredError, ValidationErrorContext, WrongLengthError } from '../errors'
-import { ArraySchema, Validator } from '../types'
+import { ObjectSchema, ValidatorTypes } from '../types'
+import { RequiredObject } from './object'
 
 export function validateArray(
   value: unknown,
@@ -24,7 +25,7 @@ export function isArray<T>(value: unknown): value is Array<T> {
   return validateArray(value as T[]) ? false : true
 }
 
-export class RequiredArray<T extends ArraySchema = ArraySchema> extends ValidatorBase implements Validator {
+export class RequiredArray<T extends ValidatorTypes = ValidatorTypes> extends ValidatorBase {
   public schema: T
   private type: 'RequiredArray' = 'RequiredArray'
   private minLength: number
@@ -45,7 +46,7 @@ export class RequiredArray<T extends ArraySchema = ArraySchema> extends Validato
   }
 }
 
-export class OptionalArray<T extends ArraySchema = ArraySchema> extends ValidatorBase implements Validator {
+export class OptionalArray<T extends ValidatorTypes = ValidatorTypes> extends ValidatorBase {
   public schema: T
   private type: 'OptionalArray' = 'OptionalArray'
   private minLength: number
@@ -66,19 +67,19 @@ export class OptionalArray<T extends ArraySchema = ArraySchema> extends Validato
   }
 }
 
-export function TypedArray<T extends ArraySchema = ArraySchema>(
+export function TypedArray<T extends ValidatorTypes = ValidatorTypes>(
   schema: T,
   minLength: number,
   maxLength: number,
   required?: false
 ): OptionalArray<T>
-export function TypedArray<T extends ArraySchema = ArraySchema>(
+export function TypedArray<T extends ValidatorTypes = ValidatorTypes>(
   schema: T,
   minLength: number,
   maxLength: number,
   required: true
 ): RequiredArray<T>
-export function TypedArray<T extends ArraySchema = ArraySchema>(
+export function TypedArray<T extends ValidatorTypes = ValidatorTypes>(
   schema: T,
   minLength = 0,
   maxLength = Number.MAX_SAFE_INTEGER,

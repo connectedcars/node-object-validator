@@ -1,6 +1,5 @@
 import { ValidatorBase } from '../common'
 import { NotIntegerError, OutOfRangeError, RequiredError, ValidationErrorContext } from '../errors'
-import { Validator } from '../types'
 
 export function validateInteger(
   value: unknown,
@@ -17,7 +16,7 @@ export function validateInteger(
   return null
 }
 
-export class RequiredInteger extends ValidatorBase implements Validator {
+export class RequiredInteger extends ValidatorBase {
   private type: 'RequiredInteger' = 'RequiredInteger'
   private min: number
   private max: number
@@ -36,7 +35,7 @@ export class RequiredInteger extends ValidatorBase implements Validator {
   }
 }
 
-export class OptionalInteger extends ValidatorBase implements Validator {
+export class OptionalInteger extends ValidatorBase {
   private type: 'OptionalInteger' = 'OptionalInteger'
   private min: number
   private max: number

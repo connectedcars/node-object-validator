@@ -1,6 +1,5 @@
 import { ValidatorBase } from '../common'
 import { NotDateError, RequiredError, ValidationErrorContext } from '../errors'
-import { Validator } from '../types'
 
 export function validateDate(value: unknown, context?: ValidationErrorContext): Error | null {
   if (!(value instanceof Date)) {
@@ -9,7 +8,7 @@ export function validateDate(value: unknown, context?: ValidationErrorContext): 
   return null
 }
 
-export class RequiredDate extends ValidatorBase implements Validator {
+export class RequiredDate extends ValidatorBase {
   private type: 'RequiredDate' = 'RequiredDate'
 
   public validate(value: unknown, context?: ValidationErrorContext): Error | null {
@@ -20,7 +19,7 @@ export class RequiredDate extends ValidatorBase implements Validator {
   }
 }
 
-export class OptionalDate extends ValidatorBase implements Validator {
+export class OptionalDate extends ValidatorBase {
   private type: 'OptionalDate' = 'OptionalDate'
 
   public validate(value: unknown, context?: ValidationErrorContext): Error | null {

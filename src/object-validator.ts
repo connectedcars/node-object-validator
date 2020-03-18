@@ -1,12 +1,11 @@
-import { isObject, isObjectSchema, ValidatorBase } from './common'
+import { isObject, ValidatorBase } from './common'
 import { NotArrayError, NotObjectError, ValidationErrorContext, ValidationsError } from './errors'
-import { ObjectSchema, Schema, SchemaToType, ValidatorTypes } from './types'
+import { ObjectSchema, SchemaToType, ValidatorTypes } from './types'
 import { OptionalArray, RequiredArray } from './validators/array'
 import { OptionalObject, RequiredObject } from './validators/object'
 
-function validate(schema: Schema, value: unknown, parentContext?: ValidationErrorContext): Error[] {
+function validate(schema: ValidatorTypes, value: unknown, parentContext?: ValidationErrorContext): Error[] {
   const errors: Error[] = []
-
   if (schema instanceof RequiredArray || schema instanceof OptionalArray) {
     if (!Array.isArray(value)) {
       errors.push(new NotArrayError(`Must be an array (received "${value}")`, parentContext))
@@ -16,35 +15,20 @@ function validate(schema: Schema, value: unknown, parentContext?: ValidationErro
       errors.push(...validate(schema.schema, item, parentContext))
     }
   } else if (schema instanceof RequiredObject || schema instanceof OptionalObject) {
-    errors.push(...validate(schema.schema, value, parentContext))
+    if (!isObject(value)) {
+      errors.push(new NotObjectError(`Must be an object (received "${value}")`, parentContext))
+      return errors
+    }
+    for (const key of Object.keys(schema.schema)) {
+      const context = { key: key, value: value[key] }
+      errors.push(...validate(schema.schema[key], value[key], context))
+    }
   } else if (schema instanceof ValidatorBase) {
     const err = schema.validate(value, parentContext)
     if (err) {
       errors.push(err)
     }
-  } else if (isObjectSchema(schema)) {
-    if (!isObject(value)) {
-      errors.push(new NotObjectError(`Must be an object (received "${value}")`, parentContext))
-      return errors
-    }
-    for (const key of Object.keys(schema)) {
-      const validator = schema[key]
-      const context = { key: key, value: value[key] }
-      const err = validator.validate(value[key], context)
-      if (err) {
-        errors.push(err)
-      } else if (
-        key in value &&
-        (validator instanceof RequiredObject ||
-          validator instanceof OptionalObject ||
-          validator instanceof RequiredArray ||
-          validator instanceof OptionalArray)
-      ) {
-        errors.push(...validate(validator, value[key], context))
-      }
-    }
   }
-
   return errors
 }
 
@@ -79,7 +63,7 @@ export class ObjectValidator<T extends ObjectSchema> {
   }
 
   public validate(obj: unknown): Error[] {
-    return validate(this.schema, obj, { key: '.', value: obj })
+    return validate(new RequiredObject(this.schema), obj, { key: '.', value: obj })
   }
 
   public isValid(obj: unknown): obj is SchemaToType<T> {

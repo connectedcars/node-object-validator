@@ -1,6 +1,5 @@
 import { ValidatorBase } from '../common'
 import { NotStringError, RequiredError, ValidationErrorContext, WrongLengthError } from '../errors'
-import { Validator } from '../types'
 
 export function validateString(
   value: unknown,
@@ -20,7 +19,7 @@ export function validateString(
   return null
 }
 
-export class RequiredString extends ValidatorBase implements Validator {
+export class RequiredString extends ValidatorBase {
   private type: 'RequiredString' = 'RequiredString'
   private minLength: number
   private maxLength: number
@@ -39,7 +38,7 @@ export class RequiredString extends ValidatorBase implements Validator {
   }
 }
 
-export class OptionalString extends ValidatorBase implements Validator {
+export class OptionalString extends ValidatorBase {
   private type: 'OptionalString' = 'OptionalString'
   private minLength: number
   private maxLength: number
