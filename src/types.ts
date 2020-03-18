@@ -67,6 +67,8 @@ type ObjectType<T> = {
   [P in keyof T]: ValidatorToType<T[P]>
 }
 
+export type SchemaToType<T> = UndefinedToOptional<ObjectType<T>>
+
 export interface Validator {
   schema?: ObjectSchema | ArraySchema
   validate(value: unknown, context?: ValidationErrorContext): Error | null
@@ -79,5 +81,3 @@ export type ObjectSchema = {
 export type ArraySchema = ObjectSchema | ArrayTypes
 
 export type Schema = ObjectSchema | ArraySchema | ValidatorTypes
-
-export type SchemaToType<T> = UndefinedToOptional<ObjectType<T>>

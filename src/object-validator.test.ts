@@ -15,7 +15,6 @@ describe('ObjectValidator', () => {
     }),
     optionalArray: new OptionalArray(new RequiredInteger(1, 2)),
     optionalArrayArray: new OptionalArray(new RequiredArray(new RequiredInteger(1, 2)))
-    //test: new Error()
   })
 
   describe('isValid', () => {

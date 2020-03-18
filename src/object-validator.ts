@@ -1,6 +1,6 @@
 import { isObject, isObjectSchema, ValidatorBase } from './common'
 import { NotArrayError, NotObjectError, ValidationErrorContext, ValidationsError } from './errors'
-import { ObjectSchema, Schema, SchemaToType } from './types'
+import { ObjectSchema, Schema, SchemaToType, ValidatorTypes } from './types'
 import { OptionalArray, RequiredArray } from './validators/array'
 import { OptionalObject, RequiredObject } from './validators/object'
 
@@ -12,13 +12,13 @@ function validate(schema: Schema, value: unknown, parentContext?: ValidationErro
       errors.push(new NotArrayError(`Must be an array (received "${value}")`, parentContext))
       return errors
     }
-    const validator = schema
     for (const item of value as Array<unknown>) {
-      errors.push(...validate(validator.schema, item, parentContext))
+      errors.push(...validate(schema.schema, item, parentContext))
     }
+  } else if (schema instanceof RequiredObject || schema instanceof OptionalObject) {
+    errors.push(...validate(schema.schema, value, parentContext))
   } else if (schema instanceof ValidatorBase) {
-    const validator = schema
-    const err = validator.validate(value, parentContext)
+    const err = schema.validate(value, parentContext)
     if (err) {
       errors.push(err)
     }
@@ -33,14 +33,14 @@ function validate(schema: Schema, value: unknown, parentContext?: ValidationErro
       const err = validator.validate(value[key], context)
       if (err) {
         errors.push(err)
-      } else if (key in value) {
-        if (validator instanceof RequiredObject || validator instanceof OptionalObject) {
-          errors.push(...validate(validator.schema, value[key], context))
-        } else if (validator instanceof RequiredArray || validator instanceof OptionalArray) {
-          for (const item of value[key] as Array<unknown>) {
-            errors.push(...validate(validator.schema, item, context))
-          }
-        }
+      } else if (
+        key in value &&
+        (validator instanceof RequiredObject ||
+          validator instanceof OptionalObject ||
+          validator instanceof RequiredArray ||
+          validator instanceof OptionalArray)
+      ) {
+        errors.push(...validate(validator, value[key], context))
       }
     }
   }
