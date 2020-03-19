@@ -4,10 +4,10 @@ import { OptionalDateTime, RequiredDateTime, validateDateTime } from './datetime
 describe('DateTime', () => {
   describe('validateDateTime', () => {
     it('requires value to be an RFC 3339 timestamp', () => {
-      expect(validateDateTime('2018-08-06T13:37:00Z')).toStrictEqual(null)
-      expect(validateDateTime('2018-08-06T13:37:00.000Z')).toStrictEqual(null)
-      expect(validateDateTime('2018-08-06T13:37:00+00:00')).toStrictEqual(null)
-      expect(validateDateTime('2018-08-06T13:37:00.000+00:00')).toStrictEqual(null)
+      expect(validateDateTime('2018-08-06T13:37:00Z')).toStrictEqual([])
+      expect(validateDateTime('2018-08-06T13:37:00.000Z')).toStrictEqual([])
+      expect(validateDateTime('2018-08-06T13:37:00+00:00')).toStrictEqual([])
+      expect(validateDateTime('2018-08-06T13:37:00.000+00:00')).toStrictEqual([])
       expect(validateDateTime('')).toStrictEqual([
         new NotRfc3339Error('Must be formatted as an RFC 3339 timestamp (received "")')
       ])
@@ -34,8 +34,8 @@ describe('DateTime', () => {
   describe('OptionalDateTime', () => {
     it('requires empty value', function() {
       const validator = new OptionalDateTime()
-      expect(validator.validate(undefined)).toStrictEqual(null)
-      expect(validator.validate(undefined)).toStrictEqual(null)
+      expect(validator.validate(undefined)).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
     })
   })
 })

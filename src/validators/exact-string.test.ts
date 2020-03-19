@@ -4,7 +4,7 @@ import { OptionalExactString, RequiredExactString, validateExactString } from '.
 describe('validateExactString', () => {
   describe('validateExactString', () => {
     it('requires value to be exact string', function() {
-      expect(validateExactString('MyString', 'MyString')).toStrictEqual(null)
+      expect(validateExactString('MyString', 'MyString')).toStrictEqual([])
       expect(validateExactString('', 'MyString')).toStrictEqual([
         new NotExactStringError('Must strictly equal "MyString" (received "")')
       ])
@@ -46,8 +46,8 @@ describe('validateExactString', () => {
   describe('OptionalExactString', () => {
     it('requires empty value', function() {
       const validator = new OptionalExactString('MyString')
-      expect(validator.validate(undefined)).toStrictEqual(null)
-      expect(validator.validate(undefined)).toStrictEqual(null)
+      expect(validator.validate(undefined)).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
     })
   })
 })

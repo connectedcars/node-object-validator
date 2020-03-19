@@ -6,14 +6,14 @@ export function validateInteger(
   min = 0,
   max = Number.MAX_SAFE_INTEGER,
   context?: ValidationErrorContext
-): Error[] | null {
+): Error[] {
   if (typeof value !== 'number' || !Number.isInteger(value)) {
     return [new NotIntegerError(`Must be an integer (received "${value}")`, context)]
   }
   if (value < min || value > max) {
     return [new OutOfRangeError(`Must be between ${min} and ${max} (received "${value}")`, context)]
   }
-  return null
+  return []
 }
 
 export class RequiredInteger extends ValidatorBase {
@@ -27,7 +27,7 @@ export class RequiredInteger extends ValidatorBase {
     this.max = max
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
     if (value == null) {
       return [new RequiredError(`Is required`, context)]
     }
@@ -46,9 +46,9 @@ export class OptionalInteger extends ValidatorBase {
     this.max = max
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
     if (value == null) {
-      return null
+      return []
     }
     return validateInteger(value, this.min, this.max, context)
   }

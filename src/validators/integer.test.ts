@@ -4,9 +4,9 @@ import { OptionalInteger, RequiredInteger, validateInteger } from './integer'
 describe('Integer', () => {
   describe('validateInteger', () => {
     it('requires value to be an integer', function() {
-      expect(validateInteger(0)).toStrictEqual(null)
-      expect(validateInteger(1)).toStrictEqual(null)
-      expect(validateInteger(123)).toStrictEqual(null)
+      expect(validateInteger(0)).toStrictEqual([])
+      expect(validateInteger(1)).toStrictEqual([])
+      expect(validateInteger(123)).toStrictEqual([])
       expect(validateInteger('1')).toStrictEqual([new NotIntegerError('Must be an integer (received "1")')])
       expect(validateInteger('')).toStrictEqual([new NotIntegerError('Must be an integer (received "")')])
       expect(validateInteger({})).toStrictEqual([
@@ -36,19 +36,19 @@ describe('Integer', () => {
       expect(validateInteger(4, 5, 500)).toStrictEqual([
         new OutOfRangeError('Must be between 5 and 500 (received "4")')
       ])
-      expect(validateInteger(5, 5, 500)).toStrictEqual(null)
-      expect(validateInteger(6, 5, 500)).toStrictEqual(null)
-      expect(validateInteger(123, 5, 500)).toStrictEqual(null)
+      expect(validateInteger(5, 5, 500)).toStrictEqual([])
+      expect(validateInteger(6, 5, 500)).toStrictEqual([])
+      expect(validateInteger(123, 5, 500)).toStrictEqual([])
     })
 
     it('requires max value', function() {
-      expect(validateInteger(-1, -500, 5)).toStrictEqual(null)
-      expect(validateInteger(0, -500, 5)).toStrictEqual(null)
-      expect(validateInteger(1, -500, 5)).toStrictEqual(null)
-      expect(validateInteger(2, -500, 5)).toStrictEqual(null)
-      expect(validateInteger(3, -500, 5)).toStrictEqual(null)
-      expect(validateInteger(4, -500, 5)).toStrictEqual(null)
-      expect(validateInteger(5, -500, 5)).toStrictEqual(null)
+      expect(validateInteger(-1, -500, 5)).toStrictEqual([])
+      expect(validateInteger(0, -500, 5)).toStrictEqual([])
+      expect(validateInteger(1, -500, 5)).toStrictEqual([])
+      expect(validateInteger(2, -500, 5)).toStrictEqual([])
+      expect(validateInteger(3, -500, 5)).toStrictEqual([])
+      expect(validateInteger(4, -500, 5)).toStrictEqual([])
+      expect(validateInteger(5, -500, 5)).toStrictEqual([])
       expect(validateInteger(6, -500, 5)).toStrictEqual([
         new OutOfRangeError('Must be between -500 and 5 (received "6")')
       ])
@@ -69,8 +69,8 @@ describe('Integer', () => {
   describe('OptionalInteger', () => {
     it('accepts empty value', function() {
       const validator = new OptionalInteger()
-      expect(validator.validate(null)).toStrictEqual(null)
-      expect(validator.validate(undefined)).toStrictEqual(null)
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
     })
   })
 })

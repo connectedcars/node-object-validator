@@ -1,15 +1,11 @@
 import { ValidatorBase } from '../common'
 import { NotExactStringError, RequiredError, ValidationErrorContext } from '../errors'
 
-export function validateExactString(
-  value: unknown,
-  expected: string,
-  context?: ValidationErrorContext
-): Error[] | null {
+export function validateExactString(value: unknown, expected: string, context?: ValidationErrorContext): Error[] {
   if (value !== expected) {
     return [new NotExactStringError(`Must strictly equal "${expected}" (received "${value}")`, context)]
   }
-  return null
+  return []
 }
 
 export class RequiredExactString extends ValidatorBase {
@@ -21,7 +17,7 @@ export class RequiredExactString extends ValidatorBase {
     this.expectedStr = expectedStr
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
     if (value == null) {
       return [new RequiredError(`Is required`, context)]
     }
@@ -38,9 +34,9 @@ export class OptionalExactString extends ValidatorBase {
     this.expectedStr = expected
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
     if (value == null) {
-      return null
+      return []
     }
     return validateExactString(value, this.expectedStr, context)
   }

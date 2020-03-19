@@ -19,6 +19,7 @@ export function validate(schema: ValidatorTypes, value: unknown, parentContext: 
       errors.push(new NotObjectError(`Must be an object (received "${value}")`, parentContext))
       return errors
     }
+    // TODO: schema.validate()
     for (const key of Object.keys(schema.schema)) {
       const context = { key: `${parentContext.key}${key}`, value: value[key] }
       errors.push(...validate(schema.schema[key], value[key], context))

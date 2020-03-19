@@ -15,8 +15,8 @@ describe('Object', () => {
   describe('OptionalObject', () => {
     it('accepts empty value', function() {
       const validator = new OptionalObject({})
-      expect(validator.validate(null)).toStrictEqual(null)
-      expect(validator.validate(undefined)).toStrictEqual(null)
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
     })
   })
 })

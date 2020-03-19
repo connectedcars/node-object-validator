@@ -6,14 +6,14 @@ export function validateFloat(
   min = Number.MIN_SAFE_INTEGER,
   max = Number.MAX_SAFE_INTEGER,
   context?: ValidationErrorContext
-): Error[] | null {
+): Error[] {
   if (typeof value !== 'number' || isNaN(value) || !isFinite(value)) {
     return [new NotFloatError(`Must be a float (received "${value}")`, context)]
   }
   if (value < min || value > max) {
     return [new OutOfRangeError(`Must be between ${min} and ${max} (received "${value}")`, context)]
   }
-  return null
+  return []
 }
 
 export class RequiredFloat extends ValidatorBase {
@@ -46,9 +46,9 @@ export class OptionalFloat extends ValidatorBase {
     this.max = max
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
     if (value == null) {
-      return null
+      return []
     }
     return validateFloat(value, this.min, this.max, context)
   }

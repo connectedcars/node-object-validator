@@ -1,10 +1,28 @@
-import { ValidatorBase } from '../common'
-import { RequiredError, ValidationErrorContext } from '../errors'
+import { isObject, ValidatorBase } from '../common'
+import { NotObjectError, RequiredError, ValidationErrorContext } from '../errors'
 import { validate } from '../object-validator'
 import { ObjectSchema } from '../types'
 
-export function validateObject(value: unknown, context?: ValidationErrorContext): Error | null {
-  return null
+export function validateObject<T extends ObjectSchema = ObjectSchema>(
+  schema: RequiredObject<T> | OptionalObject<T>,
+  value: unknown,
+  context?: ValidationErrorContext
+): Error[] {
+  const errors: Error[] = []
+  if (!isObject(value)) {
+    errors.push(new NotObjectError(`Must be an object (received "${value}")`, context))
+    return errors
+  }
+
+  for (const key of Object.keys(schema.schema)) {
+    // TODO Add parent context
+    const validator = schema.schema[key]
+    const err = validator.validate(value[key], { key: `${key}`, value: value[key] })
+    if (err) {
+      errors.push(...err)
+    }
+  }
+  return validate(schema, value, { key: '', value: value, ...context })
 }
 
 export class RequiredObject<T extends ObjectSchema = ObjectSchema> extends ValidatorBase {
@@ -20,7 +38,7 @@ export class RequiredObject<T extends ObjectSchema = ObjectSchema> extends Valid
     if (value == null) {
       return [new RequiredError(`Is required`, context)]
     }
-    return validate(this, value, { key: '', value: value, ...context })
+    return validateObject(this, value, context)
   }
 }
 
@@ -33,11 +51,11 @@ export class OptionalObject<T extends ObjectSchema = ObjectSchema> extends Valid
     this.schema = schema
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
     if (value == null) {
-      return null
+      return []
     }
-    return validate(this, value, { key: '', value: value, ...context })
+    return validateObject(this, value, context)
   }
 }
 

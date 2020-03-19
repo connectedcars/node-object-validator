@@ -6,7 +6,7 @@ export function validateString(
   minLength = 0,
   maxLength: number = Number.MAX_SAFE_INTEGER,
   context?: ValidationErrorContext
-): Error[] | null {
+): Error[] {
   if (typeof value !== 'string') {
     return [new NotStringError(`Must be a string (received "${value}")`, context)]
   }
@@ -18,7 +18,7 @@ export function validateString(
       )
     ]
   }
-  return null
+  return []
 }
 
 export class RequiredString extends ValidatorBase {
@@ -32,7 +32,7 @@ export class RequiredString extends ValidatorBase {
     this.maxLength = maxLength
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
     if (value == null) {
       return [new RequiredError(`Is required`, context)]
     }
@@ -51,9 +51,9 @@ export class OptionalString extends ValidatorBase {
     this.maxLength = maxLength
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
     if (value == null) {
-      return null
+      return []
     }
     return validateString(value, this.minLength, this.maxLength, context)
   }

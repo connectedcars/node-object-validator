@@ -13,15 +13,15 @@ describe('String', () => {
   describe('OptionalString', () => {
     it('requires empty value', function() {
       const validator = new OptionalString()
-      expect(validator.validate(undefined)).toStrictEqual(null)
-      expect(validator.validate(undefined)).toStrictEqual(null)
+      expect(validator.validate(undefined)).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
     })
   })
 
   describe('validateString', () => {
     it('requires value to be a string', () => {
-      expect(validateString('foo')).toStrictEqual(null)
-      expect(validateString('')).toStrictEqual(null)
+      expect(validateString('foo')).toStrictEqual([])
+      expect(validateString('')).toStrictEqual([])
       expect(validateString((1 as unknown) as string)).toStrictEqual([
         new NotStringError('Must be a string (received "1")')
       ])
@@ -55,18 +55,18 @@ describe('String', () => {
       expect(validateString('abcd', 5, 500)).toStrictEqual([
         new WrongLengthError('Must contain between 5 and 500 characters (received "abcd")')
       ])
-      expect(validateString('abcde', 5, 500)).toStrictEqual(null)
-      expect(validateString('abcdef', 5, 500)).toStrictEqual(null)
-      expect(validateString('this is a long string', 5, 500)).toStrictEqual(null)
+      expect(validateString('abcde', 5, 500)).toStrictEqual([])
+      expect(validateString('abcdef', 5, 500)).toStrictEqual([])
+      expect(validateString('this is a long string', 5, 500)).toStrictEqual([])
     })
 
     it('requires max value length', () => {
-      expect(validateString('', 0, 5)).toStrictEqual(null)
-      expect(validateString('a', 0, 5)).toStrictEqual(null)
-      expect(validateString('ab', 0, 5)).toStrictEqual(null)
-      expect(validateString('abc', 0, 5)).toStrictEqual(null)
-      expect(validateString('abcd', 0, 5)).toStrictEqual(null)
-      expect(validateString('abcde', 0, 5)).toStrictEqual(null)
+      expect(validateString('', 0, 5)).toStrictEqual([])
+      expect(validateString('a', 0, 5)).toStrictEqual([])
+      expect(validateString('ab', 0, 5)).toStrictEqual([])
+      expect(validateString('abc', 0, 5)).toStrictEqual([])
+      expect(validateString('abcd', 0, 5)).toStrictEqual([])
+      expect(validateString('abcde', 0, 5)).toStrictEqual([])
       expect(validateString('abcdef', 0, 5)).toStrictEqual([
         new WrongLengthError('Must contain between 0 and 5 characters (received "abcdef")')
       ])

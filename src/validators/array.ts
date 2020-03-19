@@ -7,7 +7,7 @@ export function validateArray(
   minLength = 0,
   maxLength = Number.MAX_SAFE_INTEGER,
   context?: ValidationErrorContext
-): Error[] | null {
+): Error[] {
   if (!Array.isArray(value)) {
     return [new NotArrayError(`Must be an array (received "${value}")`, context)]
   }
@@ -19,7 +19,7 @@ export function validateArray(
       )
     ]
   }
-  return null
+  return []
 }
 
 export class RequiredArray<T extends ValidatorTypes = ValidatorTypes> extends ValidatorBase {
@@ -35,7 +35,7 @@ export class RequiredArray<T extends ValidatorTypes = ValidatorTypes> extends Va
     this.maxLength = maxLength
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
     if (value == null) {
       return [new RequiredError(`Is required`, context)]
     }
@@ -56,9 +56,9 @@ export class OptionalArray<T extends ValidatorTypes = ValidatorTypes> extends Va
     this.maxLength = maxLength
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
     if (value == null) {
-      return null
+      return []
     }
     return validateArray(value, this.minLength, this.maxLength, context)
   }

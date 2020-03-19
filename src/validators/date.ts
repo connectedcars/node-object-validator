@@ -1,17 +1,17 @@
 import { ValidatorBase } from '../common'
 import { NotDateError, RequiredError, ValidationErrorContext } from '../errors'
 
-export function validateDate(value: unknown, context?: ValidationErrorContext): Error[] | null {
+export function validateDate(value: unknown, context?: ValidationErrorContext): Error[] {
   if (!(value instanceof Date)) {
     return [new NotDateError(`Must be a Date object`, context)]
   }
-  return null
+  return []
 }
 
 export class RequiredDate extends ValidatorBase {
   private type: 'RequiredDate' = 'RequiredDate'
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
     if (value == null) {
       return [new RequiredError(`Is required`, context)]
     }
@@ -22,9 +22,9 @@ export class RequiredDate extends ValidatorBase {
 export class OptionalDate extends ValidatorBase {
   private type: 'OptionalDate' = 'OptionalDate'
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
     if (value == null) {
-      return null
+      return []
     }
     return validateDate(value, context)
   }
