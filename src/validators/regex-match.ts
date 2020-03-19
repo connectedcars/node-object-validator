@@ -2,13 +2,13 @@ import { isValidType, ValidatorBase } from '../common'
 import { DoesNotMatchRegexError, RequiredError, ValidationErrorContext } from '../errors'
 import { validateString } from './string'
 
-export function validateRegexMatch(value: unknown, regex: RegExp, context?: ValidationErrorContext): Error | null {
+export function validateRegexMatch(value: unknown, regex: RegExp, context?: ValidationErrorContext): Error[] | null {
   const stringError = validateString(value, 0, Number.MAX_SAFE_INTEGER, context)
   if (!isValidType<string>(value, stringError)) {
     return stringError
   }
   if (!value.match(regex)) {
-    return new DoesNotMatchRegexError(`Did not match '${regex}' (received "${value}")`, context)
+    return [new DoesNotMatchRegexError(`Did not match '${regex}' (received "${value}")`, context)]
   }
   return null
 }
@@ -22,9 +22,9 @@ export class RequiredRegexMatch extends ValidatorBase {
     this.regex = regex
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error[] | null {
     if (value == null) {
-      return new RequiredError(`Is required`, context)
+      return [new RequiredError(`Is required`, context)]
     }
     return validateRegexMatch(value, this.regex, context)
   }
@@ -39,7 +39,7 @@ export class OptionalRegexMatch extends ValidatorBase {
     this.regex = regex
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error[] | null {
     if (value == null) {
       return null
     }

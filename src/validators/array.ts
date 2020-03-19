@@ -1,28 +1,25 @@
-import { isObjectSchema, ValidatorBase } from '../common'
+import { ValidatorBase } from '../common'
 import { NotArrayError, RequiredError, ValidationErrorContext, WrongLengthError } from '../errors'
-import { ObjectSchema, ValidatorTypes } from '../types'
-import { RequiredObject } from './object'
+import { ValidatorTypes } from '../types'
 
 export function validateArray(
   value: unknown,
   minLength = 0,
   maxLength = Number.MAX_SAFE_INTEGER,
   context?: ValidationErrorContext
-): Error | null {
+): Error[] | null {
   if (!Array.isArray(value)) {
-    return new NotArrayError(`Must be an array (received "${value}")`, context)
+    return [new NotArrayError(`Must be an array (received "${value}")`, context)]
   }
   if ((minLength !== 0 && value.length < minLength) || value.length > maxLength) {
-    return new WrongLengthError(
-      `Must contain between ${minLength} and ${maxLength} entries (found ${value.length})`,
-      context
-    )
+    return [
+      new WrongLengthError(
+        `Must contain between ${minLength} and ${maxLength} entries (found ${value.length})`,
+        context
+      )
+    ]
   }
   return null
-}
-
-export function isArray<T>(value: unknown): value is Array<T> {
-  return validateArray(value as T[]) ? false : true
 }
 
 export class RequiredArray<T extends ValidatorTypes = ValidatorTypes> extends ValidatorBase {
@@ -38,9 +35,9 @@ export class RequiredArray<T extends ValidatorTypes = ValidatorTypes> extends Va
     this.maxLength = maxLength
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error[] | null {
     if (value == null) {
-      return new RequiredError(`Is required`, context)
+      return [new RequiredError(`Is required`, context)]
     }
     return validateArray(value, this.minLength, this.maxLength, context)
   }
@@ -59,7 +56,7 @@ export class OptionalArray<T extends ValidatorTypes = ValidatorTypes> extends Va
     this.maxLength = maxLength
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error[] | null {
     if (value == null) {
       return null
     }

@@ -1,5 +1,5 @@
 import { RequiredError } from '../errors'
-import { isArray, OptionalArray, RequiredArray } from './array'
+import { OptionalArray, RequiredArray } from './array'
 import { RequiredObject } from './object'
 
 describe('Array', () => {
@@ -7,18 +7,12 @@ describe('Array', () => {
     // TODO: Write tests
   })
 
-  describe('isArray', () => {
-    it('accepts unknown array', () => {
-      expect(isArray([])).toBeTruthy()
-    })
-  })
-
   describe('RequiredArray', () => {
     it('accepts empty value', function() {
       // TODO: Support multidimensional [{ .Scheme }, RequiredString(), etc. ]
       const validator = new RequiredArray(new RequiredObject({}))
-      expect(validator.validate(null)).toStrictEqual(new RequiredError('Is required'))
-      expect(validator.validate(undefined)).toStrictEqual(new RequiredError('Is required'))
+      expect(validator.validate(null)).toStrictEqual([new RequiredError('Is required')])
+      expect(validator.validate(undefined)).toStrictEqual([new RequiredError('Is required')])
     })
   })
 

@@ -7,19 +7,19 @@ describe('Date', () => {
       expect(validateDate(new Date('2018-08-06T13:37:00Z'))).toStrictEqual(null)
       expect(validateDate(new Date('2018-08-06'))).toStrictEqual(null)
       expect(validateDate(new Date('13:37:00'))).toStrictEqual(null)
-      expect(validateDate(500)).toStrictEqual(new NotDateError('Must be a Date object'))
-      expect(validateDate('')).toStrictEqual(new NotDateError('Must be a Date object'))
-      expect(validateDate(true)).toStrictEqual(new NotDateError('Must be a Date object'))
-      expect(validateDate(false)).toStrictEqual(new NotDateError('Must be a Date object'))
-      expect(validateDate('2018-08-06T13:37:00Z')).toStrictEqual(new NotDateError('Must be a Date object'))
+      expect(validateDate(500)).toStrictEqual([new NotDateError('Must be a Date object')])
+      expect(validateDate('')).toStrictEqual([new NotDateError('Must be a Date object')])
+      expect(validateDate(true)).toStrictEqual([new NotDateError('Must be a Date object')])
+      expect(validateDate(false)).toStrictEqual([new NotDateError('Must be a Date object')])
+      expect(validateDate('2018-08-06T13:37:00Z')).toStrictEqual([new NotDateError('Must be a Date object')])
     })
   })
 
   describe('OptionalStringValue', () => {
     it('accepts empty value', function() {
       const validator = new RequiredDate()
-      expect(validator.validate(null)).toStrictEqual(new RequiredError('Is required'))
-      expect(validator.validate(undefined)).toStrictEqual(new RequiredError('Is required'))
+      expect(validator.validate(null)).toStrictEqual([new RequiredError('Is required')])
+      expect(validator.validate(undefined)).toStrictEqual([new RequiredError('Is required')])
     })
   })
 

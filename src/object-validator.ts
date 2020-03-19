@@ -4,15 +4,15 @@ import { ObjectSchema, SchemaToType, ValidatorTypes } from './types'
 import { OptionalArray, RequiredArray } from './validators/array'
 import { OptionalObject, RequiredObject } from './validators/object'
 
-function validate(schema: ValidatorTypes, value: unknown, parentContext?: ValidationErrorContext): Error[] {
+export function validate(schema: ValidatorTypes, value: unknown, parentContext: ValidationErrorContext): Error[] {
   const errors: Error[] = []
   if (schema instanceof RequiredArray || schema instanceof OptionalArray) {
     if (!Array.isArray(value)) {
       errors.push(new NotArrayError(`Must be an array (received "${value}")`, parentContext))
       return errors
     }
-    for (const item of value as Array<unknown>) {
-      errors.push(...validate(schema.schema, item, parentContext))
+    for (const [i, item] of value.entries()) {
+      errors.push(...validate(schema.schema, item, { key: `${parentContext.key}[${i}]`, value: item }))
     }
   } else if (schema instanceof RequiredObject || schema instanceof OptionalObject) {
     if (!isObject(value)) {
@@ -20,13 +20,13 @@ function validate(schema: ValidatorTypes, value: unknown, parentContext?: Valida
       return errors
     }
     for (const key of Object.keys(schema.schema)) {
-      const context = { key: key, value: value[key] }
+      const context = { key: `${parentContext.key}${key}`, value: value[key] }
       errors.push(...validate(schema.schema[key], value[key], context))
     }
   } else if (schema instanceof ValidatorBase) {
     const err = schema.validate(value, parentContext)
     if (err) {
-      errors.push(err)
+      errors.push(...err)
     }
   }
   return errors
@@ -53,6 +53,7 @@ export class ObjectValidator<T extends ObjectSchema> {
   private schema: T
   private options: ObjectValidatorOptions
 
+  // TODO: Use ValidatorTypes instead of ObjectScheme so we can also use it for arrays, etc.
   public constructor(schema: T, options?: ObjectValidatorOptions) {
     this.schema = schema
     this.options = {
@@ -63,7 +64,7 @@ export class ObjectValidator<T extends ObjectSchema> {
   }
 
   public validate(obj: unknown): Error[] {
-    return validate(new RequiredObject(this.schema), obj, { key: '.', value: obj })
+    return validate(new RequiredObject(this.schema), obj, { key: '', value: obj })
   }
 
   public isValid(obj: unknown): obj is SchemaToType<T> {

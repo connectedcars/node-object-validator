@@ -7,16 +7,16 @@ describe('Object', () => {
   describe('RequiredObject', () => {
     it('accepts empty value', function() {
       const validator = new RequiredObject({})
-      expect(validator.validate(null)).toStrictEqual(new RequiredError('Is required'))
-      expect(validator.validate(undefined as unknown)).toStrictEqual(new RequiredError('Is required'))
+      expect(validator.validate(null)).toStrictEqual([new RequiredError('Is required')])
+      expect(validator.validate(undefined as unknown)).toStrictEqual([new RequiredError('Is required')])
     })
   })
 
   describe('OptionalObject', () => {
     it('accepts empty value', function() {
       const validator = new OptionalObject({})
-      expect(validator.validate((null as unknown) as number)).toStrictEqual(null)
-      expect(validator.validate((undefined as unknown) as number)).toStrictEqual(null)
+      expect(validator.validate(null)).toStrictEqual(null)
+      expect(validator.validate(undefined)).toStrictEqual(null)
     })
   })
 })

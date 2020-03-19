@@ -1,9 +1,9 @@
 import { ValidatorBase } from '../common'
 import { RequiredError, ValidationErrorContext } from '../errors'
+import { validate } from '../object-validator'
 import { ObjectSchema } from '../types'
 
 export function validateObject(value: unknown, context?: ValidationErrorContext): Error | null {
-  // TODO: Validate that something is an object
   return null
 }
 
@@ -16,11 +16,11 @@ export class RequiredObject<T extends ObjectSchema = ObjectSchema> extends Valid
     this.schema = schema
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error[] | null {
     if (value == null) {
-      return new RequiredError(`Is required`, context)
+      return [new RequiredError(`Is required`, context)]
     }
-    return validateObject(value, context)
+    return validate(this, value, { key: '', value: value, ...context })
   }
 }
 
@@ -33,11 +33,11 @@ export class OptionalObject<T extends ObjectSchema = ObjectSchema> extends Valid
     this.schema = schema
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error[] | null {
     if (value == null) {
       return null
     }
-    return validateObject(value, context)
+    return validate(this, value, { key: '', value: value, ...context })
   }
 }
 
