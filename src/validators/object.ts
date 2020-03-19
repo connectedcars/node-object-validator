@@ -13,14 +13,10 @@ export function validateObject<T extends ObjectSchema = ObjectSchema>(
     errors.push(new NotObjectError(`Must be an object (received "${value}")`, context))
     return errors
   }
-
   for (const key of Object.keys(schema.schema)) {
     // TODO Add parent context
     const validator = schema.schema[key]
-    const err = validator.validate(value[key], { key: `${key}`, value: value[key] })
-    if (err) {
-      errors.push(...err)
-    }
+    errors.push(...validator.validate(value[key], { key: `${key}`, value: value[key] }))
   }
   return validate(schema, value, { key: '', value: value, ...context })
 }
@@ -34,7 +30,7 @@ export class RequiredObject<T extends ObjectSchema = ObjectSchema> extends Valid
     this.schema = schema
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] | null {
+  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
     if (value == null) {
       return [new RequiredError(`Is required`, context)]
     }

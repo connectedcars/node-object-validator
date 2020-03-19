@@ -2,7 +2,8 @@ import { ValidatorBase } from '../common'
 import { NotArrayError, RequiredError, ValidationErrorContext, WrongLengthError } from '../errors'
 import { ValidatorTypes } from '../types'
 
-export function validateArray(
+export function validateArray<T extends ValidatorTypes = ValidatorTypes>(
+  schema: RequiredArray<T> | OptionalArray<T>,
   value: unknown,
   minLength = 0,
   maxLength = Number.MAX_SAFE_INTEGER,
@@ -19,7 +20,13 @@ export function validateArray(
       )
     ]
   }
-  return []
+  const errors = []
+  const validator = schema.schema
+  for (const [i, item] of value.entries()) {
+    // TODO: Parent context ${context.key}
+    errors.push(...validator.validate(item, { key: `[${i}]`, value: item }))
+  }
+  return errors
 }
 
 export class RequiredArray<T extends ValidatorTypes = ValidatorTypes> extends ValidatorBase {
@@ -39,7 +46,7 @@ export class RequiredArray<T extends ValidatorTypes = ValidatorTypes> extends Va
     if (value == null) {
       return [new RequiredError(`Is required`, context)]
     }
-    return validateArray(value, this.minLength, this.maxLength, context)
+    return validateArray(this, value, this.minLength, this.maxLength, context)
   }
 }
 
@@ -60,7 +67,7 @@ export class OptionalArray<T extends ValidatorTypes = ValidatorTypes> extends Va
     if (value == null) {
       return []
     }
-    return validateArray(value, this.minLength, this.maxLength, context)
+    return validateArray(this, value, this.minLength, this.maxLength, context)
   }
 }
 
