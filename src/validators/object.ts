@@ -1,7 +1,6 @@
 import { isObject, ValidatorBase } from '../common'
 import { NotObjectError, RequiredError, ValidationErrorContext } from '../errors'
-import { validate } from '../object-validator'
-import { ObjectSchema } from '../types'
+import { ObjectSchema, SchemaToType } from '../types'
 
 export function validateObject<T extends ObjectSchema = ObjectSchema>(
   schema: RequiredObject<T> | OptionalObject<T>,
@@ -14,15 +13,16 @@ export function validateObject<T extends ObjectSchema = ObjectSchema>(
     return errors
   }
   for (const key of Object.keys(schema.schema)) {
-    // TODO Add parent context
     const validator = schema.schema[key]
-    errors.push(...validator.validate(value[key], { key: `${key}`, value: value[key] }))
+    const keyName = context?.key ? `${context.key}['${key}']` : key
+    errors.push(...validator.validate(value[key], { key: keyName, value: value[key] }))
   }
-  return validate(schema, value, { key: '', value: value, ...context })
+  return errors
 }
 
 export class RequiredObject<T extends ObjectSchema = ObjectSchema> extends ValidatorBase {
   public schema: T
+  public schemaType!: SchemaToType<T>
   private type: 'RequiredObject' = 'RequiredObject'
 
   public constructor(schema: T) {
@@ -40,6 +40,7 @@ export class RequiredObject<T extends ObjectSchema = ObjectSchema> extends Valid
 
 export class OptionalObject<T extends ObjectSchema = ObjectSchema> extends ValidatorBase {
   public schema: T
+  public schemaType!: SchemaToType<T>
   private type: 'OptionalObject' = 'OptionalObject'
 
   public constructor(schema: T) {

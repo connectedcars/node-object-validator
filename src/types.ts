@@ -11,11 +11,16 @@ import { OptionalString, RequiredString } from './validators/string'
 // https://github.com/Microsoft/TypeScript/issues/26705
 export type IsUndefined<T, K> = undefined extends T ? K : never
 export type IsNotUndefined<T, K> = undefined extends T ? never : K
-type UndefinedKeys<T> = { [K in keyof T]-?: IsUndefined<T[K], K> }[keyof T]
-type NotUndefinedKeys<T> = { [K in keyof T]-?: IsNotUndefined<T[K], K> }[keyof T]
-type IncludeNullableTypes<T extends object> = { [K in UndefinedKeys<T>]: T[K] }
-type ExcludeNullableTypes<T extends object> = { [K in NotUndefinedKeys<T>]: T[K] }
-type UndefinedToOptional<T extends object> = ExcludeNullableTypes<T> & Partial<IncludeNullableTypes<T>>
+export type UndefinedKeys<T> = { [K in keyof T]-?: IsUndefined<T[K], K> }[keyof T]
+export type NotUndefinedKeys<T> = { [K in keyof T]-?: IsNotUndefined<T[K], K> }[keyof T]
+export type IncludeNullableTypes<T extends object> = { [K in UndefinedKeys<T>]: T[K] }
+export type ExcludeNullableTypes<T extends object> = { [K in NotUndefinedKeys<T>]: T[K] }
+export type UndefinedToOptional<T extends object> = ExcludeNullableTypes<T> & Partial<IncludeNullableTypes<T>>
+
+// https://stackoverflow.com/questions/51651499/typescript-what-is-a-naked-type-parameter
+// https://2ality.com/2019/07/testing-static-types.html
+// Wrapping the types in an tuple force a specific type instead of allow any in the union
+export type AssertEqual<T, Expected> = [T, Expected] extends [Expected, T] ? true : never
 
 // TODO: Add support for tuples at some point [RequiredDate, RequiredInteger, ..]
 // TODO: Use tuples for defining length of typed arrays [number, number]

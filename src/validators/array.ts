@@ -23,8 +23,7 @@ export function validateArray<T extends ValidatorTypes = ValidatorTypes>(
   const errors = []
   const validator = schema.schema
   for (const [i, item] of value.entries()) {
-    // TODO: Parent context ${context.key}
-    errors.push(...validator.validate(item, { key: `[${i}]`, value: item }))
+    errors.push(...validator.validate(item, { key: `${context?.key || ''}[${i}]`, value: item }))
   }
   return errors
 }
