@@ -43,6 +43,7 @@ describe('Types', () => {
 
     const itShouldAllowOptionalParameters: typeof objectValidator.type = {
       int: 0,
+      optionalInt: 1,
       requiredObject: {
         int: 0
       },
