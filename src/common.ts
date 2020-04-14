@@ -1,4 +1,4 @@
-import { ValidationErrorContext, ValidationsError } from './errors'
+import { NotObjectError, RequiredError, ValidationErrorContext, ValidationsError } from './errors'
 import { ObjectSchema, ValidatorTypes } from './types'
 
 export function isValidType<T>(value: unknown, errors: Error[]): value is T {
@@ -24,6 +24,40 @@ export abstract class ValidatorBase<T> {
     } else {
       throw new ValidationsError('One of more validations failed', errors)
     }
+  }
+
+  public codeGen(
+    valueRef: string,
+    validatorRef: string,
+    id = 1,
+    context?: ValidationErrorContext
+  ): [string[], string[]] {
+    const validatorName = `validator${id}`
+    const sLines = [`let ${validatorName} = ${validatorRef}`]
+    const vLines = [
+      `errors.push(...${validatorName}.validate(${valueRef}` + (context ? `, ${JSON.stringify(context)}))` : '))')
+    ]
+    return [vLines, sLines]
+  }
+
+  public optimize(): (value: unknown) => Error[] {
+    const [code, declarations] = this.codeGen('obj', 'schema')
+    const imports = {
+      NotObjectError: NotObjectError,
+      RequiredError: RequiredError
+    }
+    const functionBody = [
+      ...Object.keys(imports).map(i => `const ${i} = imports['${i}']`),
+      ...declarations,
+      `return (obj) => {`,
+      `  const errors = []`,
+      ...code.map(l => `  ${l}`),
+      `  return errors`,
+      `}`
+    ].join('\n')
+
+    const functionGenerator = new Function('imports', 'schema', functionBody)
+    return functionGenerator(imports, this)
   }
 
   public abstract validate(value: unknown, context?: ValidationErrorContext): Error[]

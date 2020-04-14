@@ -19,7 +19,7 @@ export function validateObject<T extends ObjectSchema = ObjectSchema, O = never>
   for (const key of Object.keys(schema.schema)) {
     const validator = schema.schema[key]
     const keyName = context?.key ? `${context.key}['${key}']` : key
-    errors.push(...validator.validate(value[key], { key: keyName, value: value[key] }))
+    errors.push(...validator.validate(value[key], { key: keyName }))
   }
   return errors
 }
@@ -47,7 +47,7 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
   public schemaType!: SchemaToType<T>
   private required: boolean
 
-  public constructor(schema: T, required = false) {
+  public constructor(schema: T, required = true) {
     super()
     this.schema = schema
     this.required = required
@@ -59,12 +59,51 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
     }
     return validateObject(this, value, context)
   }
+
+  public codeGen(
+    valueRef: string,
+    validatorRef: string,
+    id = 1,
+    context?: ValidationErrorContext
+  ): [string[], string[]] {
+    const objValueRef = `objValue${id}`
+    const schemaRef = `scheme${id}`
+    const sLines = [`const ${schemaRef} = ${validatorRef}.schema`]
+    // prettier-ignore
+    const vLines = [
+      `const ${objValueRef} = ${valueRef}`,
+      `if (${objValueRef} != null) {`,
+      `  if (typeof ${objValueRef} === 'object'){`
+    ]
+    for (const key of Object.keys(this.schema)) {
+      const validator = this.schema[key]
+      const propName = context?.key ? `${context.key}['${key}']` : key
+      const [propVLines, propSLines] = validator.codeGen(`${objValueRef}['${key}']`, `${schemaRef}['${key}']`, id++, {
+        key: propName
+      })
+      sLines.push(...propSLines)
+      vLines.push(...propVLines.map(l => `    ${l}`))
+    }
+    // prettier-ignore
+    vLines.push(
+      `  } else {`,
+      `    errors.push(new NotObjectError(\`Must be an object (received "\${${valueRef}}")\`` +
+        (context ? `, ${JSON.stringify(context)}))` : '))'),
+      `  }`,
+      ...(this.required ? [
+      `} else {`,
+      `  errors.push(new RequiredError(\`Is required\``+ (context ? `, ${JSON.stringify(context)}))` : '))')] : []),
+      '}'
+    )
+
+    return [vLines, sLines]
+  }
 }
 
 export class RequiredObject<T extends ObjectSchema = ObjectSchema> extends ObjectValidator<T> {
   private type: 'RequiredObject' = 'RequiredObject'
   public constructor(schema: T) {
-    super(schema, true)
+    super(schema)
   }
 }
 

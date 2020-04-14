@@ -3,10 +3,35 @@ import { RequiredError } from '../errors'
 import { AssertEqual } from '../types'
 import { OptionalArray, RequiredArray } from './array'
 import { OptionalInteger, RequiredInteger } from './integer'
-import { OptionalObject, RequiredObject } from './object'
+import { ObjectValidator, OptionalObject, RequiredObject } from './object'
 
 describe('Object', () => {
   describe('validateObject', () => {})
+
+  describe('ObjectValidator', () => {
+    const objectValidator = new ObjectValidator({
+      int: new RequiredInteger(1, 2),
+      optionalInt: new OptionalInteger(1, 2),
+      requiredObject: new RequiredObject({
+        int: new RequiredInteger(1, 2),
+        optionalInt: new OptionalInteger(1, 2)
+      })
+    })
+
+    it('should generate code for validation', () => {
+      const unknownValue: unknown = {
+        int: 1,
+        optionalInt: 1,
+        requiredObject: {
+          int: 1
+        }
+      }
+
+      const validate = objectValidator.optimize()
+      const errors = validate(unknownValue)
+      expect(errors).toEqual([])
+    })
+  })
 
   describe('RequiredObject', () => {
     const objectValidator = new RequiredObject({

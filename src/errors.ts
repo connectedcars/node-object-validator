@@ -1,18 +1,15 @@
 export interface ValidationErrorContext {
   key: string
-  value: unknown
 }
 
 export class ValidationError extends Error {
   public key?: string
-  public value?: unknown
   public constructor(message: string, context?: ValidationErrorContext) {
     if (context) {
       message = `Field '${context.key}' ${message.charAt(0).toLowerCase() + message.slice(1)}`
     }
     super(message)
     this.key = context?.key
-    this.value = context?.value
   }
 }
 
