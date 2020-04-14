@@ -36,7 +36,7 @@ export type ObjectValidatorOptions = {
  * @property {boolean} [optimize=true] Generate an optimized function for doing the validation (default: true)
  * @property {boolean} [cacheFile] Write the optimized function to a file and reuse this if it exists, no cache invalidation is done (Not recommended)
  */
-export class ObjectValidator<T extends ObjectSchema = ObjectSchema> extends ValidatorBase {
+export class ObjectValidator<T extends ObjectSchema = ObjectSchema> extends ValidatorBase<SchemaToType<T>> {
   public schema: T
   public schemaType!: SchemaToType<T>
   private required: boolean
@@ -52,24 +52,6 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema> extends Vali
       return this.required ? [new RequiredError(`Is required`, context)] : []
     }
     return validateObject(this, value, context)
-  }
-
-  public isValid(obj: unknown): obj is SchemaToType<T> {
-    const errors = this.validate(obj)
-    return errors.length === 0
-  }
-
-  public isType(obj: unknown, errors: Error[]): obj is SchemaToType<T> {
-    return errors.length === 0
-  }
-
-  public cast(obj: unknown): SchemaToType<T> {
-    const errors = this.validate(obj)
-    if (this.isType(obj, errors)) {
-      return obj
-    } else {
-      throw new ValidationsError('One of more validations failed', errors)
-    }
   }
 }
 

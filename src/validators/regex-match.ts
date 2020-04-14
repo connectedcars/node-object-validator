@@ -13,7 +13,7 @@ export function validateRegexMatch(value: unknown, regex: RegExp, context?: Vali
   return []
 }
 
-export class RequiredRegexMatch extends ValidatorBase {
+export class RequiredRegexMatch extends ValidatorBase<string> {
   private type: 'RequiredRegex' = 'RequiredRegex'
   private regex: RegExp
 
@@ -30,7 +30,7 @@ export class RequiredRegexMatch extends ValidatorBase {
   }
 }
 
-export class OptionalRegexMatch extends ValidatorBase {
+export class OptionalRegexMatch extends ValidatorBase<string | undefined | null> {
   private type: 'OptionalRegex' = 'OptionalRegex'
   private regex: RegExp
 

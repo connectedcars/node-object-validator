@@ -1,9 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ObjectValidator } from './object-validator'
 import { AssertEqual, IsNotUndefined, IsUndefined } from './types'
-import { OptionalArray, RequiredArray } from './validators/array'
-import { OptionalInteger, RequiredInteger } from './validators/integer'
-import { RequiredObject } from './validators/object'
 
 describe('Types', () => {
   it('Compiles', () => {

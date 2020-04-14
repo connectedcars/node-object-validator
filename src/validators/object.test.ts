@@ -78,6 +78,55 @@ describe('Object', () => {
         new Error(`Field 'optionalArrayArray[0]' must be an array (received "1")`)
       ])
     })
+
+    it('should cast type guard correctly for isValid', () => {
+      const unknownValue: unknown = {
+        int: 1,
+        optionalInt: 1,
+        requiredObject: {
+          int: 1
+        },
+        optionalArray: [1],
+        optionalArrayArray: [[1]]
+      }
+      if (objectValidator.isValid(unknownValue)) {
+        const itShouldCastIntToNumber: AssertEqual<typeof unknownValue.int, number> = true
+      } else {
+        expect('did not validate but should').toBe('')
+      }
+    })
+
+    it('should cast type guard correctly for isType', () => {
+      const unknownValue: unknown = {
+        int: 1,
+        optionalInt: 1,
+        requiredObject: {
+          int: 1
+        },
+        optionalArray: [1],
+        optionalArrayArray: [[1]]
+      }
+      const errors = objectValidator.validate(unknownValue)
+      if (objectValidator.isType(unknownValue, errors)) {
+        const itShouldCastIntToNumber: AssertEqual<typeof unknownValue.int, number> = true
+      } else {
+        expect('did not validate but should').toBe('')
+      }
+    })
+
+    it('should cast type guard correctly for cast', () => {
+      const unknownValue: unknown = {
+        int: 1,
+        optionalInt: 1,
+        requiredObject: {
+          int: 1
+        },
+        optionalArray: [1],
+        optionalArrayArray: [[1]]
+      }
+      const knownValue = objectValidator.cast(unknownValue)
+      const itShouldCastIntToNumber: AssertEqual<typeof knownValue.int, number> = true
+    })
   })
 
   describe('OptionalObject', () => {

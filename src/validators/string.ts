@@ -21,7 +21,7 @@ export function validateString(
   return []
 }
 
-export class RequiredString extends ValidatorBase {
+export class RequiredString extends ValidatorBase<string> {
   private type: 'RequiredString' = 'RequiredString'
   private minLength: number
   private maxLength: number
@@ -40,7 +40,7 @@ export class RequiredString extends ValidatorBase {
   }
 }
 
-export class OptionalString extends ValidatorBase {
+export class OptionalString extends ValidatorBase<string | undefined | null> {
   private type: 'OptionalString' = 'OptionalString'
   private minLength: number
   private maxLength: number

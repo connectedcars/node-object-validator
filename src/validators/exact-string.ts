@@ -8,7 +8,7 @@ export function validateExactString(value: unknown, expected: string, context?: 
   return []
 }
 
-export class RequiredExactString extends ValidatorBase {
+export class RequiredExactString extends ValidatorBase<string> {
   private type: 'RequiredExactString' = 'RequiredExactString'
   private expectedStr: string
 
@@ -25,7 +25,7 @@ export class RequiredExactString extends ValidatorBase {
   }
 }
 
-export class OptionalExactString extends ValidatorBase {
+export class OptionalExactString extends ValidatorBase<string | undefined | null> {
   private type: 'OptionalExactString' = 'OptionalExactString'
   private expectedStr: string
 

@@ -8,7 +8,7 @@ export function validateDate(value: unknown, context?: ValidationErrorContext): 
   return []
 }
 
-export class RequiredDate extends ValidatorBase {
+export class RequiredDate extends ValidatorBase<Date> {
   private type: 'RequiredDate' = 'RequiredDate'
 
   public validate(value: unknown, context?: ValidationErrorContext): Error[] {
@@ -19,7 +19,7 @@ export class RequiredDate extends ValidatorBase {
   }
 }
 
-export class OptionalDate extends ValidatorBase {
+export class OptionalDate extends ValidatorBase<Date | undefined | null> {
   private type: 'OptionalDate' = 'OptionalDate'
 
   public validate(value: unknown, context?: ValidationErrorContext): Error[] {

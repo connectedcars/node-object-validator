@@ -16,7 +16,7 @@ export function validateInteger(
   return []
 }
 
-export class RequiredInteger extends ValidatorBase {
+export class RequiredInteger extends ValidatorBase<number> {
   private type: 'RequiredInteger' = 'RequiredInteger'
   private min: number
   private max: number
@@ -35,7 +35,7 @@ export class RequiredInteger extends ValidatorBase {
   }
 }
 
-export class OptionalInteger extends ValidatorBase {
+export class OptionalInteger extends ValidatorBase<number | undefined | null> {
   private type: 'OptionalInteger' = 'OptionalInteger'
   private min: number
   private max: number

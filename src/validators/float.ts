@@ -16,7 +16,7 @@ export function validateFloat(
   return []
 }
 
-export class RequiredFloat extends ValidatorBase {
+export class RequiredFloat extends ValidatorBase<number> {
   private type: 'RequiredFloat' = 'RequiredFloat'
   private min: number
   private max: number
@@ -35,7 +35,7 @@ export class RequiredFloat extends ValidatorBase {
   }
 }
 
-export class OptionalFloat extends ValidatorBase {
+export class OptionalFloat extends ValidatorBase<number | undefined | null> {
   private type: 'OptionalFloat' = 'OptionalFloat'
   private min: number
   private max: number

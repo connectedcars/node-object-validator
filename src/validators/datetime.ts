@@ -15,7 +15,7 @@ export function validateDateTime(value: unknown, context?: ValidationErrorContex
   return []
 }
 
-export class RequiredDateTime extends ValidatorBase {
+export class RequiredDateTime extends ValidatorBase<string> {
   private type: 'RequiredDateTime' = 'RequiredDateTime'
 
   public validate(value: unknown, context?: ValidationErrorContext): Error[] {
@@ -26,7 +26,7 @@ export class RequiredDateTime extends ValidatorBase {
   }
 }
 
-export class OptionalDateTime extends ValidatorBase {
+export class OptionalDateTime extends ValidatorBase<string | undefined | null> {
   private type: 'OptionalDateTime' = 'OptionalDateTime'
 
   public validate(value: unknown, context?: ValidationErrorContext): Error[] {

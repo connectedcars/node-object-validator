@@ -1,6 +1,6 @@
 import { ValidatorBase } from '../common'
 import { NotArrayError, RequiredError, ValidationErrorContext, WrongLengthError } from '../errors'
-import { ValidatorTypes } from '../types'
+import { SchemaToType, ValidatorTypes } from '../types'
 
 export function validateArray<T extends ValidatorTypes = ValidatorTypes>(
   schema: RequiredArray<T> | OptionalArray<T>,
@@ -28,7 +28,7 @@ export function validateArray<T extends ValidatorTypes = ValidatorTypes>(
   return errors
 }
 
-export class RequiredArray<T extends ValidatorTypes = ValidatorTypes> extends ValidatorBase {
+export class RequiredArray<T extends ValidatorTypes = ValidatorTypes> extends ValidatorBase<SchemaToType<T>> {
   public schema: T
   private type: 'RequiredArray' = 'RequiredArray'
   private minLength: number
@@ -49,7 +49,7 @@ export class RequiredArray<T extends ValidatorTypes = ValidatorTypes> extends Va
   }
 }
 
-export class OptionalArray<T extends ValidatorTypes = ValidatorTypes> extends ValidatorBase {
+export class OptionalArray<T extends ValidatorTypes = ValidatorTypes> extends ValidatorBase<SchemaToType<T>> {
   public schema: T
   private type: 'OptionalArray' = 'OptionalArray'
   private minLength: number
