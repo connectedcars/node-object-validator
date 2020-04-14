@@ -1,9 +1,9 @@
 import { isObject, ValidatorBase } from '../common'
-import { NotObjectError, RequiredError, ValidationErrorContext } from '../errors'
+import { NotObjectError, RequiredError, ValidationErrorContext, ValidationsError } from '../errors'
 import { ObjectSchema, SchemaToType } from '../types'
 
 export function validateObject<T extends ObjectSchema = ObjectSchema>(
-  schema: RequiredObject<T> | OptionalObject<T>,
+  schema: RequiredObject<T> | OptionalObject<T> | ObjectValidator<T>,
   value: unknown,
   context?: ValidationErrorContext
 ): Error[] {
@@ -20,39 +20,70 @@ export function validateObject<T extends ObjectSchema = ObjectSchema>(
   return errors
 }
 
-export class RequiredObject<T extends ObjectSchema = ObjectSchema> extends ValidatorBase {
+export type ObjectValidatorOptions = {
+  /**
+   * Generate an optimized function for doing the validation (default: true)
+   */
+  optimize?: boolean
+  /**
+   * Write the optimized function to a file and reuse this if it exists, no cache invalidation is done (Not recommended)
+   */
+  cacheFile?: boolean
+}
+
+/**
+ * @typedef ObjectValidatorOptions
+ * @property {boolean} [optimize=true] Generate an optimized function for doing the validation (default: true)
+ * @property {boolean} [cacheFile] Write the optimized function to a file and reuse this if it exists, no cache invalidation is done (Not recommended)
+ */
+export class ObjectValidator<T extends ObjectSchema = ObjectSchema> extends ValidatorBase {
   public schema: T
   public schemaType!: SchemaToType<T>
-  private type: 'RequiredObject' = 'RequiredObject'
+  private required: boolean
 
-  public constructor(schema: T) {
+  public constructor(schema: T, required = false) {
     super()
     this.schema = schema
+    this.required = required
   }
 
   public validate(value: unknown, context?: ValidationErrorContext): Error[] {
     if (value == null) {
-      return [new RequiredError(`Is required`, context)]
+      return this.required ? [new RequiredError(`Is required`, context)] : []
     }
     return validateObject(this, value, context)
+  }
+
+  public isValid(obj: unknown): obj is SchemaToType<T> {
+    const errors = this.validate(obj)
+    return errors.length === 0
+  }
+
+  public isType(obj: unknown, errors: Error[]): obj is SchemaToType<T> {
+    return errors.length === 0
+  }
+
+  public cast(obj: unknown): SchemaToType<T> {
+    const errors = this.validate(obj)
+    if (this.isType(obj, errors)) {
+      return obj
+    } else {
+      throw new ValidationsError('One of more validations failed', errors)
+    }
   }
 }
 
-export class OptionalObject<T extends ObjectSchema = ObjectSchema> extends ValidatorBase {
-  public schema: T
-  public schemaType!: SchemaToType<T>
-  private type: 'OptionalObject' = 'OptionalObject'
-
+export class RequiredObject<T extends ObjectSchema = ObjectSchema> extends ObjectValidator<T> {
+  private type: 'RequiredObject' = 'RequiredObject'
   public constructor(schema: T) {
-    super()
-    this.schema = schema
+    super(schema, true)
   }
+}
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
-    if (value == null) {
-      return []
-    }
-    return validateObject(this, value, context)
+export class OptionalObject<T extends ObjectSchema = ObjectSchema> extends ObjectValidator<T> {
+  private type: 'OptionalObject' = 'OptionalObject'
+  public constructor(schema: T) {
+    super(schema, false)
   }
 }
 
