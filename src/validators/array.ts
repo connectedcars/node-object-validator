@@ -50,6 +50,8 @@ export class ArrayValidator<T extends ValidatorTypes = ValidatorTypes, O = never
     }
     return validateArray(this, value, this.minLength, this.maxLength, context)
   }
+
+  // TODO: implement code gen for arrays
 }
 
 export class RequiredArray<T extends ValidatorTypes = ValidatorTypes> extends ArrayValidator<T> {

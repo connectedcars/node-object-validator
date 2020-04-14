@@ -24,22 +24,17 @@ export function validateObject<T extends ObjectSchema = ObjectSchema, O = never>
   return errors
 }
 
-export type ObjectValidatorOptions = {
-  /**
-   * Generate an optimized function for doing the validation (default: true)
-   */
-  optimize?: boolean
-  /**
-   * Write the optimized function to a file and reuse this if it exists, no cache invalidation is done (Not recommended)
-   */
-  cacheFile?: boolean
-}
-
 /**
  * @typedef ObjectValidatorOptions
  * @property {boolean} [optimize=true] Generate an optimized function for doing the validation (default: true)
- * @property {boolean} [cacheFile] Write the optimized function to a file and reuse this if it exists, no cache invalidation is done (Not recommended)
  */
+export type ObjectValidatorOptions = {
+  /**
+   * Generate an optimized function for doing the validation (default: false)
+   */
+  optimize?: boolean
+}
+
 export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> extends ValidatorBase<
   SchemaToType<T> | O
 > {
@@ -47,10 +42,13 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
   public schemaType!: SchemaToType<T>
   private required: boolean
 
-  public constructor(schema: T, required = true) {
+  public constructor(schema: T, options?: ObjectValidatorOptions, required = true) {
     super()
     this.schema = schema
     this.required = required
+    if (options?.optimize) {
+      this.validate = this.optimize()
+    }
   }
 
   public validate(value: unknown, context?: ValidationErrorContext): Error[] {
@@ -63,11 +61,13 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
   public codeGen(
     valueRef: string,
     validatorRef: string,
-    id = 1,
+    id = () => {
+      return this.codeGenId++
+    },
     context?: ValidationErrorContext
   ): [string[], string[]] {
-    const objValueRef = `objValue${id}`
-    const schemaRef = `scheme${id}`
+    const objValueRef = `objValue${id()}`
+    const schemaRef = `scheme${id()}`
     const sLines = [`const ${schemaRef} = ${validatorRef}.schema`]
     // prettier-ignore
     const vLines = [
@@ -78,7 +78,7 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
     for (const key of Object.keys(this.schema)) {
       const validator = this.schema[key]
       const propName = context?.key ? `${context.key}['${key}']` : key
-      const [propVLines, propSLines] = validator.codeGen(`${objValueRef}['${key}']`, `${schemaRef}['${key}']`, id++, {
+      const [propVLines, propSLines] = validator.codeGen(`${objValueRef}['${key}']`, `${schemaRef}['${key}']`, id, {
         key: propName
       })
       sLines.push(...propSLines)
@@ -110,7 +110,7 @@ export class RequiredObject<T extends ObjectSchema = ObjectSchema> extends Objec
 export class OptionalObject<T extends ObjectSchema = ObjectSchema> extends ObjectValidator<T, null | undefined> {
   private type: 'OptionalObject' = 'OptionalObject'
   public constructor(schema: T) {
-    super(schema, false)
+    super(schema, {}, false)
   }
 }
 

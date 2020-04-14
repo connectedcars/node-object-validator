@@ -7,6 +7,7 @@ export function isValidType<T>(value: unknown, errors: Error[]): value is T {
 
 export abstract class ValidatorBase<T> {
   public schema?: ValidatorTypes | ObjectSchema
+  protected codeGenId = 1
 
   public isValid(obj: unknown): obj is T {
     const errors = this.validate(obj)
@@ -29,10 +30,12 @@ export abstract class ValidatorBase<T> {
   public codeGen(
     valueRef: string,
     validatorRef: string,
-    id = 1,
+    id = () => {
+      return this.codeGenId++
+    },
     context?: ValidationErrorContext
   ): [string[], string[]] {
-    const validatorName = `validator${id}`
+    const validatorName = `validator${id()}`
     const sLines = [`let ${validatorName} = ${validatorRef}`]
     const vLines = [
       `errors.push(...${validatorName}.validate(${valueRef}` + (context ? `, ${JSON.stringify(context)}))` : '))')
@@ -50,6 +53,7 @@ export abstract class ValidatorBase<T> {
       ...Object.keys(imports).map(i => `const ${i} = imports['${i}']`),
       ...declarations,
       `return (obj) => {`,
+      `  const generatedFunction = true`,
       `  const errors = []`,
       ...code.map(l => `  ${l}`),
       `  return errors`,
@@ -57,7 +61,8 @@ export abstract class ValidatorBase<T> {
     ].join('\n')
 
     const functionGenerator = new Function('imports', 'schema', functionBody)
-    return functionGenerator(imports, this)
+    const validateFunction = functionGenerator(imports, this)
+    return validateFunction
   }
 
   public abstract validate(value: unknown, context?: ValidationErrorContext): Error[]
