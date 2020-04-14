@@ -13,37 +13,37 @@ export function validateRegexMatch(value: unknown, regex: RegExp, context?: Vali
   return []
 }
 
-export class RequiredRegexMatch extends ValidatorBase<string> {
-  private type: 'RequiredRegex' = 'RequiredRegex'
+export class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
   private regex: RegExp
+  private required: boolean
 
-  public constructor(regex: RegExp) {
+  public constructor(regex: RegExp, required = true) {
     super()
     this.regex = regex
+    this.required = required
   }
 
   public validate(value: unknown, context?: ValidationErrorContext): Error[] {
     if (value == null) {
-      return [new RequiredError(`Is required`, context)]
+      return this.required ? [new RequiredError(`Is required`, context)] : []
     }
     return validateRegexMatch(value, this.regex, context)
   }
 }
 
-export class OptionalRegexMatch extends ValidatorBase<string | undefined | null> {
-  private type: 'OptionalRegex' = 'OptionalRegex'
-  private regex: RegExp
+export class RequiredRegexMatch extends RegexMatchValidator<string> {
+  private type: 'RequiredRegex' = 'RequiredRegex'
 
   public constructor(regex: RegExp) {
-    super()
-    this.regex = regex
+    super(regex)
   }
+}
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
-    if (value == null) {
-      return []
-    }
-    return validateRegexMatch(value, this.regex, context)
+export class OptionalRegexMatch extends RegexMatchValidator<undefined | null> {
+  private type: 'OptionalRegex' = 'OptionalRegex'
+
+  public constructor(regex: RegExp) {
+    super(regex, false)
   }
 }
 

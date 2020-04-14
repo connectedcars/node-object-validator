@@ -15,25 +15,33 @@ export function validateDateTime(value: unknown, context?: ValidationErrorContex
   return []
 }
 
-export class RequiredDateTime extends ValidatorBase<string> {
-  private type: 'RequiredDateTime' = 'RequiredDateTime'
+export class DateTimeValidator<O = never> extends ValidatorBase<string | O> {
+  public required: boolean
+
+  public constructor(required = true) {
+    super()
+    this.required = required
+  }
 
   public validate(value: unknown, context?: ValidationErrorContext): Error[] {
     if (value == null) {
-      return [new RequiredError(`Is required`, context)]
+      return this.required ? [new RequiredError(`Is required`, context)] : []
     }
     return validateDateTime(value, context)
   }
 }
 
-export class OptionalDateTime extends ValidatorBase<string | undefined | null> {
-  private type: 'OptionalDateTime' = 'OptionalDateTime'
+export class RequiredDateTime extends DateTimeValidator {
+  private type: 'RequiredDateTime' = 'RequiredDateTime'
+  public constructor() {
+    super()
+  }
+}
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
-    if (value == null) {
-      return []
-    }
-    return validateDateTime(value, context)
+export class OptionalDateTime extends DateTimeValidator<undefined | null> {
+  private type: 'OptionalDateTime' = 'OptionalDateTime'
+  public constructor() {
+    super(false)
   }
 }
 

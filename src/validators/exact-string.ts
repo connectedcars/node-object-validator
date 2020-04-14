@@ -8,37 +8,37 @@ export function validateExactString(value: unknown, expected: string, context?: 
   return []
 }
 
-export class RequiredExactString extends ValidatorBase<string> {
-  private type: 'RequiredExactString' = 'RequiredExactString'
-  private expectedStr: string
+export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
+  private expected: string
+  private required: boolean
 
-  public constructor(expectedStr: string) {
+  public constructor(expected: string, required = false) {
     super()
-    this.expectedStr = expectedStr
+    this.required = required
+    this.expected = expected
   }
 
   public validate(value: unknown, context?: ValidationErrorContext): Error[] {
     if (value == null) {
-      return [new RequiredError(`Is required`, context)]
+      return this.required ? [new RequiredError(`Is required`, context)] : []
     }
-    return validateExactString(value, this.expectedStr, context)
+    return validateExactString(value, this.expected, context)
   }
 }
 
-export class OptionalExactString extends ValidatorBase<string | undefined | null> {
-  private type: 'OptionalExactString' = 'OptionalExactString'
-  private expectedStr: string
+export class RequiredExactString extends ExactStringValidator {
+  private type: 'RequiredExactString' = 'RequiredExactString'
 
   public constructor(expected: string) {
-    super()
-    this.expectedStr = expected
+    super(expected, true)
   }
+}
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
-    if (value == null) {
-      return []
-    }
-    return validateExactString(value, this.expectedStr, context)
+export class OptionalExactString extends ExactStringValidator<undefined | null> {
+  private type: 'OptionalExactString' = 'OptionalExactString'
+
+  public constructor(expected: string) {
+    super(expected, false)
   }
 }
 

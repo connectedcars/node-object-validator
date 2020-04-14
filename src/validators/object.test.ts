@@ -134,6 +134,8 @@ describe('Object', () => {
       const validator = new OptionalObject({})
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
+      const knownValue = validator.cast(null)
+      const itShouldCastIntToNumber: AssertEqual<typeof knownValue, {} | null | undefined> = true
     })
   })
 })

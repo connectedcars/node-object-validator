@@ -16,41 +16,39 @@ export function validateInteger(
   return []
 }
 
-export class RequiredInteger extends ValidatorBase<number> {
-  private type: 'RequiredInteger' = 'RequiredInteger'
+export class IntegerValidator<O = never> extends ValidatorBase<number | O> {
   private min: number
   private max: number
+  private required: boolean
 
-  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER) {
+  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER, required = true) {
     super()
     this.min = min
     this.max = max
+    this.required = required
   }
 
   public validate(value: unknown, context?: ValidationErrorContext): Error[] {
     if (value == null) {
-      return [new RequiredError(`Is required`, context)]
+      return this.required ? [new RequiredError(`Is required`, context)] : []
     }
     return validateInteger(value, this.min, this.max, context)
   }
 }
 
-export class OptionalInteger extends ValidatorBase<number | undefined | null> {
-  private type: 'OptionalInteger' = 'OptionalInteger'
-  private min: number
-  private max: number
+export class RequiredInteger extends IntegerValidator {
+  private type: 'RequiredInteger' = 'RequiredInteger'
 
   public constructor(min = 0, max = Number.MAX_SAFE_INTEGER) {
-    super()
-    this.min = min
-    this.max = max
+    super(min, max)
   }
+}
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
-    if (value == null) {
-      return []
-    }
-    return validateInteger(value, this.min, this.max, context)
+export class OptionalInteger extends IntegerValidator<undefined | null> {
+  private type: 'OptionalInteger' = 'OptionalInteger'
+
+  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER) {
+    super(min, max, false)
   }
 }
 

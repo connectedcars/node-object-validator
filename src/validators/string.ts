@@ -21,41 +21,39 @@ export function validateString(
   return []
 }
 
-export class RequiredString extends ValidatorBase<string> {
-  private type: 'RequiredString' = 'RequiredString'
+export class StringValidator<O = never> extends ValidatorBase<string | O> {
   private minLength: number
   private maxLength: number
+  private required: boolean
 
-  public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER) {
+  public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, required = true) {
     super()
     this.minLength = minLength
     this.maxLength = maxLength
+    this.required = required
   }
 
   public validate(value: unknown, context?: ValidationErrorContext): Error[] {
     if (value == null) {
-      return [new RequiredError(`Is required`, context)]
+      return this.required ? [new RequiredError(`Is required`, context)] : []
     }
     return validateString(value, this.minLength, this.maxLength, context)
   }
 }
 
-export class OptionalString extends ValidatorBase<string | undefined | null> {
-  private type: 'OptionalString' = 'OptionalString'
-  private minLength: number
-  private maxLength: number
+export class RequiredString extends StringValidator {
+  private type: 'RequiredString' = 'RequiredString'
 
   public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER) {
-    super()
-    this.minLength = minLength
-    this.maxLength = maxLength
+    super(minLength, maxLength)
   }
+}
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
-    if (value == null) {
-      return []
-    }
-    return validateString(value, this.minLength, this.maxLength, context)
+export class OptionalString extends StringValidator<undefined | null> {
+  private type: 'OptionalString' = 'OptionalString'
+
+  public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER) {
+    super(minLength, maxLength, false)
   }
 }
 

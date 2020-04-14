@@ -1,9 +1,13 @@
-import { isObject, ValidatorBase } from '../common'
-import { NotObjectError, RequiredError, ValidationErrorContext, ValidationsError } from '../errors'
+import { ValidatorBase } from '../common'
+import { NotObjectError, RequiredError, ValidationErrorContext } from '../errors'
 import { ObjectSchema, SchemaToType } from '../types'
 
-export function validateObject<T extends ObjectSchema = ObjectSchema>(
-  schema: RequiredObject<T> | OptionalObject<T> | ObjectValidator<T>,
+export function isObject(value: unknown): value is { [key: string]: unknown } {
+  return value !== null && typeof value === 'object'
+}
+
+export function validateObject<T extends ObjectSchema = ObjectSchema, O = never>(
+  schema: RequiredObject<T> | OptionalObject<T> | ObjectValidator<T, O>,
   value: unknown,
   context?: ValidationErrorContext
 ): Error[] {
@@ -36,7 +40,9 @@ export type ObjectValidatorOptions = {
  * @property {boolean} [optimize=true] Generate an optimized function for doing the validation (default: true)
  * @property {boolean} [cacheFile] Write the optimized function to a file and reuse this if it exists, no cache invalidation is done (Not recommended)
  */
-export class ObjectValidator<T extends ObjectSchema = ObjectSchema> extends ValidatorBase<SchemaToType<T>> {
+export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> extends ValidatorBase<
+  SchemaToType<T> | O
+> {
   public schema: T
   public schemaType!: SchemaToType<T>
   private required: boolean
@@ -62,7 +68,7 @@ export class RequiredObject<T extends ObjectSchema = ObjectSchema> extends Objec
   }
 }
 
-export class OptionalObject<T extends ObjectSchema = ObjectSchema> extends ObjectValidator<T> {
+export class OptionalObject<T extends ObjectSchema = ObjectSchema> extends ObjectValidator<T, null | undefined> {
   private type: 'OptionalObject' = 'OptionalObject'
   public constructor(schema: T) {
     super(schema, false)

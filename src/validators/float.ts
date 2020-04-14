@@ -16,41 +16,39 @@ export function validateFloat(
   return []
 }
 
-export class RequiredFloat extends ValidatorBase<number> {
-  private type: 'RequiredFloat' = 'RequiredFloat'
+export class FloatValidator<O = never> extends ValidatorBase<number | O> {
   private min: number
   private max: number
+  private required: boolean
 
-  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER) {
+  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER, required = true) {
     super()
     this.min = min
     this.max = max
+    this.required = required
   }
 
   public validate(value: unknown, context?: ValidationErrorContext): Error[] {
     if (value == null) {
-      return [new RequiredError(`Is required`, context)]
+      return this.required ? [new RequiredError(`Is required`, context)] : []
     }
     return validateFloat(value, this.min, this.max, context)
   }
 }
 
-export class OptionalFloat extends ValidatorBase<number | undefined | null> {
-  private type: 'OptionalFloat' = 'OptionalFloat'
-  private min: number
-  private max: number
+export class RequiredFloat extends FloatValidator {
+  private type: 'RequiredFloat' = 'RequiredFloat'
 
   public constructor(min = 0, max = Number.MAX_SAFE_INTEGER) {
-    super()
-    this.min = min
-    this.max = max
+    super(min, max)
   }
+}
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
-    if (value == null) {
-      return []
-    }
-    return validateFloat(value, this.min, this.max, context)
+export class OptionalFloat extends FloatValidator<undefined | null> {
+  private type: 'OptionalFloat' = 'OptionalFloat'
+
+  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER) {
+    super(min, max, false)
   }
 }
 

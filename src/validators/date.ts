@@ -8,25 +8,33 @@ export function validateDate(value: unknown, context?: ValidationErrorContext): 
   return []
 }
 
-export class RequiredDate extends ValidatorBase<Date> {
-  private type: 'RequiredDate' = 'RequiredDate'
+export class DateValidator<O = never> extends ValidatorBase<Date | O> {
+  private required: boolean
+
+  public constructor(required = true) {
+    super()
+    this.required = required
+  }
 
   public validate(value: unknown, context?: ValidationErrorContext): Error[] {
     if (value == null) {
-      return [new RequiredError(`Is required`, context)]
+      return this.required ? [new RequiredError(`Is required`, context)] : []
     }
     return validateDate(value, context)
   }
 }
 
-export class OptionalDate extends ValidatorBase<Date | undefined | null> {
-  private type: 'OptionalDate' = 'OptionalDate'
+export class RequiredDate extends DateValidator {
+  private type: 'RequiredDate' = 'RequiredDate'
+  public constructor() {
+    super()
+  }
+}
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
-    if (value == null) {
-      return []
-    }
-    return validateDate(value, context)
+export class OptionalDate extends DateValidator<null | undefined> {
+  private type: 'OptionalDate' = 'OptionalDate'
+  public constructor() {
+    super(false)
   }
 }
 
