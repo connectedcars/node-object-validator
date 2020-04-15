@@ -37,7 +37,7 @@ export class IntegerValidator<O = never> extends ValidatorBase<number | O> {
 }
 
 export class RequiredInteger extends IntegerValidator {
-  private type: 'RequiredInteger' = 'RequiredInteger'
+  private validatorType: 'RequiredInteger' = 'RequiredInteger'
 
   public constructor(min = 0, max = Number.MAX_SAFE_INTEGER) {
     super(min, max)
@@ -45,7 +45,7 @@ export class RequiredInteger extends IntegerValidator {
 }
 
 export class OptionalInteger extends IntegerValidator<undefined | null> {
-  private type: 'OptionalInteger' = 'OptionalInteger'
+  private validatorType: 'OptionalInteger' = 'OptionalInteger'
 
   public constructor(min = 0, max = Number.MAX_SAFE_INTEGER) {
     super(min, max, false)

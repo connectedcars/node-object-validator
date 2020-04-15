@@ -42,7 +42,7 @@ export class StringValidator<O = never> extends ValidatorBase<string | O> {
 }
 
 export class RequiredString extends StringValidator {
-  private type: 'RequiredString' = 'RequiredString'
+  private validatorType: 'RequiredString' = 'RequiredString'
 
   public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER) {
     super(minLength, maxLength)
@@ -50,7 +50,7 @@ export class RequiredString extends StringValidator {
 }
 
 export class OptionalString extends StringValidator<undefined | null> {
-  private type: 'OptionalString' = 'OptionalString'
+  private validatorType: 'OptionalString' = 'OptionalString'
 
   public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER) {
     super(minLength, maxLength, false)

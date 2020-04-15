@@ -39,7 +39,6 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
   SchemaToType<T> | O
 > {
   public schema: T
-  public schemaType!: SchemaToType<T>
   private required: boolean
 
   public constructor(schema: T, options?: ObjectValidatorOptions, required = true) {
@@ -101,14 +100,14 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
 }
 
 export class RequiredObject<T extends ObjectSchema = ObjectSchema> extends ObjectValidator<T> {
-  private type: 'RequiredObject' = 'RequiredObject'
+  private validatorType: 'RequiredObject' = 'RequiredObject'
   public constructor(schema: T) {
     super(schema)
   }
 }
 
 export class OptionalObject<T extends ObjectSchema = ObjectSchema> extends ObjectValidator<T, null | undefined> {
-  private type: 'OptionalObject' = 'OptionalObject'
+  private validatorType: 'OptionalObject' = 'OptionalObject'
   public constructor(schema: T) {
     super(schema, {}, false)
   }

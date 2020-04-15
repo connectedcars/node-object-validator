@@ -32,7 +32,7 @@ export class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
 }
 
 export class RequiredRegexMatch extends RegexMatchValidator<string> {
-  private type: 'RequiredRegex' = 'RequiredRegex'
+  private validatorType: 'RequiredRegex' = 'RequiredRegex'
 
   public constructor(regex: RegExp) {
     super(regex)
@@ -40,7 +40,7 @@ export class RequiredRegexMatch extends RegexMatchValidator<string> {
 }
 
 export class OptionalRegexMatch extends RegexMatchValidator<undefined | null> {
-  private type: 'OptionalRegex' = 'OptionalRegex'
+  private validatorType: 'OptionalRegex' = 'OptionalRegex'
 
   public constructor(regex: RegExp) {
     super(regex, false)

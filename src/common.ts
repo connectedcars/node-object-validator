@@ -7,6 +7,7 @@ export function isValidType<T>(value: unknown, errors: Error[]): value is T {
 
 export abstract class ValidatorBase<T> {
   public schema?: ValidatorTypes | ObjectSchema
+  public type!: T
   protected codeGenId = 1
 
   public isValid(obj: unknown): obj is T {

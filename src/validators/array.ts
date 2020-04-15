@@ -55,7 +55,7 @@ export class ArrayValidator<T extends ValidatorTypes = ValidatorTypes, O = never
 }
 
 export class RequiredArray<T extends ValidatorTypes = ValidatorTypes> extends ArrayValidator<T> {
-  private type: 'RequiredArray' = 'RequiredArray'
+  private validatorType: 'RequiredArray' = 'RequiredArray'
 
   public constructor(schema: T, minLength = 0, maxLength = Number.MAX_SAFE_INTEGER) {
     super(schema, minLength, maxLength)
@@ -63,7 +63,7 @@ export class RequiredArray<T extends ValidatorTypes = ValidatorTypes> extends Ar
 }
 
 export class OptionalArray<T extends ValidatorTypes = ValidatorTypes> extends ArrayValidator<T, null | undefined> {
-  private type: 'OptionalArray' = 'OptionalArray'
+  private validatorType: 'OptionalArray' = 'OptionalArray'
 
   public constructor(schema: T, minLength = 0, maxLength = Number.MAX_SAFE_INTEGER) {
     super(schema, minLength, maxLength, false)

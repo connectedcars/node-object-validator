@@ -25,14 +25,14 @@ export class DateValidator<O = never> extends ValidatorBase<Date | O> {
 }
 
 export class RequiredDate extends DateValidator {
-  private type: 'RequiredDate' = 'RequiredDate'
+  private validatorType: 'RequiredDate' = 'RequiredDate'
   public constructor() {
     super()
   }
 }
 
 export class OptionalDate extends DateValidator<null | undefined> {
-  private type: 'OptionalDate' = 'OptionalDate'
+  private validatorType: 'OptionalDate' = 'OptionalDate'
   public constructor() {
     super(false)
   }

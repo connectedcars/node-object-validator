@@ -27,7 +27,7 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
 }
 
 export class RequiredExactString extends ExactStringValidator {
-  private type: 'RequiredExactString' = 'RequiredExactString'
+  private validatorType: 'RequiredExactString' = 'RequiredExactString'
 
   public constructor(expected: string) {
     super(expected, true)
@@ -35,7 +35,7 @@ export class RequiredExactString extends ExactStringValidator {
 }
 
 export class OptionalExactString extends ExactStringValidator<undefined | null> {
-  private type: 'OptionalExactString' = 'OptionalExactString'
+  private validatorType: 'OptionalExactString' = 'OptionalExactString'
 
   public constructor(expected: string) {
     super(expected, false)

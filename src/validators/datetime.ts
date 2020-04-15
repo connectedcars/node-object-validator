@@ -32,14 +32,14 @@ export class DateTimeValidator<O = never> extends ValidatorBase<string | O> {
 }
 
 export class RequiredDateTime extends DateTimeValidator {
-  private type: 'RequiredDateTime' = 'RequiredDateTime'
+  private validatorType: 'RequiredDateTime' = 'RequiredDateTime'
   public constructor() {
     super()
   }
 }
 
 export class OptionalDateTime extends DateTimeValidator<undefined | null> {
-  private type: 'OptionalDateTime' = 'OptionalDateTime'
+  private validatorType: 'OptionalDateTime' = 'OptionalDateTime'
   public constructor() {
     super(false)
   }

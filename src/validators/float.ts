@@ -37,7 +37,7 @@ export class FloatValidator<O = never> extends ValidatorBase<number | O> {
 }
 
 export class RequiredFloat extends FloatValidator {
-  private type: 'RequiredFloat' = 'RequiredFloat'
+  private validatorType: 'RequiredFloat' = 'RequiredFloat'
 
   public constructor(min = 0, max = Number.MAX_SAFE_INTEGER) {
     super(min, max)
@@ -45,7 +45,7 @@ export class RequiredFloat extends FloatValidator {
 }
 
 export class OptionalFloat extends FloatValidator<undefined | null> {
-  private type: 'OptionalFloat' = 'OptionalFloat'
+  private validatorType: 'OptionalFloat' = 'OptionalFloat'
 
   public constructor(min = 0, max = Number.MAX_SAFE_INTEGER) {
     super(min, max, false)

@@ -53,7 +53,7 @@ describe('Object', () => {
     })
 
     it('should export the correct type and compile', () => {
-      const itShouldAllowOptionalParameters: typeof objectValidator.schemaType = {
+      const itShouldAllowOptionalParameters: typeof objectValidator.type = {
         int: 0,
         optionalInt: 1,
         requiredObject: {
@@ -63,13 +63,13 @@ describe('Object', () => {
         optionalArrayArray: [[0]]
       }
 
-      const itShouldCastIntToNumber: AssertEqual<typeof objectValidator.schemaType.int, number> = true
+      const itShouldCastIntToNumber: AssertEqual<typeof objectValidator.type.int, number> = true
       const itShouldCastOptionalIntToNumberOrUndefined: AssertEqual<
-        typeof objectValidator.schemaType.optionalInt,
+        typeof objectValidator.type.optionalInt,
         number | undefined
       > = true
       const itShouldCastOptionalArrayToNumberArrayOrUndefined: AssertEqual<
-        typeof objectValidator.schemaType.optionalArray,
+        typeof objectValidator.type.optionalArray,
         number[] | undefined
       > = true
     })
