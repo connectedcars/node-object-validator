@@ -5,6 +5,8 @@ export function isValidType<T>(value: unknown, errors: Error[]): value is T {
   return errors.length === 0
 }
 
+export type CodeGenResult = [string[], string[], { [key: string]: unknown }]
+
 export abstract class ValidatorBase<T> {
   public schema?: ValidatorTypes | ObjectSchema
   public type!: T
@@ -35,21 +37,17 @@ export abstract class ValidatorBase<T> {
       return this.codeGenId++
     },
     context?: ValidationErrorContext
-  ): [string[], string[]] {
+  ): CodeGenResult {
     const validatorName = `validator${id()}`
-    const sLines = [`let ${validatorName} = ${validatorRef}`]
-    const vLines = [
+    const declarations = [`let ${validatorName} = ${validatorRef}`]
+    const code = [
       `errors.push(...${validatorName}.validate(${valueRef}` + (context ? `, ${JSON.stringify(context)}))` : '))')
     ]
-    return [vLines, sLines]
+    return [code, declarations, {}]
   }
 
   public optimize(): (value: unknown) => Error[] {
-    const [code, declarations] = this.codeGen('obj', 'schema')
-    const imports = {
-      NotObjectError: NotObjectError,
-      RequiredError: RequiredError
-    }
+    const [code, declarations, imports] = this.codeGen('obj', 'schema')
     const functionBody = [
       ...Object.keys(imports).map(i => `const ${i} = imports['${i}']`),
       ...declarations,

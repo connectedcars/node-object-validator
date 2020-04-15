@@ -1,4 +1,4 @@
-import { ValidatorBase } from '../common'
+import { CodeGenResult, ValidatorBase } from '../common'
 import { NotObjectError, RequiredError, ValidationErrorContext } from '../errors'
 import { ObjectSchema, SchemaToType } from '../types'
 
@@ -64,12 +64,16 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
       return this.codeGenId++
     },
     context?: ValidationErrorContext
-  ): [string[], string[]] {
+  ): CodeGenResult {
     const objValueRef = `objValue${id()}`
     const schemaRef = `scheme${id()}`
-    const sLines = [`const ${schemaRef} = ${validatorRef}.schema`]
+    let imports: { [key: string]: unknown } = {
+      NotObjectError: NotObjectError,
+      RequiredError: RequiredError
+    }
+    const declarations = [`const ${schemaRef} = ${validatorRef}.schema`]
     // prettier-ignore
-    const vLines = [
+    const code = [
       `const ${objValueRef} = ${valueRef}`,
       `if (${objValueRef} != null) {`,
       `  if (typeof ${objValueRef} === 'object'){`
@@ -77,14 +81,20 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
     for (const key of Object.keys(this.schema)) {
       const validator = this.schema[key]
       const propName = context?.key ? `${context.key}['${key}']` : key
-      const [propVLines, propSLines] = validator.codeGen(`${objValueRef}['${key}']`, `${schemaRef}['${key}']`, id, {
-        key: propName
-      })
-      sLines.push(...propSLines)
-      vLines.push(...propVLines.map(l => `    ${l}`))
+      const [propDeclarations, propCode, propImports] = validator.codeGen(
+        `${objValueRef}['${key}']`,
+        `${schemaRef}['${key}']`,
+        id,
+        {
+          key: propName
+        }
+      )
+      imports = { ...imports, propImports }
+      declarations.push(...propCode)
+      code.push(...propDeclarations.map(l => `    ${l}`))
     }
     // prettier-ignore
-    vLines.push(
+    code.push(
       `  } else {`,
       `    errors.push(new NotObjectError(\`Must be an object (received "\${${valueRef}}")\`` +
         (context ? `, ${JSON.stringify(context)}))` : '))'),
@@ -95,7 +105,7 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
       '}'
     )
 
-    return [vLines, sLines]
+    return [code, declarations, imports]
   }
 }
 
