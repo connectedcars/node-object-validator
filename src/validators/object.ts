@@ -1,4 +1,4 @@
-import { CodeGenResult, ValidatorBase } from '../common'
+import { CodeGenResult, ValidatorBase, ValidatorOptions } from '../common'
 import { NotObjectError, RequiredError, ValidationErrorContext } from '../errors'
 import { ObjectSchema, SchemaToType } from '../types'
 
@@ -24,24 +24,13 @@ export function validateObject<T extends ObjectSchema = ObjectSchema, O = never>
   return errors
 }
 
-/**
- * @typedef ObjectValidatorOptions
- * @property {boolean} [optimize=true] Generate an optimized function for doing the validation (default: true)
- */
-export type ObjectValidatorOptions = {
-  /**
-   * Generate an optimized function for doing the validation (default: false)
-   */
-  optimize?: boolean
-}
-
 export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> extends ValidatorBase<
   SchemaToType<T> | O
 > {
   public schema: T
   private required: boolean
 
-  public constructor(schema: T, options?: ObjectValidatorOptions, required = true) {
+  public constructor(schema: T, options?: ValidatorOptions, required = true) {
     super()
     this.schema = schema
     this.required = required

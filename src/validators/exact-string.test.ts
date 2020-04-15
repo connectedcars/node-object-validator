@@ -1,5 +1,5 @@
 import { NotExactStringError, RequiredError } from '../errors'
-import { OptionalExactString, RequiredExactString, validateExactString } from './exact-string'
+import { ExactStringValidator, OptionalExactString, RequiredExactString, validateExactString } from './exact-string'
 
 describe('validateExactString', () => {
   describe('validateExactString', () => {
@@ -32,6 +32,16 @@ describe('validateExactString', () => {
       expect(validateExactString((0 as unknown) as string, '0')).toStrictEqual([
         new NotExactStringError('Must strictly equal "0" (received "0")')
       ])
+    })
+  })
+
+  describe('ExactStringValidator', () => {
+    it('should generate code for validation and give same result', () => {
+      const validator = new ExactStringValidator('MyString', { optimize: true })
+      const str = validator.validate.toString()
+      expect(str).toMatch(/generatedFunction = true/)
+      const errors = validator.validate('MyString')
+      expect(errors).toEqual([])
     })
   })
 

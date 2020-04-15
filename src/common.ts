@@ -7,6 +7,17 @@ export function isValidType<T>(value: unknown, errors: Error[]): value is T {
 
 export type CodeGenResult = [string[], string[], { [key: string]: unknown }]
 
+/**
+ * @typedef ValidatorOptions
+ * @property {boolean} [optimize=true] Generate an optimized function for doing the validation (default: true)
+ */
+export type ValidatorOptions = {
+  /**
+   * Generate an optimized function for doing the validation (default: false)
+   */
+  optimize?: boolean
+}
+
 export abstract class ValidatorBase<T> {
   public schema?: ValidatorTypes | ObjectSchema
   public type!: T
@@ -47,11 +58,11 @@ export abstract class ValidatorBase<T> {
   }
 
   public optimize(): (value: unknown) => Error[] {
-    const [code, declarations, imports] = this.codeGen('obj', 'schema')
+    const [code, declarations, imports] = this.codeGen('value', 'schema')
     const functionBody = [
       ...Object.keys(imports).map(i => `const ${i} = imports['${i}']`),
       ...declarations,
-      `return (obj) => {`,
+      `return (value) => {`,
       `  const generatedFunction = true`,
       `  const errors = []`,
       ...code.map(l => `  ${l}`),
