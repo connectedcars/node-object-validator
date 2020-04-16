@@ -2,34 +2,35 @@ export interface ValidationErrorContext {
   key: string
 }
 
-export class ValidationError extends Error {
+export class ValidationFailure {
   public key?: string
+  public message: string
   public constructor(message: string, context?: ValidationErrorContext) {
     if (context) {
       message = `Field '${context.key}' ${message.charAt(0).toLowerCase() + message.slice(1)}`
     }
-    super(message)
+    this.message = message
     this.key = context?.key
   }
 }
 
 export class ValidationsError extends Error {
-  public errors: Error[]
-  public constructor(message: string, errors: Error[]) {
+  public errors: ValidationFailure[]
+  public constructor(message: string, errors: ValidationFailure[]) {
     super(message)
     this.errors = errors
   }
 }
 
-export class RequiredError extends ValidationError {}
-export class NotStringError extends ValidationError {}
-export class WrongLengthError extends ValidationError {}
-export class NotDateError extends ValidationError {}
-export class NotRfc3339Error extends ValidationError {}
-export class NotExactStringError extends ValidationError {}
-export class NotFloatError extends ValidationError {}
-export class NotIntegerError extends ValidationError {}
-export class NotArrayError extends ValidationError {}
-export class NotObjectError extends ValidationError {}
-export class DoesNotMatchRegexError extends ValidationError {}
-export class OutOfRangeError extends ValidationError {}
+export class RequiredFail extends ValidationFailure {}
+export class NotStringFail extends ValidationFailure {}
+export class WrongLengthFail extends ValidationFailure {}
+export class NotDateFail extends ValidationFailure {}
+export class NotRfc3339Fail extends ValidationFailure {}
+export class NotExactStringFail extends ValidationFailure {}
+export class NotFloatFail extends ValidationFailure {}
+export class NotIntegerFail extends ValidationFailure {}
+export class NotArrayFail extends ValidationFailure {}
+export class NotObjectFail extends ValidationFailure {}
+export class DoesNotMatchRegexFail extends ValidationFailure {}
+export class OutOfRangeFail extends ValidationFailure {}

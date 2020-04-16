@@ -1,4 +1,4 @@
-import { RequiredError } from '../errors'
+import { RequiredFail } from '../errors'
 import { OptionalArray, RequiredArray } from './array'
 import { RequiredObject } from './object'
 
@@ -11,8 +11,8 @@ describe('Array', () => {
     it('accepts empty value', function() {
       // TODO: Support multidimensional [{ .Scheme }, RequiredString(), etc. ]
       const validator = new RequiredArray(new RequiredObject({}))
-      expect(validator.validate(null)).toStrictEqual([new RequiredError('Is required')])
-      expect(validator.validate(undefined)).toStrictEqual([new RequiredError('Is required')])
+      expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
+      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])
     })
   })
 

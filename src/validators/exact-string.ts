@@ -1,9 +1,13 @@
 import { CodeGenResult, ValidatorBase, ValidatorOptions } from '../common'
-import { NotExactStringError, RequiredError, ValidationErrorContext } from '../errors'
+import { NotExactStringFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
 
-export function validateExactString(value: unknown, expected: string, context?: ValidationErrorContext): Error[] {
+export function validateExactString(
+  value: unknown,
+  expected: string,
+  context?: ValidationErrorContext
+): ValidationFailure[] {
   if (value !== expected) {
-    return [new NotExactStringError(`Must strictly equal "${expected}" (received "${value}")`, context)]
+    return [new NotExactStringFail(`Must strictly equal "${expected}" (received "${value}")`, context)]
   }
   return []
 }
@@ -21,9 +25,9 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
     }
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
+  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
     if (value == null) {
-      return this.required ? [new RequiredError(`Is required`, context)] : []
+      return this.required ? [new RequiredFail(`Is required`, context)] : []
     }
     return validateExactString(value, this.expected, context)
   }
@@ -55,8 +59,8 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
     ]
     return [
       {
-        NotExactStringError: NotExactStringError,
-        RequiredError: RequiredError
+        NotExactStringError: NotExactStringFail,
+        RequiredError: RequiredFail
       },
       declarations,
       code

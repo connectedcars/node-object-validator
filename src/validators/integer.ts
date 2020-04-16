@@ -1,17 +1,17 @@
 import { ValidatorBase } from '../common'
-import { NotIntegerError, OutOfRangeError, RequiredError, ValidationErrorContext } from '../errors'
+import { NotIntegerFail, OutOfRangeFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
 
 export function validateInteger(
   value: unknown,
   min = 0,
   max = Number.MAX_SAFE_INTEGER,
   context?: ValidationErrorContext
-): Error[] {
+): ValidationFailure[] {
   if (typeof value !== 'number' || !Number.isInteger(value)) {
-    return [new NotIntegerError(`Must be an integer (received "${value}")`, context)]
+    return [new NotIntegerFail(`Must be an integer (received "${value}")`, context)]
   }
   if (value < min || value > max) {
-    return [new OutOfRangeError(`Must be between ${min} and ${max} (received "${value}")`, context)]
+    return [new OutOfRangeFail(`Must be between ${min} and ${max} (received "${value}")`, context)]
   }
   return []
 }
@@ -28,9 +28,9 @@ export class IntegerValidator<O = never> extends ValidatorBase<number | O> {
     this.required = required
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
+  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
     if (value == null) {
-      return this.required ? [new RequiredError(`Is required`, context)] : []
+      return this.required ? [new RequiredFail(`Is required`, context)] : []
     }
     return validateInteger(value, this.min, this.max, context)
   }

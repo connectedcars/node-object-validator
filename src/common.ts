@@ -1,7 +1,7 @@
-import { NotObjectError, RequiredError, ValidationErrorContext, ValidationsError } from './errors'
+import { ValidationErrorContext, ValidationFailure, ValidationsError } from './errors'
 import { ObjectSchema, ValidatorTypes } from './types'
 
-export function isValidType<T>(value: unknown, errors: Error[]): value is T {
+export function isValidType<T>(value: unknown, errors: ValidationFailure[]): value is T {
   return errors.length === 0
 }
 
@@ -28,7 +28,7 @@ export abstract class ValidatorBase<T> {
     return errors.length === 0
   }
 
-  public isType(obj: unknown, errors: Error[]): obj is T {
+  public isType(obj: unknown, errors: ValidationFailure[]): obj is T {
     return errors.length === 0
   }
 
@@ -75,5 +75,5 @@ export abstract class ValidatorBase<T> {
     return validateFunction
   }
 
-  public abstract validate(value: unknown, context?: ValidationErrorContext): Error[]
+  public abstract validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[]
 }

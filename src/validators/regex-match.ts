@@ -1,14 +1,18 @@
 import { isValidType, ValidatorBase } from '../common'
-import { DoesNotMatchRegexError, RequiredError, ValidationErrorContext } from '../errors'
+import { DoesNotMatchRegexFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
 import { validateString } from './string'
 
-export function validateRegexMatch(value: unknown, regex: RegExp, context?: ValidationErrorContext): Error[] {
+export function validateRegexMatch(
+  value: unknown,
+  regex: RegExp,
+  context?: ValidationErrorContext
+): ValidationFailure[] {
   const stringError = validateString(value, 0, Number.MAX_SAFE_INTEGER, context)
   if (!isValidType<string>(value, stringError)) {
     return stringError
   }
   if (!value.match(regex)) {
-    return [new DoesNotMatchRegexError(`Did not match '${regex}' (received "${value}")`, context)]
+    return [new DoesNotMatchRegexFail(`Did not match '${regex}' (received "${value}")`, context)]
   }
   return []
 }
@@ -23,9 +27,9 @@ export class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
     this.required = required
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
+  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
     if (value == null) {
-      return this.required ? [new RequiredError(`Is required`, context)] : []
+      return this.required ? [new RequiredFail(`Is required`, context)] : []
     }
     return validateRegexMatch(value, this.regex, context)
   }

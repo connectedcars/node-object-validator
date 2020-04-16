@@ -1,18 +1,18 @@
 import { ValidatorBase } from '../common'
-import { NotStringError, RequiredError, ValidationErrorContext, WrongLengthError } from '../errors'
+import { NotStringFail, RequiredFail, ValidationErrorContext, ValidationFailure, WrongLengthFail } from '../errors'
 
 export function validateString(
   value: unknown,
   minLength = 0,
   maxLength: number = Number.MAX_SAFE_INTEGER,
   context?: ValidationErrorContext
-): Error[] {
+): ValidationFailure[] {
   if (typeof value !== 'string') {
-    return [new NotStringError(`Must be a string (received "${value}")`, context)]
+    return [new NotStringFail(`Must be a string (received "${value}")`, context)]
   }
   if ((minLength !== 0 && value.length < minLength) || value.length > maxLength) {
     return [
-      new WrongLengthError(
+      new WrongLengthFail(
         `Must contain between ${minLength} and ${maxLength} characters (received "${value}")`,
         context
       )
@@ -33,9 +33,9 @@ export class StringValidator<O = never> extends ValidatorBase<string | O> {
     this.required = required
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
+  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
     if (value == null) {
-      return this.required ? [new RequiredError(`Is required`, context)] : []
+      return this.required ? [new RequiredFail(`Is required`, context)] : []
     }
     return validateString(value, this.minLength, this.maxLength, context)
   }

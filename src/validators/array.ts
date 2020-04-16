@@ -1,5 +1,5 @@
 import { ValidatorBase } from '../common'
-import { NotArrayError, RequiredError, ValidationErrorContext, WrongLengthError } from '../errors'
+import { NotArrayFail, RequiredFail, ValidationErrorContext, ValidationFailure, WrongLengthFail } from '../errors'
 import { SchemaToType, ValidatorTypes } from '../types'
 
 export function validateArray<T extends ValidatorTypes = ValidatorTypes, O = never>(
@@ -8,16 +8,13 @@ export function validateArray<T extends ValidatorTypes = ValidatorTypes, O = nev
   minLength = 0,
   maxLength = Number.MAX_SAFE_INTEGER,
   context?: ValidationErrorContext
-): Error[] {
+): ValidationFailure[] {
   if (!Array.isArray(value)) {
-    return [new NotArrayError(`Must be an array (received "${value}")`, context)]
+    return [new NotArrayFail(`Must be an array (received "${value}")`, context)]
   }
   if ((minLength !== 0 && value.length < minLength) || value.length > maxLength) {
     return [
-      new WrongLengthError(
-        `Must contain between ${minLength} and ${maxLength} entries (found ${value.length})`,
-        context
-      )
+      new WrongLengthFail(`Must contain between ${minLength} and ${maxLength} entries (found ${value.length})`, context)
     ]
   }
   const errors = []
@@ -44,9 +41,9 @@ export class ArrayValidator<T extends ValidatorTypes = ValidatorTypes, O = never
     this.maxLength = maxLength
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
+  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
     if (value == null) {
-      return this.required ? [new RequiredError(`Is required`, context)] : []
+      return this.required ? [new RequiredFail(`Is required`, context)] : []
     }
     return validateArray(this, value, this.minLength, this.maxLength, context)
   }

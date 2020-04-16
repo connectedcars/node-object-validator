@@ -1,5 +1,5 @@
 import { CodeGenResult, ValidatorBase, ValidatorOptions } from '../common'
-import { NotObjectError, RequiredError, ValidationErrorContext } from '../errors'
+import { NotObjectFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
 import { ObjectSchema, SchemaToType } from '../types'
 
 export function isObject(value: unknown): value is { [key: string]: unknown } {
@@ -10,10 +10,10 @@ export function validateObject<T extends ObjectSchema = ObjectSchema, O = never>
   schema: RequiredObject<T> | OptionalObject<T> | ObjectValidator<T, O>,
   value: unknown,
   context?: ValidationErrorContext
-): Error[] {
-  const errors: Error[] = []
+): ValidationFailure[] {
+  const errors: ValidationFailure[] = []
   if (!isObject(value)) {
-    errors.push(new NotObjectError(`Must be an object (received "${value}")`, context))
+    errors.push(new NotObjectFail(`Must be an object (received "${value}")`, context))
     return errors
   }
   for (const key of Object.keys(schema.schema)) {
@@ -39,9 +39,9 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
     }
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
+  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
     if (value == null) {
-      return this.required ? [new RequiredError(`Is required`, context)] : []
+      return this.required ? [new RequiredFail(`Is required`, context)] : []
     }
     return validateObject(this, value, context)
   }
@@ -57,8 +57,8 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
     const objValueRef = `objValue${id()}`
     const schemaRef = `scheme${id()}`
     let imports: { [key: string]: unknown } = {
-      NotObjectError: NotObjectError,
-      RequiredError: RequiredError
+      NotObjectError: NotObjectFail,
+      RequiredError: RequiredFail
     }
     const declarations = [`const ${schemaRef} = ${validatorRef}.schema`]
     // prettier-ignore

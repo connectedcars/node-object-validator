@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { RequiredError } from '../errors'
+import { NotIntegerFail, RequiredFail } from '../errors'
 import { AssertEqual } from '../types'
 import { OptionalArray, RequiredArray } from './array'
 import { OptionalInteger, RequiredInteger } from './integer'
 import { ObjectValidator, OptionalObject, RequiredObject } from './object'
 
 describe('Object', () => {
-  describe('validateObject', () => {})
+  describe('validateObject', () => {
+    // TODO:
+  })
 
   describe('ObjectValidator', () => {
     const objectValidator = new ObjectValidator(
@@ -93,8 +95,8 @@ describe('Object', () => {
 
     it('accepts empty value', function() {
       const validator = new RequiredObject({})
-      expect(validator.validate(null)).toStrictEqual([new RequiredError('Is required')])
-      expect(validator.validate(undefined as unknown)).toStrictEqual([new RequiredError('Is required')])
+      expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
+      expect(validator.validate(undefined as unknown)).toStrictEqual([new RequiredFail('Is required')])
     })
 
     it('validates correct value', () => {
@@ -122,9 +124,15 @@ describe('Object', () => {
         optionalArrayArray: [1]
       }
       expect(objectValidator.validate(unknownValue)).toEqual([
-        new Error(`Field 'requiredObject['optionalInt']' must be an integer (received "1")`),
-        new Error(`Field 'optionalArray[0]' must be an integer (received "1")`),
-        new Error(`Field 'optionalArrayArray[0]' must be an array (received "1")`)
+        new NotIntegerFail(`Must be an integer (received "1")`, {
+          key: "requiredObject['optionalInt']"
+        }),
+        new NotIntegerFail(`Must be an integer (received "1")`, {
+          key: 'optionalArray[0]'
+        }),
+        new NotIntegerFail(`Must be an array (received "1")`, {
+          key: 'optionalArrayArray[0]'
+        })
       ])
     })
 

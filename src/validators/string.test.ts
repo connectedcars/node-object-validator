@@ -1,12 +1,12 @@
-import { NotStringError, RequiredError, WrongLengthError } from '../errors'
+import { NotStringFail, RequiredFail, WrongLengthFail } from '../errors'
 import { OptionalString, RequiredString, validateString } from './string'
 
 describe('String', () => {
   describe('RequiredString', () => {
     it('requires empty value', function() {
       const validator = new RequiredString()
-      expect(validator.validate(null)).toStrictEqual([new RequiredError('Is required')])
-      expect(validator.validate(undefined)).toStrictEqual([new RequiredError('Is required')])
+      expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
+      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])
     })
   })
 
@@ -23,37 +23,37 @@ describe('String', () => {
       expect(validateString('foo')).toStrictEqual([])
       expect(validateString('')).toStrictEqual([])
       expect(validateString((1 as unknown) as string)).toStrictEqual([
-        new NotStringError('Must be a string (received "1")')
+        new NotStringFail('Must be a string (received "1")')
       ])
       expect(validateString(({} as unknown) as string)).toStrictEqual([
-        new NotStringError('Must be a string (received "[object Object]")')
+        new NotStringFail('Must be a string (received "[object Object]")')
       ])
       expect(validateString(([] as unknown) as string)).toStrictEqual([
-        new NotStringError('Must be a string (received "")')
+        new NotStringFail('Must be a string (received "")')
       ])
       expect(validateString((true as unknown) as string)).toStrictEqual([
-        new NotStringError('Must be a string (received "true")')
+        new NotStringFail('Must be a string (received "true")')
       ])
       expect(validateString((false as unknown) as string)).toStrictEqual([
-        new NotStringError('Must be a string (received "false")')
+        new NotStringFail('Must be a string (received "false")')
       ])
     })
 
     it('requires min value length', () => {
       expect(validateString('', 5, 500)).toStrictEqual([
-        new WrongLengthError('Must contain between 5 and 500 characters (received "")')
+        new WrongLengthFail('Must contain between 5 and 500 characters (received "")')
       ])
       expect(validateString('a', 5, 500)).toStrictEqual([
-        new WrongLengthError('Must contain between 5 and 500 characters (received "a")')
+        new WrongLengthFail('Must contain between 5 and 500 characters (received "a")')
       ])
       expect(validateString('ab', 5, 500)).toStrictEqual([
-        new WrongLengthError('Must contain between 5 and 500 characters (received "ab")')
+        new WrongLengthFail('Must contain between 5 and 500 characters (received "ab")')
       ])
       expect(validateString('abc', 5, 500)).toStrictEqual([
-        new WrongLengthError('Must contain between 5 and 500 characters (received "abc")')
+        new WrongLengthFail('Must contain between 5 and 500 characters (received "abc")')
       ])
       expect(validateString('abcd', 5, 500)).toStrictEqual([
-        new WrongLengthError('Must contain between 5 and 500 characters (received "abcd")')
+        new WrongLengthFail('Must contain between 5 and 500 characters (received "abcd")')
       ])
       expect(validateString('abcde', 5, 500)).toStrictEqual([])
       expect(validateString('abcdef', 5, 500)).toStrictEqual([])
@@ -68,13 +68,13 @@ describe('String', () => {
       expect(validateString('abcd', 0, 5)).toStrictEqual([])
       expect(validateString('abcde', 0, 5)).toStrictEqual([])
       expect(validateString('abcdef', 0, 5)).toStrictEqual([
-        new WrongLengthError('Must contain between 0 and 5 characters (received "abcdef")')
+        new WrongLengthFail('Must contain between 0 and 5 characters (received "abcdef")')
       ])
       expect(validateString('abcdefg', 0, 5)).toStrictEqual([
-        new WrongLengthError('Must contain between 0 and 5 characters (received "abcdefg")')
+        new WrongLengthFail('Must contain between 0 and 5 characters (received "abcdefg")')
       ])
       expect(validateString('this is a long string', 0, 5)).toStrictEqual([
-        new WrongLengthError('Must contain between 0 and 5 characters (received "this is a long string")')
+        new WrongLengthFail('Must contain between 0 and 5 characters (received "this is a long string")')
       ])
     })
   })

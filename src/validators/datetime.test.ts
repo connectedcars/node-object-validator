@@ -1,4 +1,4 @@
-import { NotRfc3339Error, RequiredError } from '../errors'
+import { NotRfc3339Fail, RequiredFail } from '../errors'
 import { OptionalDateTime, RequiredDateTime, validateDateTime } from './datetime'
 
 describe('DateTime', () => {
@@ -9,16 +9,16 @@ describe('DateTime', () => {
       expect(validateDateTime('2018-08-06T13:37:00+00:00')).toStrictEqual([])
       expect(validateDateTime('2018-08-06T13:37:00.000+00:00')).toStrictEqual([])
       expect(validateDateTime('')).toStrictEqual([
-        new NotRfc3339Error('Must be formatted as an RFC 3339 timestamp (received "")')
+        new NotRfc3339Fail('Must be formatted as an RFC 3339 timestamp (received "")')
       ])
       expect(validateDateTime('2018-08-06')).toStrictEqual([
-        new NotRfc3339Error('Must be formatted as an RFC 3339 timestamp (received "2018-08-06")')
+        new NotRfc3339Fail('Must be formatted as an RFC 3339 timestamp (received "2018-08-06")')
       ])
       expect(validateDateTime('2018-08-06T13:37:00')).toStrictEqual([
-        new NotRfc3339Error('Must be formatted as an RFC 3339 timestamp (received "2018-08-06T13:37:00")')
+        new NotRfc3339Fail('Must be formatted as an RFC 3339 timestamp (received "2018-08-06T13:37:00")')
       ])
       expect(validateDateTime('13:37:00')).toStrictEqual([
-        new NotRfc3339Error('Must be formatted as an RFC 3339 timestamp (received "13:37:00")')
+        new NotRfc3339Fail('Must be formatted as an RFC 3339 timestamp (received "13:37:00")')
       ])
     })
   })
@@ -26,8 +26,8 @@ describe('DateTime', () => {
   describe('RequiredDateTime', () => {
     it('requires empty value', function() {
       const validator = new RequiredDateTime()
-      expect(validator.validate(null)).toStrictEqual([new RequiredError('Is required')])
-      expect(validator.validate(undefined)).toStrictEqual([new RequiredError('Is required')])
+      expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
+      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])
     })
   })
 

@@ -1,9 +1,9 @@
 import { ValidatorBase } from '../common'
-import { NotDateError, RequiredError, ValidationErrorContext } from '../errors'
+import { NotDateFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
 
-export function validateDate(value: unknown, context?: ValidationErrorContext): Error[] {
+export function validateDate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
   if (!(value instanceof Date)) {
-    return [new NotDateError(`Must be a Date object`, context)]
+    return [new NotDateFail(`Must be a Date object`, context)]
   }
   return []
 }
@@ -16,9 +16,9 @@ export class DateValidator<O = never> extends ValidatorBase<Date | O> {
     this.required = required
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): Error[] {
+  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
     if (value == null) {
-      return this.required ? [new RequiredError(`Is required`, context)] : []
+      return this.required ? [new RequiredFail(`Is required`, context)] : []
     }
     return validateDate(value, context)
   }
