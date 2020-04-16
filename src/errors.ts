@@ -4,12 +4,15 @@ export interface ValidationErrorContext {
 
 export class ValidationFailure {
   public key?: string
-  public message: string
+  public get message(): string {
+    return this.key
+      ? `Field '${this.key}' ${this._message.charAt(0).toLowerCase() + this._message.slice(1)}`
+      : this._message
+  }
+  private _message: string
+
   public constructor(message: string, context?: ValidationErrorContext) {
-    if (context) {
-      message = `Field '${context.key}' ${message.charAt(0).toLowerCase() + message.slice(1)}`
-    }
-    this.message = message
+    this._message = message
     this.key = context?.key
   }
 }

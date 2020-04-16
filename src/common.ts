@@ -57,7 +57,7 @@ export abstract class ValidatorBase<T> {
     return [{}, declarations, code]
   }
 
-  public optimize(): (value: unknown) => Error[] {
+  public optimize(): (value: unknown) => ValidationFailure[] {
     const [imports, declarations, code] = this.codeGen('value', 'schema')
     const functionBody = [
       ...Object.keys(imports).map(i => `const ${i} = imports['${i}']`),
