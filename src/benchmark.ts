@@ -22,8 +22,8 @@ const schema = {
     latitude: new RequiredFloat(-90, 90),
     longitude: new RequiredFloat(-180, 180),
     accuracy: new RequiredInteger(0, 20)
-  })
-  /*positions: new RequiredArray(
+  }),
+  positions: new RequiredArray(
     new RequiredObject({
       latitude: new RequiredFloat(-90, 90),
       longitude: new RequiredFloat(-180, 180),
@@ -31,7 +31,7 @@ const schema = {
     }),
     0,
     10
-  )*/
+  )
 }
 
 const gpsOdometerKm = new ObjectValidator(schema, { optimize: false })
@@ -78,9 +78,9 @@ const benchmarks: { [key: string]: unknown } = {
   }
 }
 
-const errors = gpsOdometerKm.validate(benchmarks['failureEarly'])
+const errors = gpsOdometerKm.validate(benchmarks['success'])
 console.log(errors)
-const errorsOptimized = gpsOdometerKmOptimized.validate(benchmarks['failureEarly'])
+const errorsOptimized = gpsOdometerKmOptimized.validate(benchmarks['success'])
 console.log(errorsOptimized)
 console.log(gpsOdometerKmOptimized.validate.toString())
 
