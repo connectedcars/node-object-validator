@@ -1,5 +1,5 @@
-import { NotRfc3339Fail, RequiredFail } from '../errors'
-import { OptionalDateTime, RequiredDateTime, validateDateTime } from './datetime'
+import { NotRfc3339Fail, RequiredFail, WrongLengthFail } from '../errors'
+import { DateTimeValidator, OptionalDateTime, RequiredDateTime, validateDateTime } from './datetime'
 
 describe('DateTime', () => {
   describe('validateDateTime', () => {
@@ -9,17 +9,27 @@ describe('DateTime', () => {
       expect(validateDateTime('2018-08-06T13:37:00+00:00')).toStrictEqual([])
       expect(validateDateTime('2018-08-06T13:37:00.000+00:00')).toStrictEqual([])
       expect(validateDateTime('')).toStrictEqual([
-        new NotRfc3339Fail('Must be formatted as an RFC 3339 timestamp (received "")')
+        new WrongLengthFail('Must contain between 20 and 29 characters (received "")')
       ])
       expect(validateDateTime('2018-08-06')).toStrictEqual([
-        new NotRfc3339Fail('Must be formatted as an RFC 3339 timestamp (received "2018-08-06")')
+        new WrongLengthFail('Must contain between 20 and 29 characters (received "2018-08-06")')
       ])
       expect(validateDateTime('2018-08-06T13:37:00')).toStrictEqual([
-        new NotRfc3339Fail('Must be formatted as an RFC 3339 timestamp (received "2018-08-06T13:37:00")')
+        new WrongLengthFail('Must contain between 20 and 29 characters (received "2018-08-06T13:37:00")')
       ])
       expect(validateDateTime('13:37:00')).toStrictEqual([
-        new NotRfc3339Fail('Must be formatted as an RFC 3339 timestamp (received "13:37:00")')
+        new WrongLengthFail('Must contain between 20 and 29 characters (received "13:37:00")')
       ])
+    })
+  })
+
+  describe('StringValidator', () => {
+    it('1 should generate validation code and give same result', () => {
+      const validator = new DateTimeValidator({ optimize: true })
+      const str = validator.validate.toString()
+      expect(str).toMatch(/generatedFunction = true/)
+      const errors = validator.validate('2018-08-06T13:37:00Z')
+      expect(errors).toEqual([])
     })
   })
 

@@ -70,9 +70,13 @@ export abstract class ValidatorBase<T> {
       `}`
     ].join('\n')
 
-    const functionGenerator = new Function('imports', 'schema', functionBody)
-    const validateFunction = functionGenerator(imports, this)
-    return validateFunction
+    try {
+      const functionGenerator = new Function('imports', 'schema', functionBody)
+      const validateFunction = functionGenerator(imports, this)
+      return validateFunction
+    } catch (e) {
+      throw new Error(`Failed to compile optimized function(${e.message}):\n${functionBody}`)
+    }
   }
 
   public abstract validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[]

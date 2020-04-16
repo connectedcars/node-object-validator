@@ -1,7 +1,17 @@
 import { NotStringFail, RequiredFail, WrongLengthFail } from '../errors'
-import { OptionalString, RequiredString, validateString } from './string'
+import { OptionalString, RequiredString, StringValidator, validateString } from './string'
 
 describe('String', () => {
+  describe('StringValidator', () => {
+    it('should generate validation code and give same result', () => {
+      const validator = new StringValidator(1, 30, { optimize: true })
+      const str = validator.validate.toString()
+      expect(str).toMatch(/generatedFunction = true/)
+      const errors = validator.validate('MyString')
+      expect(errors).toEqual([])
+    })
+  })
+
   describe('RequiredString', () => {
     it('requires empty value', function() {
       const validator = new RequiredString()

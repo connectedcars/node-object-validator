@@ -1,4 +1,4 @@
-import { ValidatorBase } from '../common'
+import { CodeGenResult, ValidatorBase, ValidatorOptions } from '../common'
 import { NotStringFail, RequiredFail, ValidationErrorContext, ValidationFailure, WrongLengthFail } from '../errors'
 
 export function validateString(
@@ -26,11 +26,14 @@ export class StringValidator<O = never> extends ValidatorBase<string | O> {
   private maxLength: number
   private required: boolean
 
-  public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, required = true) {
+  public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions, required = true) {
     super()
     this.minLength = minLength
     this.maxLength = maxLength
     this.required = required
+    if (options?.optimize) {
+      this.validate = this.optimize()
+    }
   }
 
   public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
@@ -38,6 +41,44 @@ export class StringValidator<O = never> extends ValidatorBase<string | O> {
       return this.required ? [new RequiredFail(`Is required`, context)] : []
     }
     return validateString(value, this.minLength, this.maxLength, context)
+  }
+
+  public codeGen(
+    valueRef: string,
+    validatorRef: string,
+    id = () => {
+      return this.codeGenId++
+    },
+    context?: ValidationErrorContext
+  ): CodeGenResult {
+    const contextStr = context ? `, ${JSON.stringify(context)}` : ''
+    const localValueRef = `value${id()}`
+    const declarations: string[] = []
+    // prettier-ignore
+    const code: string[] = [
+      `const ${localValueRef} = ${valueRef}`,
+      `if (${localValueRef} != null) {`,
+      `  if (typeof ${localValueRef} === 'string') {`,
+      `    if (${this.minLength ? `${localValueRef}.length < ${this.minLength} || ` : '' }${localValueRef}.length > ${this.maxLength}) {`,
+      `      errors.push(new WrongLengthFail(\`Must contain between ${this.minLength} and ${this.maxLength} characters (received "\${${localValueRef}}")\`${contextStr}))`,
+      `    }`,
+      `  } else {`,
+      `    errors.push(new NotStringFail(\`Must be a string (received "\${${localValueRef}}")\`, context))`,
+      `  }`,
+      ...(this.required ? [
+        `} else {`,
+        `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
+        '}'
+    ]
+    return [
+      {
+        WrongLengthFail: WrongLengthFail,
+        NotStringFail: NotStringFail,
+        RequiredError: RequiredFail
+      },
+      declarations,
+      code
+    ]
   }
 }
 
@@ -53,7 +94,7 @@ export class OptionalString extends StringValidator<undefined | null> {
   private validatorType: 'OptionalString' = 'OptionalString'
 
   public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER) {
-    super(minLength, maxLength, false)
+    super(minLength, maxLength, {}, false)
   }
 }
 

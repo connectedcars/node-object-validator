@@ -18,8 +18,8 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
 
   public constructor(expected: string, options?: ValidatorOptions, required = true) {
     super()
-    this.required = required
     this.expected = expected
+    this.required = required
     if (options?.optimize) {
       this.validate = this.optimize()
     }
