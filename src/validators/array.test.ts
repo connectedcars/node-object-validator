@@ -1,10 +1,22 @@
 import { RequiredFail } from '../errors'
-import { OptionalArray, RequiredArray } from './array'
+import { ArrayValidator, OptionalArray, RequiredArray } from './array'
+import { RequiredInteger } from './integer'
 import { RequiredObject } from './object'
 
 describe('Array', () => {
   describe('validateArray', () => {
     // TODO: Write tests
+  })
+
+  describe('ArrayValidator', () => {
+    const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10, { optimize: true })
+
+    it('should generate code for validation and give same result', () => {
+      const str = arrayValidator.validate.toString()
+      expect(str).toMatch(/generatedFunction = true/)
+      const errors = arrayValidator.validate([1, 2, 4, 5])
+      expect(errors).toEqual([])
+    })
   })
 
   describe('RequiredArray', () => {

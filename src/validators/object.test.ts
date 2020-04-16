@@ -11,21 +11,21 @@ describe('Object', () => {
   })
 
   describe('ObjectValidator', () => {
-    const objectValidator = new ObjectValidator(
-      {
-        int: new RequiredInteger(1, 2),
-        optionalInt: new OptionalInteger(1, 2),
-        requiredObject: new RequiredObject({
-          int: new RequiredInteger(1, 2),
-          optionalInt: new OptionalInteger(1, 2)
-        }),
-        optionalArray: new OptionalArray(new RequiredInteger(1, 2)),
-        optionalArrayArray: new OptionalArray(new RequiredArray(new RequiredInteger(1, 2)))
-      },
-      { optimize: true }
-    )
-
     it('should generate code for validation and give same result', () => {
+      const objectValidator = new ObjectValidator(
+        {
+          int: new RequiredInteger(1, 2),
+          optionalInt: new OptionalInteger(1, 2),
+          requiredObject: new RequiredObject({
+            int: new RequiredInteger(1, 2),
+            optionalInt: new OptionalInteger(1, 2)
+          }),
+          optionalArray: new OptionalArray(new RequiredInteger(1, 2)),
+          optionalArrayArray: new OptionalArray(new RequiredArray(new RequiredInteger(1, 2)))
+        },
+        { optimize: true }
+      )
+
       const unknownValue: unknown = {
         int: 1,
         optionalInt: 1,
@@ -42,6 +42,17 @@ describe('Object', () => {
     })
 
     it('should cast type guard correctly for isValid', () => {
+      const objectValidator = new ObjectValidator({
+        int: new RequiredInteger(1, 2),
+        optionalInt: new OptionalInteger(1, 2),
+        requiredObject: new RequiredObject({
+          int: new RequiredInteger(1, 2),
+          optionalInt: new OptionalInteger(1, 2)
+        }),
+        optionalArray: new OptionalArray(new RequiredInteger(1, 2)),
+        optionalArrayArray: new OptionalArray(new RequiredArray(new RequiredInteger(1, 2)))
+      })
+
       const unknownValue: unknown = {
         int: 1,
         optionalInt: 1,

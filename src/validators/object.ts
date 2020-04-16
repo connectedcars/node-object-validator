@@ -54,6 +54,7 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
     },
     context?: ValidationErrorContext
   ): CodeGenResult {
+    const contextStr = context ? `, ${JSON.stringify(context)}` : ''
     const objValueRef = `objValue${id()}`
     const schemaRef = `scheme${id()}`
     let imports: { [key: string]: unknown } = {
@@ -85,12 +86,11 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
     // prettier-ignore
     code.push(
       `  } else {`,
-      `    errors.push(new NotObjectError(\`Must be an object (received "\${${valueRef}}")\`` +
-        (context ? `, ${JSON.stringify(context)}))` : '))'),
+      `    errors.push(new NotObjectError(\`Must be an object (received "\${${valueRef}}")\`${contextStr}))`,
       `  }`,
       ...(this.required ? [
       `} else {`,
-      `  errors.push(new RequiredError(\`Is required\``+ (context ? `, ${JSON.stringify(context)}))` : '))')] : []),
+      `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
       '}'
     )
 

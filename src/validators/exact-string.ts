@@ -43,8 +43,7 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
     const expectedStr = JSON.stringify(this.expected)
     const contextStr = context ? `, ${JSON.stringify(context)}` : ''
     const localValueRef = `value${id()}`
-    const localRequiredErrorRef = `requiredError${id()}`
-    const declarations = [`const ${localRequiredErrorRef} = new RequiredError(\`Is required\`${contextStr})`]
+    const declarations: string[] = []
     // prettier-ignore
     const code = [
       `const ${localValueRef} = ${valueRef}`,
@@ -54,7 +53,7 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
       `  }`,
       ...(this.required ? [
       `} else {`,
-      `  errors.push(${localRequiredErrorRef})`] : []),
+      `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
       '}'
     ]
     return [
