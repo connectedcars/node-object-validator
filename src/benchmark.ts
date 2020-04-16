@@ -1,7 +1,16 @@
-import { ObjectValidator, OptionalObject, RequiredArray, RequiredObject } from '.'
-import { RequiredDateTime, RequiredExactString, RequiredFloat, RequiredInteger, RequiredString } from '.'
+import {
+  ObjectValidator,
+  OptionalObject,
+  RequiredArray,
+  RequiredDateTime,
+  RequiredFloat,
+  RequiredInteger,
+  RequiredObject,
+  RequiredString
+} from '.'
+import { RequiredExactString } from '.'
 
-const OPERATIONS = 10000000
+const OPERATIONS = 1000000
 
 const schema = {
   type: new RequiredExactString('gps_odometer_km'),
@@ -13,8 +22,8 @@ const schema = {
     latitude: new RequiredFloat(-90, 90),
     longitude: new RequiredFloat(-180, 180),
     accuracy: new RequiredInteger(0, 20)
-  }),
-  positions: new RequiredArray(
+  })
+  /*positions: new RequiredArray(
     new RequiredObject({
       latitude: new RequiredFloat(-90, 90),
       longitude: new RequiredFloat(-180, 180),
@@ -22,7 +31,7 @@ const schema = {
     }),
     0,
     10
-  )
+  )*/
 }
 
 const gpsOdometerKm = new ObjectValidator(schema, { optimize: false })
@@ -69,8 +78,11 @@ const benchmarks: { [key: string]: unknown } = {
   }
 }
 
-const errors = gpsOdometerKm.validate(benchmarks['success'])
+const errors = gpsOdometerKm.validate(benchmarks['failureEarly'])
 console.log(errors)
+const errorsOptimized = gpsOdometerKmOptimized.validate(benchmarks['failureEarly'])
+console.log(errorsOptimized)
+console.log(gpsOdometerKmOptimized.validate.toString())
 
 function timeRun(cb: () => void, operations: number): [number, number] {
   const start = Date.now()
@@ -83,13 +95,24 @@ function timeRun(cb: () => void, operations: number): [number, number] {
 }
 
 for (const benchmark of Object.keys(benchmarks)) {
+  console.log(`Running benchmark ${benchmark}`)
   const obj = benchmarks[benchmark]
-  let [duration, ops] = timeRun(() => {
+
+  // Warmup
+  timeRun(() => {
+    gpsOdometerKm.validate(obj)
+  }, 100000)
+  console.log(`Warmup done`)
+
+  // Normal timing
+  const [normalDuration, normalOps] = timeRun(() => {
     gpsOdometerKm.validate(obj)
   }, OPERATIONS)
-  console.log(`${benchmark} in ${duration / 1000} s (${ops} ops/s)`)
-  ;[duration, ops] = timeRun(() => {
+  console.log(`${benchmark} in ${normalDuration / 1000} s (${normalOps} ops/s)`)
+
+  // Optimized timing
+  const [optimizedDuration, optimizedOps] = timeRun(() => {
     gpsOdometerKmOptimized.validate(obj)
   }, OPERATIONS)
-  console.log(`${benchmark} optimized in ${duration / 1000} s (${ops} ops/s)`)
+  console.log(`${benchmark} optimized in ${optimizedDuration / 1000} s (${optimizedOps} ops/s)`)
 }
