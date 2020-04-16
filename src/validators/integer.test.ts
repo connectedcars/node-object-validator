@@ -1,5 +1,5 @@
 import { NotIntegerFail, OutOfRangeFail, RequiredFail } from '../errors'
-import { OptionalInteger, RequiredInteger, validateInteger } from './integer'
+import { IntegerValidator, OptionalInteger, RequiredInteger, validateInteger } from './integer'
 
 describe('Integer', () => {
   describe('validateInteger', () => {
@@ -43,6 +43,16 @@ describe('Integer', () => {
       expect(validateInteger(7, -500, 5)).toStrictEqual([
         new OutOfRangeFail('Must be between -500 and 5 (received "7")')
       ])
+    })
+  })
+
+  describe('IntegerValidator', () => {
+    it('should generate validation code and give same result', () => {
+      const validator = new IntegerValidator(1, 30, { optimize: true })
+      const str = validator.validate.toString()
+      expect(str).toMatch(/generatedFunction = true/)
+      const errors = validator.validate(10)
+      expect(errors).toEqual([])
     })
   })
 
