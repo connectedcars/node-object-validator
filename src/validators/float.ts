@@ -1,4 +1,4 @@
-import { ValidatorBase } from '../common'
+import { CodeGenResult, ValidatorBase, ValidatorOptions } from '../common'
 import { NotFloatFail, OutOfRangeFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
 
 export function validateFloat(
@@ -21,11 +21,14 @@ export class FloatValidator<O = never> extends ValidatorBase<number | O> {
   private max: number
   private required: boolean
 
-  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER, required = true) {
+  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions, required = true) {
     super()
     this.min = min
     this.max = max
     this.required = required
+    if (options?.optimize) {
+      this.validate = this.optimize()
+    }
   }
 
   public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
@@ -33,6 +36,44 @@ export class FloatValidator<O = never> extends ValidatorBase<number | O> {
       return this.required ? [new RequiredFail(`Is required`, context)] : []
     }
     return validateFloat(value, this.min, this.max, context)
+  }
+
+  public codeGen(
+    valueRef: string,
+    validatorRef: string,
+    id = () => {
+      return this.codeGenId++
+    },
+    context?: ValidationErrorContext
+  ): CodeGenResult {
+    const contextStr = context ? `, ${JSON.stringify(context)}` : ''
+    const localValueRef = `value${id()}`
+    const declarations: string[] = []
+    // prettier-ignore
+    const code: string[] = [
+      `const ${localValueRef} = ${valueRef}`,
+      `if (${localValueRef} != null) {`,
+      `  if (typeof ${localValueRef} === 'number' && !isNaN(${localValueRef} ) && isFinite(${localValueRef})) {`,
+      `    if (${localValueRef} < ${this.min} || ${localValueRef} > ${this.max}) {`,
+      `      errors.push(new OutOfRangeFail(\`Must be between ${this.min} and ${this.max} (received "\${${localValueRef}}")\`${contextStr}))`,
+      `    }`,
+      `  } else {`,
+      `    errors.push(new NotFloatFail(\`Must be a float (received "\${${localValueRef}}")\`${contextStr}))`,
+      `  }`,
+      ...(this.required ? [
+        `} else {`,
+        `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
+        '}'
+    ]
+    return [
+      {
+        OutOfRangeFail: OutOfRangeFail,
+        NotFloatFail: NotFloatFail,
+        RequiredError: RequiredFail
+      },
+      declarations,
+      code
+    ]
   }
 }
 
@@ -48,7 +89,7 @@ export class OptionalFloat extends FloatValidator<undefined | null> {
   private validatorType: 'OptionalFloat' = 'OptionalFloat'
 
   public constructor(min = 0, max = Number.MAX_SAFE_INTEGER) {
-    super(min, max, false)
+    super(min, max, {}, false)
   }
 }
 

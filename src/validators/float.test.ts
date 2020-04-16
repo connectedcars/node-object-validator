@@ -1,5 +1,5 @@
 import { NotFloatFail, OutOfRangeFail, RequiredFail } from '../errors'
-import { OptionalFloat, RequiredFloat, validateFloat } from './float'
+import { FloatValidator, OptionalFloat, RequiredFloat, validateFloat } from './float'
 
 describe('Float', () => {
   describe('validateFloat', () => {
@@ -60,6 +60,16 @@ describe('Float', () => {
       expect(validateFloat(0.7, -500, 0.5)).toStrictEqual([
         new OutOfRangeFail('Must be between -500 and 0.5 (received "0.7")')
       ])
+    })
+  })
+
+  describe('FloatValidator', () => {
+    it('should generate validation code and give same result', () => {
+      const validator = new FloatValidator(1, 2, { optimize: true })
+      const str = validator.validate.toString()
+      expect(str).toMatch(/generatedFunction = true/)
+      const errors = validator.validate(1.5)
+      expect(errors).toEqual([])
     })
   })
 
