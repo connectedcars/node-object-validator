@@ -1,5 +1,5 @@
 import { DoesNotMatchRegexFail, NotStringFail, RequiredFail } from '../errors'
-import { OptionalRegexMatch, RequiredRegexMatch, validateRegexMatch } from './regex-match'
+import { OptionalRegexMatch, RegexMatchValidator, RequiredRegexMatch, validateRegexMatch } from './regex-match'
 
 describe('Regex', () => {
   describe('validateRegex', () => {
@@ -26,6 +26,16 @@ describe('Regex', () => {
       ])
       expect(validateRegexMatch('abcde', /^abcde/)).toStrictEqual([])
       expect(validateRegexMatch('abcdef', /^abcde/)).toStrictEqual([])
+    })
+  })
+
+  describe('RegexValidator', () => {
+    it('should generate validation code and give same result', () => {
+      const validator = new RegexMatchValidator(/^.*$/, { optimize: true })
+      const str = validator.validate.toString()
+      expect(str).toMatch(/generatedFunction = true/)
+      const errors = validator.validate('2018-08-06T13:37:00Z')
+      expect(errors).toEqual([])
     })
   })
 

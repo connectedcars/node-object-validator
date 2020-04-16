@@ -64,7 +64,7 @@ export class DateTimeValidator<O = never> extends ValidatorBase<string | O> {
       `      errors.push(new WrongLengthFail(\`Must contain between 20 and 29 characters (received "\${${localValueRef}}")\`${contextStr}))`,
       `    }`,
       `  } else {`,
-      `    errors.push(new NotStringFail(\`Must be a string (received "\${${localValueRef}}")\`, context))`,
+      `    errors.push(new NotStringFail(\`Must be a string (received "\${${localValueRef}}")\`${contextStr}))`,
       `  }`,
       ...(this.required ? [
         `} else {`,

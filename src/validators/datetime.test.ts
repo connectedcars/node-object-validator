@@ -23,8 +23,8 @@ describe('DateTime', () => {
     })
   })
 
-  describe('StringValidator', () => {
-    it('1 should generate validation code and give same result', () => {
+  describe('DateTimeValidator', () => {
+    it('should generate validation code and give same result', () => {
       const validator = new DateTimeValidator({ optimize: true })
       const str = validator.validate.toString()
       expect(str).toMatch(/generatedFunction = true/)

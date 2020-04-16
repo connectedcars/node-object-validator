@@ -1,5 +1,12 @@
-import { isValidType, ValidatorBase } from '../common'
-import { DoesNotMatchRegexFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
+import { CodeGenResult, isValidType, ValidatorBase, ValidatorOptions } from '../common'
+import {
+  DoesNotMatchRegexFail,
+  NotStringFail,
+  RequiredFail,
+  ValidationErrorContext,
+  ValidationFailure,
+  WrongLengthFail
+} from '../errors'
 import { validateString } from './string'
 
 export function validateRegexMatch(
@@ -11,7 +18,7 @@ export function validateRegexMatch(
   if (!isValidType<string>(value, stringError)) {
     return stringError
   }
-  if (!value.match(regex)) {
+  if (!regex.test(value)) {
     return [new DoesNotMatchRegexFail(`Did not match '${regex}' (received "${value}")`, context)]
   }
   return []
@@ -21,10 +28,13 @@ export class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
   private regex: RegExp
   private required: boolean
 
-  public constructor(regex: RegExp, required = true) {
+  public constructor(regex: RegExp, options?: ValidatorOptions, required = true) {
     super()
     this.regex = regex
     this.required = required
+    if (options?.optimize) {
+      this.validate = this.optimize()
+    }
   }
 
   public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
@@ -32,6 +42,49 @@ export class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
       return this.required ? [new RequiredFail(`Is required`, context)] : []
     }
     return validateRegexMatch(value, this.regex, context)
+  }
+
+  public codeGen(
+    valueRef: string,
+    validatorRef: string,
+    id = () => {
+      return this.codeGenId++
+    },
+    context?: ValidationErrorContext
+  ): CodeGenResult {
+    const contextStr = context ? `, ${JSON.stringify(context)}` : ''
+    const localRegexRef = `regex${id()}`
+    const localValueRef = `value${id()}`
+    // prettier-ignore
+    const declarations: string[] = [
+      `const ${localRegexRef} = ${this.regex}`
+    ]
+    // prettier-ignore
+    const code: string[] = [
+      `const ${localValueRef} = ${valueRef}`,
+      `if (${localValueRef} != null) {`,
+      `  if (typeof ${localValueRef} === 'string') {`,
+      `    if (!${localRegexRef}.test(${localValueRef})) {`,
+      `      errors.push(new DoesNotMatchRegexFail(\`Did not match '${this.regex}' (received "\${${localValueRef}}")\`${contextStr}))`,
+      `    }`,
+      `  } else {`,
+      `    errors.push(new NotStringFail(\`Must be a string (received "\${${localValueRef}}")\`${contextStr}))`,
+      `  }`,
+      ...(this.required ? [
+        `} else {`,
+        `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
+        '}'
+    ]
+    return [
+      {
+        DoesNotMatchRegexFail: DoesNotMatchRegexFail,
+        WrongLengthFail: WrongLengthFail,
+        NotStringFail: NotStringFail,
+        RequiredError: RequiredFail
+      },
+      declarations,
+      code
+    ]
   }
 }
 
@@ -47,7 +100,7 @@ export class OptionalRegexMatch extends RegexMatchValidator<undefined | null> {
   private validatorType: 'OptionalRegex' = 'OptionalRegex'
 
   public constructor(regex: RegExp) {
-    super(regex, false)
+    super(regex, {}, false)
   }
 }
 

@@ -1,5 +1,5 @@
 import { NotDateFail, RequiredFail } from '../errors'
-import { OptionalDate, RequiredDate, validateDate } from './date'
+import { DateValidator, OptionalDate, RequiredDate, validateDate } from './date'
 
 describe('Date', () => {
   describe('validateDate', () => {
@@ -12,6 +12,16 @@ describe('Date', () => {
       expect(validateDate(true)).toStrictEqual([new NotDateFail('Must be a Date object')])
       expect(validateDate(false)).toStrictEqual([new NotDateFail('Must be a Date object')])
       expect(validateDate('2018-08-06T13:37:00Z')).toStrictEqual([new NotDateFail('Must be a Date object')])
+    })
+  })
+
+  describe('DateValidator', () => {
+    it('should generate validation code and give same result', () => {
+      const validator = new DateValidator({ optimize: true })
+      const str = validator.validate.toString()
+      expect(str).toMatch(/generatedFunction = true/)
+      const errors = validator.validate(new Date())
+      expect(errors).toEqual([])
     })
   })
 

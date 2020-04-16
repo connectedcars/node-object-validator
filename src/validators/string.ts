@@ -63,7 +63,7 @@ export class StringValidator<O = never> extends ValidatorBase<string | O> {
       `      errors.push(new WrongLengthFail(\`Must contain between ${this.minLength} and ${this.maxLength} characters (received "\${${localValueRef}}")\`${contextStr}))`,
       `    }`,
       `  } else {`,
-      `    errors.push(new NotStringFail(\`Must be a string (received "\${${localValueRef}}")\`, context))`,
+      `    errors.push(new NotStringFail(\`Must be a string (received "\${${localValueRef}}")\`${contextStr}))`,
       `  }`,
       ...(this.required ? [
         `} else {`,
