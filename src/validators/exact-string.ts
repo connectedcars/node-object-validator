@@ -38,18 +38,29 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
   ): CodeGenResult {
     const expectedStr = JSON.stringify(this.expected)
     const contextStr = context ? `, ${JSON.stringify(context)}` : ''
+    const localValueRef = `value${id()}`
+    const localRequiredErrorRef = `requiredError${id()}`
+    const declarations = [`const ${localRequiredErrorRef} = new RequiredError(\`Is required\`${contextStr})`]
     // prettier-ignore
     const code = [
-      `if (${valueRef} != null) {`,
-      `  if (${valueRef} !== ${expectedStr}) {`,
-      `    errors.push(new NotExactStringError(\`Must strictly equal ${expectedStr} (received "\${${valueRef}}")\`${contextStr}))`,
+      `const ${localValueRef} = ${valueRef}`,
+      `if (${localValueRef} != null) {`,
+      `  if (${localValueRef} !== ${expectedStr}) {`,
+      `    errors.push(new NotExactStringError(\`Must strictly equal ${expectedStr} (received "\${${localValueRef}}")\`${contextStr}))`,
       `  }`,
       ...(this.required ? [
       `} else {`,
-      `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
+      `  errors.push(${localRequiredErrorRef})`] : []),
       '}'
     ]
-    return [code, [], {}]
+    return [
+      {
+        NotExactStringError: NotExactStringError,
+        RequiredError: RequiredError
+      },
+      declarations,
+      code
+    ]
   }
 }
 

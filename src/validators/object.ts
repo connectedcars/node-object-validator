@@ -70,7 +70,7 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
     for (const key of Object.keys(this.schema)) {
       const validator = this.schema[key]
       const propName = context?.key ? `${context.key}['${key}']` : key
-      const [propDeclarations, propCode, propImports] = validator.codeGen(
+      const [propImports, propDeclarations, propCode] = validator.codeGen(
         `${objValueRef}['${key}']`,
         `${schemaRef}['${key}']`,
         id,
@@ -78,9 +78,9 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
           key: propName
         }
       )
-      imports = { ...imports, propImports }
-      declarations.push(...propCode)
-      code.push(...propDeclarations.map(l => `    ${l}`))
+      imports = { ...imports, ...propImports }
+      declarations.push(...propDeclarations)
+      code.push(...propCode.map(l => `    ${l}`))
     }
     // prettier-ignore
     code.push(
@@ -94,7 +94,7 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
       '}'
     )
 
-    return [code, declarations, imports]
+    return [imports, declarations, code]
   }
 }
 
