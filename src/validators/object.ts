@@ -2,6 +2,8 @@ import { CodeGenResult, ValidatorBase, ValidatorOptions } from '../common'
 import { NotObjectFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
 import { ObjectSchema, SchemaToType } from '../types'
 
+// TODO: Fail on empty object if the scheme has one required property
+
 export function isObject(value: unknown): value is { [key: string]: unknown } {
   return value !== null && typeof value === 'object'
 }

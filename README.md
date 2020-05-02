@@ -4,11 +4,14 @@ Validate JSON data based on a defined schema.
 
 ## How to use
 
+``` bash
+npm install @connectedcars/object-validator
+```
+
 ``` javascript
 import { ObjectValidator, DateTime, ExactString, Float, Integer, StringValue, TypedArray, TypedObject } from 'object-validator'
 
-
-let schema = new ObjectValidator(
+const schema = new ObjectValidator(
     {
       type: ExactString('gps_odometer_km'),
       unitId: StringValue(1, 32),
@@ -60,7 +63,7 @@ let errors = gpsOdometerKm.validate({
     positions: []
     }
 )
-if(errors.length > 0) {
+if (errors.length > 0) {
     console.error(`${errors.length} errors found`)
 }
 ```
