@@ -52,7 +52,7 @@ export class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
     },
     context?: ValidationErrorContext
   ): CodeGenResult {
-    const contextStr = context ? `, ${JSON.stringify(context)}` : ''
+    const contextStr = context ? `, { key: \`${context.key}\` }` : ''
     const localRegexRef = `regex${id()}`
     const localValueRef = `value${id()}`
     // prettier-ignore
@@ -91,16 +91,16 @@ export class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
 export class RequiredRegexMatch extends RegexMatchValidator<string> {
   private validatorType: 'RequiredRegex' = 'RequiredRegex'
 
-  public constructor(regex: RegExp) {
-    super(regex)
+  public constructor(regex: RegExp, options?: ValidatorOptions) {
+    super(regex, options)
   }
 }
 
 export class OptionalRegexMatch extends RegexMatchValidator<undefined | null> {
   private validatorType: 'OptionalRegex' = 'OptionalRegex'
 
-  public constructor(regex: RegExp) {
-    super(regex, {}, false)
+  public constructor(regex: RegExp, options?: ValidatorOptions) {
+    super(regex, options, false)
   }
 }
 

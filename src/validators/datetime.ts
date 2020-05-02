@@ -48,7 +48,7 @@ export class DateTimeValidator<O = never> extends ValidatorBase<string | O> {
     },
     context?: ValidationErrorContext
   ): CodeGenResult {
-    const contextStr = context ? `, ${JSON.stringify(context)}` : ''
+    const contextStr = context ? `, { key: \`${context.key}\` }` : ''
     const localValueRef = `value${id()}`
     const declarations: string[] = []
     // prettier-ignore
@@ -87,15 +87,15 @@ export class DateTimeValidator<O = never> extends ValidatorBase<string | O> {
 
 export class RequiredDateTime extends DateTimeValidator {
   private validatorType: 'RequiredDateTime' = 'RequiredDateTime'
-  public constructor() {
-    super()
+  public constructor(options?: ValidatorOptions) {
+    super(options)
   }
 }
 
 export class OptionalDateTime extends DateTimeValidator<undefined | null> {
   private validatorType: 'OptionalDateTime' = 'OptionalDateTime'
-  public constructor() {
-    super({}, false)
+  public constructor(options?: ValidatorOptions) {
+    super(options, false)
   }
 }
 

@@ -51,7 +51,7 @@ export class StringValidator<O = never> extends ValidatorBase<string | O> {
     },
     context?: ValidationErrorContext
   ): CodeGenResult {
-    const contextStr = context ? `, ${JSON.stringify(context)}` : ''
+    const contextStr = context ? `, { key: \`${context.key}\` }` : ''
     const localValueRef = `value${id()}`
     const declarations: string[] = []
     // prettier-ignore
@@ -85,16 +85,16 @@ export class StringValidator<O = never> extends ValidatorBase<string | O> {
 export class RequiredString extends StringValidator {
   private validatorType: 'RequiredString' = 'RequiredString'
 
-  public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER) {
-    super(minLength, maxLength)
+  public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(minLength, maxLength, options)
   }
 }
 
 export class OptionalString extends StringValidator<undefined | null> {
   private validatorType: 'OptionalString' = 'OptionalString'
 
-  public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER) {
-    super(minLength, maxLength, {}, false)
+  public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(minLength, maxLength, options, false)
   }
 }
 

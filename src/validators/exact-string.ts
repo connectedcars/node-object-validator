@@ -41,7 +41,7 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
     context?: ValidationErrorContext
   ): CodeGenResult {
     const expectedStr = JSON.stringify(this.expected)
-    const contextStr = context ? `, ${JSON.stringify(context)}` : ''
+    const contextStr = context ? `, { key: \`${context.key}\` }` : ''
     const localValueRef = `value${id()}`
     const declarations: string[] = []
     // prettier-ignore
@@ -70,16 +70,16 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
 export class RequiredExactString extends ExactStringValidator {
   private validatorType: 'RequiredExactString' = 'RequiredExactString'
 
-  public constructor(expected: string) {
-    super(expected)
+  public constructor(expected: string, options?: ValidatorOptions) {
+    super(expected, options)
   }
 }
 
 export class OptionalExactString extends ExactStringValidator<undefined | null> {
   private validatorType: 'OptionalExactString' = 'OptionalExactString'
 
-  public constructor(expected: string) {
-    super(expected, {}, false)
+  public constructor(expected: string, options?: ValidatorOptions) {
+    super(expected, options, false)
   }
 }
 

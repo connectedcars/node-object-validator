@@ -1,81 +1,90 @@
 import { NotFloatFail, OutOfRangeFail, RequiredFail } from '../errors'
 import { FloatValidator, OptionalFloat, RequiredFloat, validateFloat } from './float'
 
-describe('Float', () => {
+describe.each([false, true])('Float (optimize: %s)', optimize => {
   describe('validateFloat', () => {
     it('requires value to be a float', function() {
       expect(validateFloat(0.0001)).toStrictEqual([])
-      expect(validateFloat(1)).toStrictEqual([])
-      expect(validateFloat(1.25)).toStrictEqual([])
-      expect(validateFloat(123)).toStrictEqual([])
-      expect(validateFloat('1')).toStrictEqual([new NotFloatFail('Must be a float (received "1")')])
-      expect(validateFloat('')).toStrictEqual([new NotFloatFail('Must be a float (received "")')])
-      expect(validateFloat({})).toStrictEqual([new NotFloatFail('Must be a float (received "[object Object]")')])
-      expect(validateFloat([])).toStrictEqual([new NotFloatFail('Must be a float (received "")')])
-      expect(validateFloat(true)).toStrictEqual([new NotFloatFail('Must be a float (received "true")')])
-      expect(validateFloat(false)).toStrictEqual([new NotFloatFail('Must be a float (received "false")')])
-    })
-
-    it('requires min value', function() {
-      expect(validateFloat(-0.1, 0.5, 500)).toStrictEqual([
-        new OutOfRangeFail('Must be between 0.5 and 500 (received "-0.1")')
-      ])
-      expect(validateFloat(0, 0.5, 500)).toStrictEqual([
-        new OutOfRangeFail('Must be between 0.5 and 500 (received "0")')
-      ])
-      expect(validateFloat(0.1, 0.5, 500)).toStrictEqual([
-        new OutOfRangeFail('Must be between 0.5 and 500 (received "0.1")')
-      ])
-      expect(validateFloat(0.2, 0.5, 500)).toStrictEqual([
-        new OutOfRangeFail('Must be between 0.5 and 500 (received "0.2")')
-      ])
-      expect(validateFloat(0.3, 0.5, 500)).toStrictEqual([
-        new OutOfRangeFail('Must be between 0.5 and 500 (received "0.3")')
-      ])
-      expect(validateFloat(0.4, 0.5, 500)).toStrictEqual([
-        new OutOfRangeFail('Must be between 0.5 and 500 (received "0.4")')
-      ])
-      expect(validateFloat(0.49999999, 0.5, 500)).toStrictEqual([
-        new OutOfRangeFail('Must be between 0.5 and 500 (received "0.49999999")')
-      ])
-      expect(validateFloat(0.5, 0.5, 500)).toStrictEqual([])
-      expect(validateFloat(0.6, 0.5, 500)).toStrictEqual([])
-      expect(validateFloat(123.456, 0.5, 500)).toStrictEqual([])
-    })
-
-    it('requires max value', function() {
-      expect(validateFloat(-0.1, -500, 0.5)).toStrictEqual([])
-      expect(validateFloat(0, -500, 0.5)).toStrictEqual([])
-      expect(validateFloat(0.1, -500, 0.5)).toStrictEqual([])
-      expect(validateFloat(0.2, -500, 0.5)).toStrictEqual([])
-      expect(validateFloat(0.3, -500, 0.5)).toStrictEqual([])
-      expect(validateFloat(0.4, -500, 0.5)).toStrictEqual([])
-      expect(validateFloat(0.5, -500, 0.5)).toStrictEqual([])
-      expect(validateFloat(0.500000001, -500, 0.5)).toStrictEqual([
-        new OutOfRangeFail('Must be between -500 and 0.5 (received "0.500000001")')
-      ])
-      expect(validateFloat(0.6, -500, 0.5)).toStrictEqual([
-        new OutOfRangeFail('Must be between -500 and 0.5 (received "0.6")')
-      ])
-      expect(validateFloat(0.7, -500, 0.5)).toStrictEqual([
-        new OutOfRangeFail('Must be between -500 and 0.5 (received "0.7")')
-      ])
     })
   })
 
   describe('FloatValidator', () => {
     it('should generate validation code and give same result', () => {
-      const validator = new FloatValidator(1, 2, { optimize: true })
+      const validator = new FloatValidator(1, 2, { optimize })
       const str = validator.validate.toString()
-      expect(str).toMatch(/generatedFunction = true/)
+      if (optimize) {
+        expect(str).toMatch(/generatedFunction = true/)
+      } else {
+        expect(str).not.toMatch(/generatedFunction = true/)
+      }
       const errors = validator.validate(1.5)
       expect(errors).toEqual([])
+    })
+
+    it('requires value to be a float', function() {
+      const validator = new FloatValidator(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, { optimize })
+      expect(validator.validate(0.0001)).toStrictEqual([])
+      expect(validator.validate(1)).toStrictEqual([])
+      expect(validator.validate(1.25)).toStrictEqual([])
+      expect(validator.validate(123)).toStrictEqual([])
+      expect(validator.validate('1')).toStrictEqual([new NotFloatFail('Must be a float (received "1")')])
+      expect(validator.validate('')).toStrictEqual([new NotFloatFail('Must be a float (received "")')])
+      expect(validator.validate({})).toStrictEqual([new NotFloatFail('Must be a float (received "[object Object]")')])
+      expect(validator.validate([])).toStrictEqual([new NotFloatFail('Must be a float (received "")')])
+      expect(validator.validate(true)).toStrictEqual([new NotFloatFail('Must be a float (received "true")')])
+      expect(validator.validate(false)).toStrictEqual([new NotFloatFail('Must be a float (received "false")')])
+    })
+
+    it('requires min value', function() {
+      const validator = new FloatValidator(0.5, 500, { optimize })
+      expect(validator.validate(-0.1)).toStrictEqual([
+        new OutOfRangeFail('Must be between 0.5 and 500 (received "-0.1")')
+      ])
+      expect(validator.validate(0)).toStrictEqual([new OutOfRangeFail('Must be between 0.5 and 500 (received "0")')])
+      expect(validator.validate(0.1)).toStrictEqual([
+        new OutOfRangeFail('Must be between 0.5 and 500 (received "0.1")')
+      ])
+      expect(validator.validate(0.2)).toStrictEqual([
+        new OutOfRangeFail('Must be between 0.5 and 500 (received "0.2")')
+      ])
+      expect(validator.validate(0.3)).toStrictEqual([
+        new OutOfRangeFail('Must be between 0.5 and 500 (received "0.3")')
+      ])
+      expect(validator.validate(0.4)).toStrictEqual([
+        new OutOfRangeFail('Must be between 0.5 and 500 (received "0.4")')
+      ])
+      expect(validator.validate(0.49999999)).toStrictEqual([
+        new OutOfRangeFail('Must be between 0.5 and 500 (received "0.49999999")')
+      ])
+      expect(validator.validate(0.5)).toStrictEqual([])
+      expect(validator.validate(0.6)).toStrictEqual([])
+      expect(validator.validate(123.456)).toStrictEqual([])
+    })
+
+    it('requires max value', function() {
+      const validator = new FloatValidator(-500, 0.5, { optimize })
+      expect(validator.validate(-0.1)).toStrictEqual([])
+      expect(validator.validate(0)).toStrictEqual([])
+      expect(validator.validate(0.1)).toStrictEqual([])
+      expect(validator.validate(0.2)).toStrictEqual([])
+      expect(validator.validate(0.3)).toStrictEqual([])
+      expect(validator.validate(0.4)).toStrictEqual([])
+      expect(validator.validate(0.5)).toStrictEqual([])
+      expect(validator.validate(0.500000001)).toStrictEqual([
+        new OutOfRangeFail('Must be between -500 and 0.5 (received "0.500000001")')
+      ])
+      expect(validator.validate(0.6)).toStrictEqual([
+        new OutOfRangeFail('Must be between -500 and 0.5 (received "0.6")')
+      ])
+      expect(validator.validate(0.7)).toStrictEqual([
+        new OutOfRangeFail('Must be between -500 and 0.5 (received "0.7")')
+      ])
     })
   })
 
   describe('RequiredFloat', () => {
     it('accepts empty value', function() {
-      const validator = new RequiredFloat()
+      const validator = new RequiredFloat(0, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
       expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])
     })
@@ -83,7 +92,7 @@ describe('Float', () => {
 
   describe('OptionalFloat', () => {
     it('accepts empty value', function() {
-      const validator = new OptionalFloat()
+      const validator = new OptionalFloat(0, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
     })

@@ -54,7 +54,7 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
     },
     context?: ValidationErrorContext
   ): CodeGenResult {
-    const contextStr = context ? `, ${JSON.stringify(context)}` : ''
+    const contextStr = context ? `, { key: \`${context.key}\` }` : ''
     const objValueRef = `objValue${id()}`
     const schemaRef = `scheme${id()}`
     let imports: { [key: string]: unknown } = {
@@ -100,15 +100,15 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
 
 export class RequiredObject<T extends ObjectSchema = ObjectSchema> extends ObjectValidator<T> {
   private validatorType: 'RequiredObject' = 'RequiredObject'
-  public constructor(schema: T) {
-    super(schema)
+  public constructor(schema: T, options?: ValidatorOptions) {
+    super(schema, options)
   }
 }
 
 export class OptionalObject<T extends ObjectSchema = ObjectSchema> extends ObjectValidator<T, null | undefined> {
   private validatorType: 'OptionalObject' = 'OptionalObject'
-  public constructor(schema: T) {
-    super(schema, {}, false)
+  public constructor(schema: T, options?: ValidatorOptions) {
+    super(schema, options, false)
   }
 }
 

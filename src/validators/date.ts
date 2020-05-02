@@ -34,7 +34,7 @@ export class DateValidator<O = never> extends ValidatorBase<Date | O> {
     },
     context?: ValidationErrorContext
   ): CodeGenResult {
-    const contextStr = context ? `, ${JSON.stringify(context)}` : ''
+    const contextStr = context ? `, { key: \`${context.key}\` }` : ''
     const localValueRef = `value${id()}`
     const declarations: string[] = []
     // prettier-ignore
@@ -62,15 +62,15 @@ export class DateValidator<O = never> extends ValidatorBase<Date | O> {
 
 export class RequiredDate extends DateValidator {
   private validatorType: 'RequiredDate' = 'RequiredDate'
-  public constructor() {
-    super()
+  public constructor(options?: ValidatorOptions) {
+    super(options)
   }
 }
 
 export class OptionalDate extends DateValidator<null | undefined> {
   private validatorType: 'OptionalDate' = 'OptionalDate'
-  public constructor() {
-    super({}, false)
+  public constructor(options?: ValidatorOptions) {
+    super(options, false)
   }
 }
 

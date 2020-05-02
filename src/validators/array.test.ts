@@ -1,36 +1,43 @@
 import { RequiredFail } from '../errors'
-import { ArrayValidator, OptionalArray, RequiredArray } from './array'
+import { ArrayValidator, OptionalArray, RequiredArray, validateArray } from './array'
 import { RequiredInteger } from './integer'
 import { RequiredObject } from './object'
 
-describe('Array', () => {
+describe.each([false, true])('Array (optimize: %s)', optimize => {
   describe('validateArray', () => {
-    // TODO: Write tests
+    it('should validate simple array', () => {
+      const errors = validateArray(new RequiredArray(new RequiredInteger()), [1, 2, 3, 4])
+      expect(errors).toEqual([])
+    })
   })
 
   describe('ArrayValidator', () => {
-    const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10, { optimize: true })
+    const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10, { optimize })
 
-    it('should generate code for validation and give same result', () => {
+    it('should validate and give correct result', () => {
       const str = arrayValidator.validate.toString()
-      expect(str).toMatch(/generatedFunction = true/)
+      if (optimize) {
+        expect(str).toMatch(/generatedFunction = true/)
+      } else {
+        expect(str).not.toMatch(/generatedFunction = true/)
+      }
       const errors = arrayValidator.validate([1, 2, 4, 5])
       expect(errors).toEqual([])
     })
   })
 
   describe('RequiredArray', () => {
-    it('accepts empty value', function() {
+    it('accepts empty value', () => {
       // TODO: Support multidimensional [{ .Scheme }, RequiredString(), etc. ]
-      const validator = new RequiredArray(new RequiredObject({}))
+      const validator = new RequiredArray(new RequiredObject({}), 0, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
       expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])
     })
   })
 
   describe('OptionalArray', () => {
-    it('accepts empty value', function() {
-      const validator = new OptionalArray(new RequiredObject({}))
+    it('accepts empty value', () => {
+      const validator = new OptionalArray(new RequiredObject({}), 0, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
     })

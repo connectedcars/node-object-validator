@@ -46,7 +46,7 @@ export class FloatValidator<O = never> extends ValidatorBase<number | O> {
     },
     context?: ValidationErrorContext
   ): CodeGenResult {
-    const contextStr = context ? `, ${JSON.stringify(context)}` : ''
+    const contextStr = context ? `, { key: \`${context.key}\` }` : ''
     const localValueRef = `value${id()}`
     const declarations: string[] = []
     // prettier-ignore
@@ -80,21 +80,25 @@ export class FloatValidator<O = never> extends ValidatorBase<number | O> {
 export class RequiredFloat extends FloatValidator {
   private validatorType: 'RequiredFloat' = 'RequiredFloat'
 
-  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER) {
-    super(min, max)
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, options)
   }
 }
 
 export class OptionalFloat extends FloatValidator<undefined | null> {
   private validatorType: 'OptionalFloat' = 'OptionalFloat'
 
-  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER) {
-    super(min, max, {}, false)
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, options, false)
   }
 }
 
 export function Float(min: number, max: number, required?: false): OptionalFloat
 export function Float(min: number, max: number, required: true): RequiredFloat
-export function Float(min = 0, max = Number.MAX_SAFE_INTEGER, required = false): OptionalFloat | RequiredFloat {
+export function Float(
+  min = Number.MIN_SAFE_INTEGER,
+  max = Number.MAX_SAFE_INTEGER,
+  required = false
+): OptionalFloat | RequiredFloat {
   return required ? new RequiredFloat(min, max) : new OptionalFloat(min, max)
 }
