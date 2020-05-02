@@ -3,7 +3,9 @@
   // All paths need to reset or they would be pointing to ./node_modules/@connectedcars/setup
   "compilerOptions": {
     "outDir": "build/dist",
-    "rootDirs": ["src"]
+    "rootDirs": ["src"],
+    // Incremental seems to break the type validation sometimes
+    "incremental": false
   },
   "exclude": [
     "build",
