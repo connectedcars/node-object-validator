@@ -114,15 +114,15 @@ export class OptionalObject<T extends ObjectSchema = ObjectSchema> extends Objec
 
 export function TypedObject<T extends ObjectSchema = ObjectSchema>(
   schema: ObjectSchema,
-  required?: false
+  required: false
 ): OptionalObject<T>
 export function TypedObject<T extends ObjectSchema = ObjectSchema>(
   schema: ObjectSchema,
-  required: true
+  required?: true
 ): RequiredObject<T>
 export function TypedObject<T extends ObjectSchema = ObjectSchema>(
   schema: T,
-  required = false
+  required = true
 ): OptionalObject<T> | RequiredObject<T> {
   return required ? new RequiredObject(schema) : new OptionalObject(schema)
 }

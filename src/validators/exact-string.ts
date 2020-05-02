@@ -83,8 +83,8 @@ export class OptionalExactString extends ExactStringValidator<undefined | null> 
   }
 }
 
-export function ExactString(expectedStr: string, required?: false): OptionalExactString
-export function ExactString(expectedStr: string, required: true): RequiredExactString
-export function ExactString(expectedStr: string, required = false): OptionalExactString | RequiredExactString {
+export function ExactString(expectedStr: string, required: false): OptionalExactString
+export function ExactString(expectedStr: string, required?: true): RequiredExactString
+export function ExactString(expectedStr: string, required = true): OptionalExactString | RequiredExactString {
   return required ? new RequiredExactString(expectedStr) : new OptionalExactString(expectedStr)
 }

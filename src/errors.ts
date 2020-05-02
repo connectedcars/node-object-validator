@@ -15,6 +15,10 @@ export class ValidationFailure {
     this._message = message
     this.key = context?.key
   }
+
+  public toString(): string {
+    return `${this.constructor.name}: ${this.message}`
+  }
 }
 
 export class ValidationsError extends Error {

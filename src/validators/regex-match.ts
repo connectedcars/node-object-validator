@@ -104,8 +104,8 @@ export class OptionalRegexMatch extends RegexMatchValidator<undefined | null> {
   }
 }
 
-export function RegexMatch(regex: RegExp, required?: false): OptionalRegexMatch
-export function RegexMatch(regex: RegExp, required: true): RequiredRegexMatch
-export function RegexMatch(regex: RegExp, required = false): OptionalRegexMatch | RequiredRegexMatch {
+export function RegexMatch(regex: RegExp, required: false): OptionalRegexMatch
+export function RegexMatch(regex: RegExp, required?: true): RequiredRegexMatch
+export function RegexMatch(regex: RegExp, required = true): OptionalRegexMatch | RequiredRegexMatch {
   return required ? new RequiredRegexMatch(regex) : new OptionalRegexMatch(regex)
 }

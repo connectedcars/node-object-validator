@@ -89,12 +89,12 @@ export class ArrayValidator<T extends ValidatorTypes = ValidatorTypes, O = never
       `const ${arrayValueRef} = ${valueRef}`,
       `if (${arrayValueRef} != null) {`,
       `  if (Array.isArray(${arrayValueRef})){`,
-      `    if (${this.minLength ? `${arrayValueRef}.length > ${this.minLength} || ` : '' }${arrayValueRef}.length < ${this.maxLength}) {`,
+      `    if (${this.minLength ? `${arrayValueRef}.length >= ${this.minLength} && ` : '' }${arrayValueRef}.length < ${this.maxLength}) {`,
       `      for (const [${iRef}, ${itemRef}] of ${arrayValueRef}.entries()) {`,
       ...propCode.map(l => `        ${l}`),
       `      }`,
       `    } else {`,
-      `      errors.push(new WrongLengthFail(\`Must contain between ${this.minLength} and ${this.maxLength} characters (received "\${${arrayValueRef}}")\`${contextStr}))`,
+      `      errors.push(new WrongLengthFail(\`Must contain between ${this.minLength} and ${this.maxLength} entries (found \${${arrayValueRef}.length})\`${contextStr}))`,
       `    }`,
       `  } else {`,
       `    errors.push(new NotArrayFail(\`Must be an array (received "\${${valueRef}}")\`${contextStr}))`,
@@ -129,19 +129,19 @@ export function TypedArray<T extends ValidatorTypes = ValidatorTypes>(
   schema: T,
   minLength: number,
   maxLength: number,
-  required?: false
+  required: false
 ): OptionalArray<T>
 export function TypedArray<T extends ValidatorTypes = ValidatorTypes>(
   schema: T,
   minLength: number,
   maxLength: number,
-  required: true
+  required?: true
 ): RequiredArray<T>
 export function TypedArray<T extends ValidatorTypes = ValidatorTypes>(
   schema: T,
   minLength = 0,
   maxLength = Number.MAX_SAFE_INTEGER,
-  required = false
+  required = true
 ): OptionalArray<T> | RequiredArray<T> {
   return required
     ? new RequiredArray<T>(schema, minLength, maxLength)
