@@ -5,7 +5,7 @@ import { ObjectSchema, SchemaToType } from '../types'
 // TODO: Fail on empty object if the scheme has one required property
 
 export function isObject(value: unknown): value is { [key: string]: unknown } {
-  return value !== null && typeof value === 'object'
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
 export function validateObject<T extends ObjectSchema = ObjectSchema, O = never>(
@@ -56,7 +56,7 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
     },
     context?: ValidationErrorContext
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ''
+    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
     const objValueRef = `objValue${id()}`
     const schemaRef = `scheme${id()}`
     let imports: { [key: string]: unknown } = {
@@ -64,11 +64,12 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
       RequiredError: RequiredFail
     }
     const declarations = [`const ${schemaRef} = ${validatorRef}.schema`]
+
     // prettier-ignore
     const code = [
       `const ${objValueRef} = ${valueRef}`,
       `if (${objValueRef} != null) {`,
-      `  if (typeof ${objValueRef} === 'object'){`
+      `  if (typeof ${objValueRef} === 'object' && !Array.isArray(${objValueRef})){`
     ]
     for (const key of Object.keys(this.schema)) {
       const validator = this.schema[key]

@@ -1,5 +1,5 @@
 import { NotStringFail, RequiredFail, WrongLengthFail } from '../errors'
-import { OptionalString, RequiredString, StringValidator, validateString } from './string'
+import { OptionalString, RequiredString, StringValidator, StringValue, validateString } from './string'
 
 describe.each([false, true])('String (optimize: %s)', optimize => {
   describe('validateString', () => {
@@ -87,6 +87,20 @@ describe.each([false, true])('String (optimize: %s)', optimize => {
       const validator = new OptionalString()
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
+    })
+  })
+
+  describe('StringValue', () => {
+    it('accepts empty value', () => {
+      const validator = StringValue(0, 10, false)
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
+    })
+
+    it('rejects empty value', () => {
+      const validator = StringValue(0, 10)
+      expect(validator.validate(null).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
+      expect(validator.validate(undefined).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
     })
   })
 })

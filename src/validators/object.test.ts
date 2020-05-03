@@ -2,19 +2,23 @@
 import { NotIntegerFail, RequiredFail } from '../errors'
 import { AssertEqual } from '../types'
 import { OptionalArray, RequiredArray } from './array'
+import { OptionalDate } from './date'
 import { RequiredFloat } from './float'
 import { OptionalInteger, RequiredInteger } from './integer'
-import { ObjectValidator, OptionalObject, RequiredObject, validateObject } from './object'
+import { ObjectValidator, OptionalObject, RequiredObject, TypedObject, validateObject } from './object'
+import { RegexMatch, RequiredRegexMatch } from './regex-match'
 
 describe.each([false, true])('Object (optimize: %s)', optimize => {
   describe('validateObject', () => {
-    const errors = validateObject(
-      new RequiredObject({
-        int: new RequiredInteger(1, 2)
-      }),
-      { int: 1 }
-    )
-    expect(errors).toEqual([])
+    it('should validate simple object', () => {
+      const errors = validateObject(
+        new RequiredObject({
+          int: new RequiredInteger(1, 2)
+        }),
+        { int: 1 }
+      )
+      expect(errors).toEqual([])
+    })
   })
 
   describe('ObjectValidator', () => {
@@ -28,7 +32,9 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
             optionalInt: new OptionalInteger(1, 2)
           }),
           optionalArray: new OptionalArray(new RequiredInteger(1, 2)),
-          optionalArrayArray: new OptionalArray(new RequiredArray(new RequiredInteger(1, 2)))
+          optionalArrayArray: new OptionalArray(new RequiredArray(new RequiredInteger(1, 2))),
+          optionalDate: new OptionalDate(),
+          regexMatch: new RequiredRegexMatch(/^.*$/)
         },
         { optimize }
       )
@@ -40,7 +46,9 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
           int: 1
         },
         optionalArray: [1],
-        optionalArrayArray: [[1]]
+        optionalArrayArray: [[1]],
+        optionalDate: new Date(),
+        regexMatch: 'hello'
       }
       const str = objectValidator.validate.toString()
       if (optimize) {
@@ -84,6 +92,56 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
       } else {
         expect('did not validate but should').toBe('')
       }
+    })
+
+    it('should cast to known type', () => {
+      const objectValidator = new ObjectValidator(
+        {
+          int: new RequiredInteger(1, 2)
+        },
+        { optimize }
+      )
+
+      const unknownValue: unknown = {
+        int: 1
+      }
+      expect(() => {
+        const knownValue = objectValidator.cast(unknownValue)
+        const itShouldCastIntToNumber: AssertEqual<typeof knownValue.int, number> = true
+      }).not.toThrow()
+    })
+
+    it('should fail to cast', () => {
+      const objectValidator = new ObjectValidator(
+        {
+          int: new RequiredInteger(1, 2)
+        },
+        { optimize }
+      )
+
+      const unknownValue: unknown = {
+        int: '1'
+      }
+      expect(() => {
+        const knownValue = objectValidator.cast(unknownValue)
+        const itShouldCastIntToNumber: AssertEqual<typeof knownValue.int, number> = true
+      }).toThrow()
+    })
+
+    it('should reject non object values', () => {
+      const validator = new ObjectValidator({}, { optimize })
+      expect(validator.validate([]).map(e => e.toString())).toStrictEqual([
+        'NotObjectFail: Must be an object (received "")'
+      ])
+      expect(validator.validate(1).map(e => e.toString())).toStrictEqual([
+        'NotObjectFail: Must be an object (received "1")'
+      ])
+      expect(validator.validate(true).map(e => e.toString())).toStrictEqual([
+        'NotObjectFail: Must be an object (received "true")'
+      ])
+      expect(validator.validate('').map(e => e.toString())).toStrictEqual([
+        'NotObjectFail: Must be an object (received "")'
+      ])
     })
   })
 
@@ -207,6 +265,20 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toStrictEqual([])
       const knownValue = validator.cast(null)
       const itShouldCastIntToNumber: AssertEqual<typeof knownValue, {} | null | undefined> = true
+    })
+  })
+
+  describe('TypedObject', () => {
+    it('accepts empty value', () => {
+      const validator = TypedObject({}, false)
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
+    })
+
+    it('rejects empty value', () => {
+      const validator = TypedObject({})
+      expect(validator.validate(null).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
+      expect(validator.validate(undefined).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
     })
   })
 })

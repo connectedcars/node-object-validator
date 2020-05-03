@@ -34,7 +34,7 @@ export class DateValidator<O = never> extends ValidatorBase<Date | O> {
     },
     context?: ValidationErrorContext
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ''
+    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
     const localValueRef = `value${id()}`
     const declarations: string[] = []
     // prettier-ignore

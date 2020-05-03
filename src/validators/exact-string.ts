@@ -41,7 +41,7 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
     context?: ValidationErrorContext
   ): CodeGenResult {
     const expectedStr = JSON.stringify(this.expected)
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ''
+    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
     const localValueRef = `value${id()}`
     const declarations: string[] = []
     // prettier-ignore

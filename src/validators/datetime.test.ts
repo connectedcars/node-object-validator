@@ -1,5 +1,5 @@
 import { NotRfc3339Fail, RequiredFail, WrongLengthFail } from '../errors'
-import { DateTimeValidator, OptionalDateTime, RequiredDateTime, validateDateTime } from './datetime'
+import { DateTime, DateTimeValidator, OptionalDateTime, RequiredDateTime, validateDateTime } from './datetime'
 
 describe.each([false, true])('DateTime (optimize: %s)', optimize => {
   describe('validateDateTime', () => {
@@ -43,6 +43,13 @@ describe.each([false, true])('DateTime (optimize: %s)', optimize => {
         new NotRfc3339Fail('Must be formatted as an RFC 3339 timestamp (received "2018-08-ABT13:37:00Z")')
       ])
     })
+
+    it('requires value to show correct context on error', () => {
+      const validator = new DateTimeValidator({ optimize })
+      expect(validator.validate('', { key: 'myDate' }).map(e => e.toString())).toStrictEqual([
+        `WrongLengthFail: Field 'myDate' must contain between 20 and 29 characters (received "")`
+      ])
+    })
   })
 
   describe('RequiredDateTime', () => {
@@ -58,6 +65,20 @@ describe.each([false, true])('DateTime (optimize: %s)', optimize => {
       const validator = new OptionalDateTime({ optimize })
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
+    })
+  })
+
+  describe('DateTime', () => {
+    it('accepts empty value', () => {
+      const validator = DateTime(false)
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
+    })
+
+    it('rejects empty value', () => {
+      const validator = DateTime()
+      expect(validator.validate(null).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
+      expect(validator.validate(undefined).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
     })
   })
 })

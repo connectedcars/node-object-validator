@@ -46,7 +46,7 @@ export class FloatValidator<O = never> extends ValidatorBase<number | O> {
     },
     context?: ValidationErrorContext
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ''
+    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
     const localValueRef = `value${id()}`
     const declarations: string[] = []
     // prettier-ignore

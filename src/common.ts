@@ -49,11 +49,10 @@ export abstract class ValidatorBase<T> {
     },
     context?: ValidationErrorContext
   ): CodeGenResult {
+    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
     const validatorName = `validator${id()}`
     const declarations = [`const ${validatorName} = ${validatorRef}`]
-    const code = [
-      `errors.push(...${validatorName}.validate(${valueRef}` + (context ? `, ${JSON.stringify(context)}))` : '))')
-    ]
+    const code = [`errors.push(...${validatorName}.validate(${valueRef}${contextStr}))`]
     return [{}, declarations, code]
   }
 
@@ -62,7 +61,7 @@ export abstract class ValidatorBase<T> {
     const functionBody = [
       ...Object.keys(imports).map(i => `const ${i} = imports['${i}']`),
       ...declarations,
-      `return (value) => {`,
+      `return (value, context) => {`,
       `  const generatedFunction = true`,
       `  const errors = []`,
       ...code.map(l => `  ${l}`),
@@ -72,7 +71,7 @@ export abstract class ValidatorBase<T> {
 
     try {
       const functionGenerator = new Function('imports', 'schema', functionBody)
-      const validateFunction = functionGenerator(imports, this)
+      const validateFunction = functionGenerator(imports, { schema: this.schema, validate: this.validate })
       return validateFunction
     } catch (e) {
       throw new Error(`Failed to compile optimized function(${e.message}):\n${functionBody}`)

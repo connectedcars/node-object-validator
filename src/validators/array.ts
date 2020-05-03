@@ -65,7 +65,7 @@ export class ArrayValidator<T extends ValidatorTypes = ValidatorTypes, O = never
     },
     context?: ValidationErrorContext
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ''
+    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
     const arrayValueRef = `arrayValue${id()}`
     const iRef = `i${id()}`
     const itemRef = `item${id()}`

@@ -1,5 +1,5 @@
 import { NotDateFail, RequiredFail } from '../errors'
-import { DateValidator, OptionalDate, RequiredDate, validateDate } from './date'
+import { DateObject, DateValidator, OptionalDate, RequiredDate, validateDate } from './date'
 
 describe.each([false, true])('Date (optimize: %s)', optimize => {
   describe('validateDate', () => {
@@ -32,6 +32,13 @@ describe.each([false, true])('Date (optimize: %s)', optimize => {
       expect(validator.validate(false)).toStrictEqual([new NotDateFail('Must be a Date object')])
       expect(validator.validate('2018-08-06T13:37:00Z')).toStrictEqual([new NotDateFail('Must be a Date object')])
     })
+
+    it('requires value to show correct context on error', () => {
+      const validator = new DateValidator({ optimize })
+      expect(validator.validate('', { key: 'myDate' }).map(e => e.toString())).toStrictEqual([
+        `NotDateFail: Field 'myDate' must be a Date object`
+      ])
+    })
   })
 
   describe('OptionalStringValue', () => {
@@ -47,6 +54,20 @@ describe.each([false, true])('Date (optimize: %s)', optimize => {
       const validator = new OptionalDate({ optimize })
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
+    })
+  })
+
+  describe('DateObject', () => {
+    it('accepts empty value', () => {
+      const validator = DateObject(false)
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
+    })
+
+    it('rejects empty value', () => {
+      const validator = DateObject()
+      expect(validator.validate(null).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
+      expect(validator.validate(undefined).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
     })
   })
 })

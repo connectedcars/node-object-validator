@@ -1,5 +1,5 @@
 import { RequiredFail } from '../errors'
-import { ArrayValidator, OptionalArray, RequiredArray, validateArray } from './array'
+import { ArrayValidator, OptionalArray, RequiredArray, TypedArray, validateArray } from './array'
 import { RequiredInteger } from './integer'
 import { RequiredObject } from './object'
 
@@ -12,9 +12,8 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
   })
 
   describe('ArrayValidator', () => {
-    const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10, { optimize })
-
     it('should validate and give correct result', () => {
+      const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10, { optimize })
       const str = arrayValidator.validate.toString()
       if (optimize) {
         expect(str).toMatch(/generatedFunction = true/)
@@ -40,6 +39,20 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
       const validator = new OptionalArray(new RequiredObject({}), 0, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
+    })
+  })
+
+  describe('TypedArray', () => {
+    it('accepts empty value', () => {
+      const validator = TypedArray(new RequiredObject({}), 0, Number.MAX_SAFE_INTEGER, false)
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
+    })
+
+    it('rejects empty value', () => {
+      const validator = TypedArray(new RequiredObject({}), 0, Number.MAX_SAFE_INTEGER)
+      expect(validator.validate(null).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
+      expect(validator.validate(undefined).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
     })
   })
 })

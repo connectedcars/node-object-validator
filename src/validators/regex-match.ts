@@ -52,7 +52,7 @@ export class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
     },
     context?: ValidationErrorContext
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ''
+    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
     const localRegexRef = `regex${id()}`
     const localValueRef = `value${id()}`
     // prettier-ignore

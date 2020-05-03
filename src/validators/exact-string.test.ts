@@ -1,5 +1,11 @@
 import { NotExactStringFail, RequiredFail } from '../errors'
-import { ExactStringValidator, OptionalExactString, RequiredExactString, validateExactString } from './exact-string'
+import {
+  ExactString,
+  ExactStringValidator,
+  OptionalExactString,
+  RequiredExactString,
+  validateExactString
+} from './exact-string'
 
 describe.each([false, true])('validateExactString (optimize: %s)', optimize => {
   describe('validateExactString', () => {
@@ -67,6 +73,20 @@ describe.each([false, true])('validateExactString (optimize: %s)', optimize => {
       const validator = new OptionalExactString('MyString', { optimize })
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
+    })
+  })
+
+  describe('ExactString', () => {
+    it('accepts empty value', () => {
+      const validator = ExactString('MyString', false)
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
+    })
+
+    it('rejects empty value', () => {
+      const validator = ExactString('MyString')
+      expect(validator.validate(null).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
+      expect(validator.validate(undefined).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
     })
   })
 })
