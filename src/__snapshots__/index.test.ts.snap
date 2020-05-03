@@ -1,0 +1,25 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Shorthand validation of complex objects (optimize: false) fails due to empty object 1`] = `
+Array [
+  "RequiredFail: Field 'type' is required",
+  "RequiredFail: Field 'unitId' is required",
+  "RequiredFail: Field 'recordedAt' is required",
+  "RequiredFail: Field 'tripId' is required",
+  "RequiredFail: Field 'value' is required",
+  "RequiredFail: Field 'position' is required",
+  "RequiredFail: Field 'positions' is required",
+]
+`;
+
+exports[`Shorthand validation of complex objects (optimize: true) fails due to empty object 1`] = `
+Array [
+  "RequiredFail: Field 'type' is required",
+  "RequiredFail: Field 'unitId' is required",
+  "RequiredFail: Field 'recordedAt' is required",
+  "RequiredFail: Field 'tripId' is required",
+  "RequiredFail: Field 'value' is required",
+  "RequiredFail: Field 'position' is required",
+  "RequiredFail: Field 'positions' is required",
+]
+`;
