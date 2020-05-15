@@ -7,7 +7,7 @@
     "test": "TZ=UTC jest",
     "cov": "TZ=UTC jest --coverage=true",
     "benchmark": "node benchmark.js",
-    "build": "build bin src",
+    "build": "build src",
     "build:js": "build src --skip-typings",
     "types": "tsc --noEmit",
     "lint": "eslint './src/**/*.{ts,tsx}'",
