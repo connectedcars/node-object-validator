@@ -16,8 +16,13 @@
     "ci-audit": "npm audit --json || true",
     "ci-eslint": "eslint --format json './src/**/*.{ts,tsx}' || true",
     "prepare": "echo \"Make npm install devDependencies for this package by having a prepare script\"",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "prepublishOnly": "rm -rf build"
   },
+   "files": [
+    "build/dist/**/!(*.test).js",
+    "build/dist/**/!(*.test).d.ts"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/connectedcars/node-object-validator.git"
