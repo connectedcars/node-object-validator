@@ -2,7 +2,8 @@
   "name": "@connectedcars/object-validator",
   "version": "1.0.0",
   "description": "Object validator",
-  "main": "src/index.js",
+  "main": "build/dist/src/index.js",
+  "types": "build/dist/src/index.d.ts",
   "scripts": {
     "test": "TZ=UTC jest",
     "cov": "TZ=UTC jest --coverage=true",
@@ -14,8 +15,15 @@
     "lint:fix": "eslint --fix './src/**/*.{ts,tsx}'",
     "ci-jest": "TZ=UTC jest --silent --no-color --json 2> /dev/null; res=$?; echo; exit $res",
     "ci-audit": "npm audit --json || true",
-    "ci-eslint": "eslint --format json './src/**/*.{ts,tsx}' || true"
+    "ci-eslint": "eslint --format json './src/**/*.{ts,tsx}' || true",
+    "prepare": "echo \"Make npm install devDependencies for this package by having a prepare script\"",
+    "prepack": "npm run build",
+    "prepublishOnly": "rm -rf build"
   },
+   "files": [
+    "build/dist/**/!(*.test).js",
+    "build/dist/**/!(*.test).d.ts"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/connectedcars/node-object-validator.git"
