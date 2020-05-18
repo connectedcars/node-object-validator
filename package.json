@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Object validator",
   "main": "build/dist/src/index.js",
+  "types": "build/dist/src/index.d.ts",
   "scripts": {
     "test": "TZ=UTC jest",
     "cov": "TZ=UTC jest --coverage=true",
