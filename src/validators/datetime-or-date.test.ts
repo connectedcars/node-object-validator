@@ -1,11 +1,11 @@
-import { NotDatetimeOrDateFail, NotRfc3339Fail, RequiredFail, WrongLengthFail } from '../errors'
+import { NotDatetimeOrDateFail, RequiredFail } from '../errors'
 import {
   DateTimeOrDate,
   DateTimeOrDateValidator,
   OptionalDateTimeOrDate,
   RequiredDateTimeOrDate,
   validateDateTimeOrDate
-} from './datetime-or-data'
+} from './datetime-or-date'
 
 describe.each([false, true])('DateTime (optimize: %s)', optimize => {
   describe('validateDateTimeOrDate', () => {
