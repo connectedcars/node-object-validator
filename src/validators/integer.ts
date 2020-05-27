@@ -3,8 +3,8 @@ import { NotIntegerFail, OutOfRangeFail, RequiredFail, ValidationErrorContext, V
 
 export function validateInteger(
   value: unknown,
-  min = 0,
-  max = Number.MAX_SAFE_INTEGER,
+  min: number,
+  max: number,
   context?: ValidationErrorContext
 ): ValidationFailure[] {
   if (typeof value !== 'number' || !Number.isInteger(value)) {

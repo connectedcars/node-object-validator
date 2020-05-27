@@ -33,10 +33,13 @@ export class RequiredFail extends ValidationFailure {}
 export class NotStringFail extends ValidationFailure {}
 export class WrongLengthFail extends ValidationFailure {}
 export class NotDateFail extends ValidationFailure {}
+export class NotDatetimeOrDateFail extends ValidationFailure {}
 export class NotRfc3339Fail extends ValidationFailure {}
 export class NotExactStringFail extends ValidationFailure {}
 export class NotFloatFail extends ValidationFailure {}
+export class NotFloatStringFail extends ValidationFailure {}
 export class NotIntegerFail extends ValidationFailure {}
+export class NotIntegerStringFail extends ValidationFailure {}
 export class NotArrayFail extends ValidationFailure {}
 export class NotObjectFail extends ValidationFailure {}
 export class DoesNotMatchRegexFail extends ValidationFailure {}
