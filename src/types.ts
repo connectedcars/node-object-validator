@@ -1,3 +1,11 @@
+import {
+  OptionalDateTimeOrDate,
+  OptionalFloatString,
+  OptionalIntegerString,
+  RequiredDateTimeOrDate,
+  RequiredFloatString,
+  RequiredIntegerString
+} from '.'
 import { OptionalArray, RequiredArray } from './validators/array'
 import { OptionalDate, RequiredDate } from './validators/date'
 import { OptionalDateTime, RequiredDateTime } from './validators/datetime'
@@ -32,12 +40,18 @@ export type ValidatorTypes =
   | OptionalDate
   | RequiredDateTime
   | OptionalDateTime
+  | RequiredDateTimeOrDate
+  | OptionalDateTimeOrDate
   | RequiredExactString
   | OptionalExactString
   | RequiredFloat
   | OptionalFloat
   | RequiredInteger
   | OptionalInteger
+  | RequiredFloatString
+  | OptionalFloatString
+  | RequiredIntegerString
+  | OptionalIntegerString
   | RequiredString
   | OptionalString
   | RequiredRegexMatch
