@@ -10,17 +10,14 @@ export function validateFloatString(
 ): ValidationFailure[] {
   const stringError = validateString(value, 0, Number.MAX_SAFE_INTEGER, context)
   if (!isValidType<string>(value, stringError)) {
-    if (typeof value === 'number') {
-      return validateFloat(value, min, max, context)
-    }
-    return [new NotFloatStringFail(`Must be an float or a string with an float (received "${value}")`)]
+    return [new NotFloatStringFail(`Must be a string with a float (received "${value}")`)]
   }
   if (value.length === 0) {
-    return [new WrongLengthFail(`Must be an float or a string with an float (received "")`)]
+    return [new WrongLengthFail(`Must be a string with a float (received "")`)]
   }
   const float = parseFloat(value)
   if (isNaN(float)) {
-    return [new NotFloatStringFail(`Must be an float or a string with an float (received "${value}")`, context)]
+    return [new NotFloatStringFail(`Must be a string with a float (received "${value}")`, context)]
   }
   return validateFloat(float, min, max, context)
 }
@@ -35,10 +32,6 @@ export class FloatStringValidator<O = never> extends ValidatorBase<number | O> {
     this.min = min
     this.max = max
     this.required = required
-    if (options?.optimize) {
-      //TODO: get optimize working
-      //this.validate = this.optimize()
-    }
   }
 
   public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {

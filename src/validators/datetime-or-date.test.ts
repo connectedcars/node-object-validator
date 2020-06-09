@@ -16,18 +16,6 @@ describe.each([false, true])('DateTime (optimize: %s)', optimize => {
   })
 
   describe('DateTimeOrDateValidator', () => {
-    it.skip('should generate validation code and give same result', () => {
-      const validator = new DateTimeOrDateValidator({ optimize })
-      const str = validator.validate.toString()
-      if (optimize) {
-        expect(str).toMatch(/generatedFunction = true/)
-      } else {
-        expect(str).not.toMatch(/generatedFunction = true/)
-      }
-      const errors = validator.validate('2018-08-06T13:37:00Z')
-      expect(errors).toEqual([])
-    })
-
     it('requires value to be an RFC 3339 timestamp', () => {
       const validator = new DateTimeOrDateValidator({ optimize })
       expect(validator.validate('2018-08-06T13:37:00Z')).toStrictEqual([])
@@ -35,22 +23,28 @@ describe.each([false, true])('DateTime (optimize: %s)', optimize => {
       expect(validator.validate('2018-08-06T13:37:00+00:00')).toStrictEqual([])
       expect(validator.validate('2018-08-06T13:37:00.000+00:00')).toStrictEqual([])
       expect(validator.validate('')).toStrictEqual([
-        new NotDatetimeOrDateFail('Must be a Date or a formatted as an RFC 3339 timestamp (received "")')
+        new NotDatetimeOrDateFail(
+          'Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp (received "")'
+        )
       ])
       expect(validator.validate('2018-08-06')).toStrictEqual([
-        new NotDatetimeOrDateFail('Must be a Date or a formatted as an RFC 3339 timestamp (received "2018-08-06")')
+        new NotDatetimeOrDateFail(
+          'Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp (received "2018-08-06")'
+        )
       ])
       expect(validator.validate('2018-08-06T13:37:00')).toStrictEqual([
         new NotDatetimeOrDateFail(
-          'Must be a Date or a formatted as an RFC 3339 timestamp (received "2018-08-06T13:37:00")'
+          'Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp (received "2018-08-06T13:37:00")'
         )
       ])
       expect(validator.validate('13:37:00')).toStrictEqual([
-        new NotDatetimeOrDateFail('Must be a Date or a formatted as an RFC 3339 timestamp (received "13:37:00")')
+        new NotDatetimeOrDateFail(
+          'Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp (received "13:37:00")'
+        )
       ])
       expect(validator.validate('2018-08-ABT13:37:00Z')).toStrictEqual([
         new NotDatetimeOrDateFail(
-          'Must be a Date or a formatted as an RFC 3339 timestamp (received "2018-08-ABT13:37:00Z")'
+          'Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp (received "2018-08-ABT13:37:00Z")'
         )
       ])
     })
@@ -61,16 +55,24 @@ describe.each([false, true])('DateTime (optimize: %s)', optimize => {
       expect(validator.validate(new Date('2018-08-06'))).toStrictEqual([])
       expect(validator.validate(new Date('13:37:00'))).toStrictEqual([])
       expect(validator.validate(500)).toStrictEqual([
-        new NotDatetimeOrDateFail('Must be a Date or a formatted as an RFC 3339 timestamp (received "500")')
+        new NotDatetimeOrDateFail(
+          'Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp (received "500")'
+        )
       ])
       expect(validator.validate('')).toStrictEqual([
-        new NotDatetimeOrDateFail('Must be a Date or a formatted as an RFC 3339 timestamp (received "")')
+        new NotDatetimeOrDateFail(
+          'Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp (received "")'
+        )
       ])
       expect(validator.validate(true)).toStrictEqual([
-        new NotDatetimeOrDateFail('Must be a Date or a formatted as an RFC 3339 timestamp (received "true")')
+        new NotDatetimeOrDateFail(
+          'Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp (received "true")'
+        )
       ])
       expect(validator.validate(false)).toStrictEqual([
-        new NotDatetimeOrDateFail('Must be a Date or a formatted as an RFC 3339 timestamp (received "false")')
+        new NotDatetimeOrDateFail(
+          'Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp (received "false")'
+        )
       ])
     })
   })

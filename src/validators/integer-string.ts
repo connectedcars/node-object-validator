@@ -17,18 +17,17 @@ export function validateIntegerString(
 ): ValidationFailure[] {
   const stringError = validateString(value, 0, Number.MAX_SAFE_INTEGER, context)
   if (!isValidType<string>(value, stringError)) {
-    if (typeof value === 'number') {
-      return validateInteger(value, min, max, context)
-    } else {
-      return [new NotIntegerStringFail(`Must be an integer or a string with an integer (received "${value}")`)]
-    }
+    return [new NotIntegerStringFail(`Must be a string with an integer (received "${value}")`)]
   }
   if (value.length === 0) {
-    return [new WrongLengthFail(`Must be an integer or a string with an integer (received "")`)]
+    return [new WrongLengthFail(`Must be a string with an integer (received "")`)]
   }
-  const int = parseInt(value)
+  const int = parseFloat(value)
+  if (int % 1 !== 0) {
+    return [new NotIntegerStringFail(`Must be a string with an integer (received "${value}")`)]
+  }
   if (isNaN(int)) {
-    return [new NotIntegerStringFail(`Must be a string with an integer (received "${value}")`, context)]
+    return [new NotIntegerStringFail(`Must be a string with an integer (received "${value}")`)]
   }
   return validateInteger(int, min, max, context)
 }
@@ -48,10 +47,6 @@ export class IntegerStringValidator<O = never> extends ValidatorBase<string | O>
     this.min = min
     this.max = max
     this.required = required
-    if (options?.optimize) {
-      // TODO: add support for optimize
-      //this.validate = this.optimize()
-    }
   }
 
   public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {

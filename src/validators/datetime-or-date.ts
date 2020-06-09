@@ -9,7 +9,11 @@ export function validateDateTimeOrDate(value: unknown, context?: ValidationError
   if (!isValidType<Date>(value, dateError)) {
     const dateTimeError = validateDateTime(value, context)
     if (!isValidType<string>(value, dateTimeError)) {
-      return [new NotDatetimeOrDateFail(`Must be a ISO 8601 date or a formatted as an RFC 3339 timestamp (received "${value}")`)]
+      return [
+        new NotDatetimeOrDateFail(
+          `Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp (received "${value}")`
+        )
+      ]
     }
     return [] //valid datetime
   }
@@ -22,10 +26,6 @@ export class DateTimeOrDateValidator<O = never> extends ValidatorBase<string | O
   public constructor(options?: ValidatorOptions, required = true) {
     super()
     this.required = required
-    if (options?.optimize) {
-      //TODO: fix optimise
-      //this.validate = this.optimize()
-    }
   }
 
   public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
