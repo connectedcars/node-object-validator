@@ -1,9 +1,13 @@
 import {
   OptionalDateTimeOrDate,
+  OptionalFloatOrFloatString,
   OptionalFloatString,
+  OptionalIntegerOrIntegerString,
   OptionalIntegerString,
   RequiredDateTimeOrDate,
+  RequiredFloatOrFloatString,
   RequiredFloatString,
+  RequiredIntegerOrIntegerString,
   RequiredIntegerString
 } from '.'
 import { OptionalArray, RequiredArray } from './validators/array'
@@ -50,7 +54,11 @@ export type ValidatorTypes =
   | OptionalInteger
   | RequiredFloatString
   | OptionalFloatString
+  | RequiredFloatOrFloatString
+  | OptionalFloatOrFloatString
   | RequiredIntegerString
+  | OptionalIntegerOrIntegerString
+  | RequiredIntegerOrIntegerString
   | OptionalIntegerString
   | RequiredString
   | OptionalString
