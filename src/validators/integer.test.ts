@@ -4,7 +4,7 @@ import { Integer, IntegerValidator, OptionalInteger, RequiredInteger, validateIn
 describe.each([false, true])('Integer (optimize: %s)', optimize => {
   describe('validateInteger', () => {
     it('requires value to be an integer', function() {
-      expect(validateInteger(0)).toStrictEqual([])
+      expect(validateInteger(0, -1, 1)).toStrictEqual([])
     })
   })
 
@@ -26,6 +26,7 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
       expect(validator.validate(0)).toStrictEqual([])
       expect(validator.validate(1)).toStrictEqual([])
       expect(validator.validate(123)).toStrictEqual([])
+      expect(validator.validate(123.9)).toStrictEqual([new NotIntegerFail('Must be an integer (received "123.9")')])
       expect(validator.validate('1')).toStrictEqual([new NotIntegerFail('Must be an integer (received "1")')])
       expect(validator.validate('')).toStrictEqual([new NotIntegerFail('Must be an integer (received "")')])
       expect(validator.validate({})).toStrictEqual([
