@@ -1,5 +1,7 @@
 import { ObjectValidator } from './index'
 import { DateTime, ExactString, Float, Integer, StringValue, TypedArray, TypedObject } from './index'
+import { FloatOrFloatString } from './validators/float-or-float-string'
+import { IntegerOrIntegerString } from './validators/integer-or-integer-string'
 
 describe.each([false, true])('Shorthand validation of complex objects (optimize: %s)', optimize => {
   const validator = new ObjectValidator(
@@ -14,7 +16,9 @@ describe.each([false, true])('Shorthand validation of complex objects (optimize:
         longitude: Float(-180, 180),
         accuracy: Integer(0, 20),
         extra: TypedObject({
-          tag: StringValue(1, 50)
+          tag: StringValue(1, 50),
+          tagversion: IntegerOrIntegerString(1, 50),
+          tagDepth: FloatOrFloatString(0, 42.4)
         })
       }),
       optionalPosition: TypedObject(
@@ -51,7 +55,9 @@ describe.each([false, true])('Shorthand validation of complex objects (optimize:
           longitude: 12.54454,
           accuracy: 18,
           extra: {
-            tag: 'yes'
+            tag: 'yes',
+            tagversion: 4,
+            tagDepth: '27.89'
           }
         },
         positions: [
@@ -87,7 +93,9 @@ describe.each([false, true])('Shorthand validation of complex objects (optimize:
         longitude: -181,
         accuracy: 18,
         extra: {
-          tag: 'bogus'
+          tag: 'bogus',
+          tagversion: '4',
+          tagDepth: 27
         }
       },
       positions: [
@@ -120,7 +128,9 @@ describe.each([false, true])('Shorthand validation of complex objects (optimize:
         longitude: 12.54454,
         accuracy: 18,
         extra: {
-          tag: ''
+          tag: '',
+          tagversion: 32,
+          tagDepth: 3.1416
         }
       },
       positions: [
@@ -153,7 +163,9 @@ describe.each([false, true])('Shorthand validation of complex objects (optimize:
         longitude: 12.54454,
         accuracy: 18,
         extra: {
-          tag: 'test'
+          tag: 'test',
+          tagversion: 32,
+          tagDepth: 3.1416
         }
       }
     })
@@ -172,7 +184,9 @@ describe.each([false, true])('Shorthand validation of complex objects (optimize:
         longitude: 12.54454,
         accuracy: 18,
         extra: {
-          tag: 'test'
+          tag: 'test',
+          tagversion: 32,
+          tagDepth: 3.1416
         }
       },
       positions: [
@@ -200,7 +214,9 @@ describe.each([false, true])('Shorthand validation of complex objects (optimize:
         longitude: 12.54454,
         accuracy: 18,
         extra: {
-          tag: 'test'
+          tag: 'test',
+          tagversion: 32,
+          tagDepth: 3.1416
         }
       },
       positions: [
