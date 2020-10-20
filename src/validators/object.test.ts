@@ -106,7 +106,7 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
         int: 1
       }
       expect(() => {
-        const knownValue = objectValidator.cast(unknownValue)
+        const knownValue = objectValidator.cast<{ int: number }>(unknownValue)
         const itShouldCastIntToNumber: AssertEqual<typeof knownValue.int, number> = true
       }).not.toThrow()
     })
@@ -182,7 +182,7 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
       > = true
     })
 
-    it('accepts empty value', function() {
+    it('accepts empty value', function () {
       const validator = new RequiredObject({}, { optimize })
       expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
       expect(validator.validate(undefined as unknown)).toStrictEqual([new RequiredFail('Is required')])
@@ -259,7 +259,7 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
   })
 
   describe('OptionalObject', () => {
-    it('accepts empty value', function() {
+    it('accepts empty value', function () {
       const validator = new OptionalObject({}, { optimize })
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
