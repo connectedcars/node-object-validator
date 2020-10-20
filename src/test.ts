@@ -1,20 +1,15 @@
 export interface Artifacts<T> {
   type: T
   toolChain: string
-  fitImage: string
-  app: string
-  dtb: string
-  uboot: string
-  zImage: string
-  image: string
+  image: MySub
 }
 
 export interface Artifacts1 extends Artifacts<number> {
   test: string
 }
 
-export interface Artifacts2 extends Artifacts<string> {
+export type Artifacts3 = Artifacts<boolean>
+
+export interface MySub {
   test: string
 }
-
-export type Artifacts3 = Artifacts<boolean>
