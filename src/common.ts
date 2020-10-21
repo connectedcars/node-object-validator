@@ -23,18 +23,18 @@ export abstract class ValidatorBase<T> {
   public type!: T
   protected codeGenId = 1
 
-  public isValid(obj: unknown): obj is T {
+  public isValid<UT extends T = T>(obj: unknown): obj is UT {
     const errors = this.validate(obj)
     return errors.length === 0
   }
 
-  public isType(obj: unknown, errors: ValidationFailure[]): obj is T {
+  public isType<UT extends T = T>(obj: unknown, errors: ValidationFailure[]): obj is UT {
     return errors.length === 0
   }
 
-  public cast(obj: unknown): T {
+  public cast<UT extends T = T>(obj: unknown): UT {
     const errors = this.validate(obj)
-    if (this.isType(obj, errors)) {
+    if (this.isType<UT>(obj, errors)) {
       return obj
     } else {
       throw new ValidationsError('One of more validations failed', errors)
