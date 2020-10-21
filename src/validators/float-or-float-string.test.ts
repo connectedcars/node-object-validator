@@ -1,4 +1,4 @@
-import { NotFloatOrFloatStringFail, OutOfRangeFail, RequiredFail, WrongLengthFail } from '../errors'
+import { NotFloatOrFloatStringFail, RequiredFail } from '../errors'
 import {
   FloatOrFloatString,
   FloatOrFloatStringValidator,
@@ -9,13 +9,13 @@ import {
 
 describe.each([false, true])('Float (optimize: %s)', optimize => {
   describe('validateFloatOrFloatString', () => {
-    it('requires value to be a float', function() {
+    it('requires value to be a float', () => {
       expect(validateFloatOrFloatString(0.0001, 0, 1)).toStrictEqual([])
     })
   })
 
   describe('FloatOrFloatStringValidator', () => {
-    it('requires value to be a float', function() {
+    it('requires value to be a float', () => {
       const validator = new FloatOrFloatStringValidator(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(0.0001)).toStrictEqual([])
       expect(validator.validate(1)).toStrictEqual([])
@@ -45,7 +45,7 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
       ])
     })
 
-    it('requires min value', function() {
+    it('requires min value', () => {
       const validator = new FloatOrFloatStringValidator(0.5, 500, { optimize })
       expect(validator.validate(-0.1)).toStrictEqual([
         new NotFloatOrFloatStringFail(
@@ -122,7 +122,7 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
       expect(validator.validate('123.456')).toStrictEqual([])
     })
 
-    it('requires value to be a float', function() {
+    it('requires value to be a float', () => {
       const validator = new FloatOrFloatStringValidator(0, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(-0.1)).toStrictEqual([
         new NotFloatOrFloatStringFail('Must be a float or a string formatted float larger than 0 (received "-0.1")')
@@ -130,7 +130,7 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
       expect(validator.validate(1)).toStrictEqual([])
     })
 
-    it('requires value to be a float', function() {
+    it('requires value to be a float', () => {
       const validator = new FloatOrFloatStringValidator(Number.MIN_SAFE_INTEGER, 10, { optimize })
       expect(validator.validate(20)).toStrictEqual([
         new NotFloatOrFloatStringFail('Must be a float or a string formatted float smaller than 10 (received "20")')
@@ -138,7 +138,7 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
       expect(validator.validate(1)).toStrictEqual([])
     })
 
-    it('requires max value', function() {
+    it('requires max value', () => {
       const validator = new FloatOrFloatStringValidator(-500, 0.5, { optimize })
       expect(validator.validate(-0.1)).toStrictEqual([])
       expect(validator.validate(0)).toStrictEqual([])
@@ -188,7 +188,7 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
   })
 
   describe('RequiredFloatOrFloatString', () => {
-    it('accepts empty value', function() {
+    it('accepts empty value', () => {
       const validator = new RequiredFloatOrFloatString(0, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
       expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])
@@ -196,7 +196,7 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
   })
 
   describe('OptionalFloatString', () => {
-    it('accepts empty value', function() {
+    it('accepts empty value', () => {
       const validator = new OptionalFloatOrFloatString(0, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])

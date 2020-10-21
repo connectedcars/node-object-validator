@@ -3,7 +3,7 @@ import { Float, FloatValidator, OptionalFloat, RequiredFloat, validateFloat } fr
 
 describe.each([false, true])('Float (optimize: %s)', optimize => {
   describe('validateFloat', () => {
-    it('requires value to be a float', function() {
+    it('requires value to be a float', () => {
       expect(validateFloat(0.0001)).toStrictEqual([])
     })
   })
@@ -21,7 +21,7 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
       expect(errors).toEqual([])
     })
 
-    it('requires value to be a float', function() {
+    it('requires value to be a float', () => {
       const validator = new FloatValidator(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(0.0001)).toStrictEqual([])
       expect(validator.validate(1)).toStrictEqual([])
@@ -35,7 +35,7 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
       expect(validator.validate(false)).toStrictEqual([new NotFloatFail('Must be a float (received "false")')])
     })
 
-    it('requires min value', function() {
+    it('requires min value', () => {
       const validator = new FloatValidator(0.5, 500, { optimize })
       expect(validator.validate(-0.1)).toStrictEqual([
         new OutOfRangeFail('Must be between 0.5 and 500 (received "-0.1")')
@@ -61,7 +61,7 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
       expect(validator.validate(123.456)).toStrictEqual([])
     })
 
-    it('requires max value', function() {
+    it('requires max value', () => {
       const validator = new FloatValidator(-500, 0.5, { optimize })
       expect(validator.validate(-0.1)).toStrictEqual([])
       expect(validator.validate(0)).toStrictEqual([])
@@ -83,7 +83,7 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
   })
 
   describe('RequiredFloat', () => {
-    it('accepts empty value', function() {
+    it('accepts empty value', () => {
       const validator = new RequiredFloat(0, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
       expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])
@@ -91,7 +91,7 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
   })
 
   describe('OptionalFloat', () => {
-    it('accepts empty value', function() {
+    it('accepts empty value', () => {
       const validator = new OptionalFloat(0, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
