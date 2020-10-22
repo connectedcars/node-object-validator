@@ -75,7 +75,7 @@ describe.each([false, true])('String (optimize: %s)', optimize => {
   })
 
   describe('RequiredString', () => {
-    it('requires empty value', function() {
+    it('requires empty value', () => {
       const validator = new RequiredString()
       expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
       expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])
@@ -83,7 +83,7 @@ describe.each([false, true])('String (optimize: %s)', optimize => {
   })
 
   describe('OptionalString', () => {
-    it('requires empty value', function() {
+    it('requires empty value', () => {
       const validator = new OptionalString()
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])

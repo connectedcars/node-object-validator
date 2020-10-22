@@ -4,7 +4,6 @@
   "compilerOptions": {
     "outDir": "build/dist",
     "rootDir": ".",
-    // Incremental seems to break the type validation sometimes
     "incremental": false
   },
   "exclude": [

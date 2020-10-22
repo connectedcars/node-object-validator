@@ -53,7 +53,7 @@ describe.each([false, true])('DateTime (optimize: %s)', optimize => {
   })
 
   describe('RequiredDateTime', () => {
-    it('requires empty value', function() {
+    it('requires empty value', () => {
       const validator = new RequiredDateTime({ optimize })
       expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
       expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])
@@ -61,7 +61,7 @@ describe.each([false, true])('DateTime (optimize: %s)', optimize => {
   })
 
   describe('OptionalDateTime', () => {
-    it('requires empty value', function() {
+    it('requires empty value', () => {
       const validator = new OptionalDateTime({ optimize })
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])

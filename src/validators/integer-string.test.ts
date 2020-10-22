@@ -1,4 +1,4 @@
-import { NotIntegerFail, NotIntegerStringFail, OutOfRangeFail, RequiredFail, WrongLengthFail } from '../errors'
+import { NotIntegerStringFail, OutOfRangeFail, RequiredFail, WrongLengthFail } from '../errors'
 import {
   IntegerString,
   IntegerStringValidator,
@@ -9,13 +9,13 @@ import {
 
 describe.each([false, true])('Integer (optimize: %s)', optimize => {
   describe('validateInteger', () => {
-    it('requires value to be an integer', function() {
+    it('requires value to be an integer', () => {
       expect(validateIntegerString('0', 0, 1)).toStrictEqual([])
     })
   })
 
   describe('IntegerStringValidator', () => {
-    it('requires value to be an integer', function() {
+    it('requires value to be an integer', () => {
       const validator = new IntegerStringValidator(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate('0')).toStrictEqual([])
       expect(validator.validate('1')).toStrictEqual([])
@@ -47,7 +47,7 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
       ])
     })
 
-    it('requires min value', function() {
+    it('requires min value', function () {
       const validator = new IntegerStringValidator(5, 500, { optimize })
       expect(validator.validate('-1')).toStrictEqual([new OutOfRangeFail('Must be between 5 and 500 (received "-1")')])
       expect(validator.validate('0')).toStrictEqual([new OutOfRangeFail('Must be between 5 and 500 (received "0")')])
@@ -60,7 +60,7 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
       expect(validator.validate('123')).toStrictEqual([])
     })
 
-    it('requires max value', function() {
+    it('requires max value', () => {
       const validator = new IntegerStringValidator(-500, 5, { optimize })
       expect(validator.validate('-1')).toStrictEqual([])
       expect(validator.validate('0')).toStrictEqual([])
@@ -75,7 +75,7 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
   })
 
   describe('RequiredIntegerString', () => {
-    it('accepts empty value', function() {
+    it('accepts empty value', () => {
       const validator = new RequiredIntegerString(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
       expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])
@@ -83,7 +83,7 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
   })
 
   describe('OptionalIntegerString', () => {
-    it('accepts empty value', function() {
+    it('accepts empty value', () => {
       const validator = new OptionalIntegerString(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])

@@ -151,7 +151,7 @@ describe.each([false, true])('Shorthand validation of complex objects (optimize:
     ])
   })
 
-  it('fails due to missing positions', function() {
+  it('fails due to missing positions', () => {
     const errors = validator.validate({
       type: 'gps_odometer_km',
       unitId: '1234567',
@@ -172,7 +172,7 @@ describe.each([false, true])('Shorthand validation of complex objects (optimize:
     expect(errors.map(e => e.toString())).toEqual([`RequiredFail: Field 'positions' is required`])
   })
 
-  it('fails due to too few positions', function() {
+  it('fails due to too few positions', () => {
     const errors = validator.validate({
       type: 'gps_odometer_km',
       unitId: '1234567',
@@ -202,7 +202,7 @@ describe.each([false, true])('Shorthand validation of complex objects (optimize:
     ])
   })
 
-  it('fails due to invalid positions', function() {
+  it('fails due to invalid positions', () => {
     const errors = validator.validate({
       type: 'gps_odometer_km',
       unitId: '1234567',
