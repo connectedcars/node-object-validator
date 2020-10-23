@@ -16,6 +16,7 @@ import { OptionalDateTime, RequiredDateTime } from './validators/datetime'
 import { OptionalExactString, RequiredExactString } from './validators/exact-string'
 import { OptionalFloat, RequiredFloat } from './validators/float'
 import { OptionalInteger, RequiredInteger } from './validators/integer'
+import { OptionalNumber, RequiredNumber } from './validators/number'
 import { OptionalObject, RequiredObject } from './validators/object'
 import { OptionalRegexMatch, RequiredRegexMatch } from './validators/regex-match'
 import { OptionalString, RequiredString } from './validators/string'
@@ -51,6 +52,8 @@ export type ValidatorTypes =
   | OptionalExactString
   | RequiredFloat
   | OptionalFloat
+  | RequiredNumber
+  | OptionalNumber
   | RequiredInteger
   | OptionalInteger
   | RequiredFloatString
@@ -80,6 +83,8 @@ type ValidatorToType<O> =
   : O extends OptionalExactString ? string | undefined
   : O extends RequiredFloat ? number
   : O extends OptionalFloat ? number | undefined
+  : O extends RequiredNumber ? number
+  : O extends OptionalNumber ? number | undefined
   : O extends RequiredInteger ? number
   : O extends OptionalInteger ? number | undefined
   : O extends RequiredObject<infer U> ? SchemaToType<U>

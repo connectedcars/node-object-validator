@@ -34,6 +34,7 @@ export class NotArrayFail extends ValidationFailure {}
 export class NotDateFail extends ValidationFailure {}
 export class NotDatetimeOrDateFail extends ValidationFailure {}
 export class NotExactStringFail extends ValidationFailure {}
+export class NotNumberFail extends ValidationFailure {}
 export class NotFloatFail extends ValidationFailure {}
 export class NotFloatOrFloatStringFail extends ValidationFailure {}
 export class NotFloatStringFail extends ValidationFailure {}
