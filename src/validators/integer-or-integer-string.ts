@@ -81,13 +81,3 @@ export class OptionalIntegerOrIntegerString extends IntegerOrIntegerStringValida
     super(min, max, options, false)
   }
 }
-
-export function IntegerOrIntegerString(min: number, max: number, required: false): OptionalIntegerOrIntegerString
-export function IntegerOrIntegerString(min: number, max: number, required?: true): RequiredIntegerOrIntegerString
-export function IntegerOrIntegerString(
-  min = Number.MIN_SAFE_INTEGER,
-  max = Number.MAX_SAFE_INTEGER,
-  required = true
-): OptionalIntegerOrIntegerString | RequiredIntegerOrIntegerString {
-  return required ? new RequiredIntegerOrIntegerString(min, max) : new OptionalIntegerOrIntegerString(min, max)
-}

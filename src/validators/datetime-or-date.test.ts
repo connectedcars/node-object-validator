@@ -1,6 +1,5 @@
 import { NotDatetimeOrDateFail, RequiredFail } from '../errors'
 import {
-  DateTimeOrDate,
   DateTimeOrDateValidator,
   OptionalDateTimeOrDate,
   RequiredDateTimeOrDate,
@@ -90,20 +89,6 @@ describe.each([false, true])('DateTime (optimize: %s)', optimize => {
       const validator = new OptionalDateTimeOrDate({ optimize })
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
-    })
-  })
-
-  describe('DatDateTimeOrDateeTime', () => {
-    it('accepts empty value', () => {
-      const validator = DateTimeOrDate(false)
-      expect(validator.validate(null)).toStrictEqual([])
-      expect(validator.validate(undefined)).toStrictEqual([])
-    })
-
-    it('rejects empty value', () => {
-      const validator = DateTimeOrDate()
-      expect(validator.validate(null).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
-      expect(validator.validate(undefined).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
     })
   })
 })

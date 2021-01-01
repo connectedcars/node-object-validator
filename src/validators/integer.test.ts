@@ -1,5 +1,5 @@
 import { NotIntegerFail, OutOfRangeFail, RequiredFail } from '../errors'
-import { Integer, IntegerValidator, OptionalInteger, RequiredInteger, validateInteger } from './integer'
+import { IntegerValidator, OptionalInteger, RequiredInteger, validateInteger } from './integer'
 
 describe.each([false, true])('Integer (optimize: %s)', optimize => {
   describe('validateInteger', () => {
@@ -77,20 +77,6 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
       const validator = new OptionalInteger(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
-    })
-  })
-
-  describe('Integer', () => {
-    it('accepts empty value', () => {
-      const validator = Integer(0, Number.MAX_SAFE_INTEGER, false)
-      expect(validator.validate(null)).toStrictEqual([])
-      expect(validator.validate(undefined)).toStrictEqual([])
-    })
-
-    it('rejects empty value', () => {
-      const validator = Integer(0, Number.MAX_SAFE_INTEGER)
-      expect(validator.validate(null).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
-      expect(validator.validate(undefined).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
     })
   })
 })

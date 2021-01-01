@@ -79,13 +79,3 @@ export class OptionalFloatOrFloatString extends FloatOrFloatStringValidator<unde
     super(min, max, options, false)
   }
 }
-
-export function FloatOrFloatString(min: number, max: number, required: false): OptionalFloatOrFloatString
-export function FloatOrFloatString(min: number, max: number, required?: true): RequiredFloatOrFloatString
-export function FloatOrFloatString(
-  min = Number.MIN_SAFE_INTEGER,
-  max = Number.MAX_SAFE_INTEGER,
-  required = true
-): OptionalFloatOrFloatString | RequiredFloatOrFloatString {
-  return required ? new RequiredFloatOrFloatString(min, max) : new OptionalFloatOrFloatString(min, max)
-}

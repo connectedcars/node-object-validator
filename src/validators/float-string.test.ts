@@ -1,11 +1,5 @@
 import { NotFloatStringFail, OutOfRangeFail, RequiredFail, WrongLengthFail } from '../errors'
-import {
-  FloatString,
-  FloatStringValidator,
-  OptionalFloatString,
-  RequiredFloatString,
-  validateFloatString
-} from './float-string'
+import { FloatStringValidator, OptionalFloatString, RequiredFloatString, validateFloatString } from './float-string'
 
 describe.each([false, true])('Float (optimize: %s)', optimize => {
   describe('validateFloatString', () => {
@@ -115,20 +109,6 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
       const validator = new OptionalFloatString(0, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
-    })
-  })
-
-  describe('FloatString', () => {
-    it('accepts empty value', () => {
-      const validator = FloatString(0, Number.MAX_SAFE_INTEGER, false)
-      expect(validator.validate(null)).toStrictEqual([])
-      expect(validator.validate(undefined)).toStrictEqual([])
-    })
-
-    it('rejects empty value', () => {
-      const validator = FloatString(0, Number.MAX_SAFE_INTEGER)
-      expect(validator.validate(null).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
-      expect(validator.validate(undefined).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
     })
   })
 })

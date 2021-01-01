@@ -1,12 +1,12 @@
 import { RequiredFail } from '../errors'
-import { ArrayValidator, OptionalArray, RequiredArray, TypedArray, validateArray } from './array'
+import { ArrayValidator, OptionalArray, RequiredArray, validateArray } from './array'
 import { RequiredInteger } from './integer'
 import { RequiredObject } from './object'
 
 describe.each([false, true])('Array (optimize: %s)', optimize => {
   describe('validateArray', () => {
     it('should validate simple array', () => {
-      const errors = validateArray(new RequiredArray(new RequiredInteger()), [1, 2, 3, 4])
+      const errors = validateArray(new RequiredInteger(), [1, 2, 3, 4])
       expect(errors).toEqual([])
     })
   })
@@ -39,20 +39,6 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
       const validator = new OptionalArray(new RequiredObject({}), 0, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
-    })
-  })
-
-  describe('TypedArray', () => {
-    it('accepts empty value', () => {
-      const validator = TypedArray(new RequiredObject({}), 0, Number.MAX_SAFE_INTEGER, false)
-      expect(validator.validate(null)).toStrictEqual([])
-      expect(validator.validate(undefined)).toStrictEqual([])
-    })
-
-    it('rejects empty value', () => {
-      const validator = TypedArray(new RequiredObject({}), 0, Number.MAX_SAFE_INTEGER)
-      expect(validator.validate(null).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
-      expect(validator.validate(undefined).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
     })
   })
 })

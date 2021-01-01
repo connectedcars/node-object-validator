@@ -103,9 +103,3 @@ export class OptionalRegexMatch extends RegexMatchValidator<undefined | null> {
     super(regex, options, false)
   }
 }
-
-export function RegexMatch(regex: RegExp, required: false): OptionalRegexMatch
-export function RegexMatch(regex: RegExp, required?: true): RequiredRegexMatch
-export function RegexMatch(regex: RegExp, required = true): OptionalRegexMatch | RequiredRegexMatch {
-  return required ? new RequiredRegexMatch(regex) : new OptionalRegexMatch(regex)
-}

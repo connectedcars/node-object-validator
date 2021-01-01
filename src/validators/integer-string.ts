@@ -70,13 +70,3 @@ export class OptionalIntegerString extends IntegerStringValidator<undefined | nu
     super(min, max, options, false)
   }
 }
-
-export function IntegerString(min: number, max: number, required: false): OptionalIntegerString
-export function IntegerString(min: number, max: number, required?: true): RequiredIntegerString
-export function IntegerString(
-  min = Number.MIN_SAFE_INTEGER,
-  max = Number.MAX_SAFE_INTEGER,
-  required = true
-): OptionalIntegerString | RequiredIntegerString {
-  return required ? new RequiredIntegerString(min, max) : new OptionalIntegerString(min, max)
-}

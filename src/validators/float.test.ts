@@ -1,5 +1,5 @@
 import { NotFloatFail, OutOfRangeFail, RequiredFail } from '../errors'
-import { Float, FloatValidator, OptionalFloat, RequiredFloat, validateFloat } from './float'
+import { FloatValidator, OptionalFloat, RequiredFloat, validateFloat } from './float'
 
 describe.each([false, true])('Float (optimize: %s)', optimize => {
   describe('validateFloat', () => {
@@ -95,20 +95,6 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
       const validator = new OptionalFloat(0, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
-    })
-  })
-
-  describe('Float', () => {
-    it('accepts empty value', () => {
-      const validator = Float(0, Number.MAX_SAFE_INTEGER, false)
-      expect(validator.validate(null)).toStrictEqual([])
-      expect(validator.validate(undefined)).toStrictEqual([])
-    })
-
-    it('rejects empty value', () => {
-      const validator = Float(0, Number.MAX_SAFE_INTEGER)
-      expect(validator.validate(null).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
-      expect(validator.validate(undefined).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
     })
   })
 })

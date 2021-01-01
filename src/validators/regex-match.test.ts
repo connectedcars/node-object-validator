@@ -1,11 +1,5 @@
 import { DoesNotMatchRegexFail, NotStringFail, RequiredFail } from '../errors'
-import {
-  OptionalRegexMatch,
-  RegexMatch,
-  RegexMatchValidator,
-  RequiredRegexMatch,
-  validateRegexMatch
-} from './regex-match'
+import { OptionalRegexMatch, RegexMatchValidator, RequiredRegexMatch, validateRegexMatch } from './regex-match'
 
 describe.each([false, true])('Regex (optimize: %s)', optimize => {
   describe('validateRegex', () => {
@@ -71,20 +65,6 @@ describe.each([false, true])('Regex (optimize: %s)', optimize => {
       const validator = new OptionalRegexMatch(/^.*$/, { optimize })
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
-    })
-  })
-
-  describe('RegexMatch', () => {
-    it('accepts empty value', () => {
-      const validator = RegexMatch(/^.*$/, false)
-      expect(validator.validate(null)).toStrictEqual([])
-      expect(validator.validate(undefined)).toStrictEqual([])
-    })
-
-    it('rejects empty value', () => {
-      const validator = RegexMatch(/^.*$/)
-      expect(validator.validate(null).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
-      expect(validator.validate(undefined).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
     })
   })
 })

@@ -1,20 +1,24 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NotIntegerFail, RequiredFail } from '../errors'
-import { AssertEqual } from '../types'
 import { OptionalArray, RequiredArray } from './array'
 import { OptionalDate } from './date'
 import { RequiredFloat } from './float'
 import { OptionalInteger, RequiredInteger } from './integer'
-import { ObjectValidator, OptionalObject, RequiredObject, TypedObject, validateObject } from './object'
-import { RegexMatch, RequiredRegexMatch } from './regex-match'
+import { ObjectValidator, OptionalObject, RequiredObject, validateObject } from './object'
+import { RequiredRegexMatch } from './regex-match'
+
+// https://stackoverflow.com/questions/51651499/typescript-what-is-a-naked-type-parameter
+// https://2ality.com/2019/07/testing-static-types.html
+// Wrapping the types in an tuple force a specific type instead of allow any in the union
+export type AssertEqual<T, Expected> = [T, Expected] extends [Expected, T] ? true : never
 
 describe.each([false, true])('Object (optimize: %s)', optimize => {
   describe('validateObject', () => {
     it('should validate simple object', () => {
       const errors = validateObject(
-        new RequiredObject({
+        {
           int: new RequiredInteger(1, 2)
-        }),
+        },
         { int: 1 }
       )
       expect(errors).toEqual([])
@@ -61,7 +65,14 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
     })
 
     it('should cast type guard correctly for isValid', () => {
-      const objectValidator = new ObjectValidator(
+      const objectValidator = new ObjectValidator<{
+        int: number
+        float: number
+        optionalInt?: number
+        requiredObject: { int: number; optionalInt?: number }
+        optionalArray?: number[]
+        optionalArrayArray?: number[][]
+      }>(
         {
           int: new RequiredInteger(1, 2),
           float: new RequiredFloat(1, 2),
@@ -95,7 +106,7 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
     })
 
     it('should cast to known type', () => {
-      const objectValidator = new ObjectValidator(
+      const objectValidator = new ObjectValidator<{ int: number }>(
         {
           int: new RequiredInteger(1, 2)
         },
@@ -106,13 +117,13 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
         int: 1
       }
       expect(() => {
-        const knownValue = objectValidator.cast<{ int: number }>(unknownValue)
+        const knownValue = objectValidator.cast(unknownValue)
         const itShouldCastIntToNumber: AssertEqual<typeof knownValue.int, number> = true
       }).not.toThrow()
     })
 
     it('should fail to cast', () => {
-      const objectValidator = new ObjectValidator(
+      const objectValidator = new ObjectValidator<{ int: number }>(
         {
           int: new RequiredInteger(1, 2)
         },
@@ -146,7 +157,14 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
   })
 
   describe('RequiredObject', () => {
-    const objectValidator = new RequiredObject(
+    const objectValidator = new RequiredObject<{
+      int: number
+      float: number
+      optionalInt?: number
+      requiredObject: { int: number; optionalInt?: number }
+      optionalArray?: number[]
+      optionalArrayArray?: number[][]
+    }>(
       {
         int: new RequiredInteger(1, 2),
         optionalInt: new OptionalInteger(1, 2),
@@ -159,28 +177,6 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
       },
       { optimize }
     )
-
-    it('should export the correct type and compile', () => {
-      const itShouldAllowOptionalParameters: typeof objectValidator.type = {
-        int: 0,
-        optionalInt: 1,
-        requiredObject: {
-          int: 0
-        },
-        optionalArray: [0],
-        optionalArrayArray: [[0]]
-      }
-
-      const itShouldCastIntToNumber: AssertEqual<typeof objectValidator.type.int, number> = true
-      const itShouldCastOptionalIntToNumberOrUndefined: AssertEqual<
-        typeof objectValidator.type.optionalInt,
-        number | undefined
-      > = true
-      const itShouldCastOptionalArrayToNumberArrayOrUndefined: AssertEqual<
-        typeof objectValidator.type.optionalArray,
-        number[] | undefined
-      > = true
-    })
 
     it('accepts empty value', () => {
       const validator = new RequiredObject({}, { optimize })
@@ -265,20 +261,6 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toStrictEqual([])
       const knownValue = validator.cast(null)
       const itShouldCastIntToNumber: AssertEqual<typeof knownValue, Record<string, unknown> | null | undefined> = true
-    })
-  })
-
-  describe('TypedObject', () => {
-    it('accepts empty value', () => {
-      const validator = TypedObject({}, false)
-      expect(validator.validate(null)).toStrictEqual([])
-      expect(validator.validate(undefined)).toStrictEqual([])
-    })
-
-    it('rejects empty value', () => {
-      const validator = TypedObject({})
-      expect(validator.validate(null).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
-      expect(validator.validate(undefined).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
     })
   })
 })

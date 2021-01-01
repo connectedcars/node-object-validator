@@ -1,6 +1,6 @@
 import { ValidationErrorContext, ValidationFailure, ValidationsError } from './errors'
-import { ObjectSchema, ValidatorTypes } from './types'
 
+// TODO: Give better name
 export function isValidType<T>(value: unknown, errors: ValidationFailure[]): value is T {
   return errors.length === 0
 }
@@ -18,23 +18,29 @@ export type ValidatorOptions = {
   optimize?: boolean
 }
 
-export abstract class ValidatorBase<T> {
-  public schema?: ValidatorTypes | ObjectSchema
-  public type!: T
+export interface Validator {
+  validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[]
+  codeGen(valueRef: string, validatorRef: string, id: () => number, context?: ValidationErrorContext): CodeGenResult
+}
+
+export abstract class ValidatorBase<T> implements Validator {
+  public schema?: unknown
   protected codeGenId = 1
 
-  public isValid<UT extends T = T>(obj: unknown): obj is UT {
+  // TODO: implement convert JSON to validate object
+
+  public isValid(obj: unknown): obj is T {
     const errors = this.validate(obj)
     return errors.length === 0
   }
 
-  public isType<UT extends T = T>(obj: unknown, errors: ValidationFailure[]): obj is UT {
+  public isType(obj: unknown, errors: ValidationFailure[]): obj is T {
     return errors.length === 0
   }
 
-  public cast<UT extends T = T>(obj: unknown): UT {
+  public cast(obj: unknown): T {
     const errors = this.validate(obj)
-    if (this.isType<UT>(obj, errors)) {
+    if (this.isType(obj, errors)) {
       return obj
     } else {
       throw new ValidationsError('One of more validations failed', errors)

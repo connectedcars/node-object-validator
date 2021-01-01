@@ -98,9 +98,3 @@ export class OptionalDateTime extends DateTimeValidator<undefined | null> {
     super(options, false)
   }
 }
-
-export function DateTime(required: false): OptionalDateTime
-export function DateTime(required?: true): RequiredDateTime
-export function DateTime(required = true): OptionalDateTime | RequiredDateTime {
-  return required ? new RequiredDateTime() : new OptionalDateTime()
-}

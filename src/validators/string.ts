@@ -97,13 +97,3 @@ export class OptionalString extends StringValidator<undefined | null> {
     super(minLength, maxLength, options, false)
   }
 }
-
-export function StringValue(minLength: number, maxLength: number, required: false): OptionalString
-export function StringValue(minLength: number, maxLength: number, required?: true): RequiredString
-export function StringValue(
-  minLength = 0,
-  maxLength = Number.MAX_SAFE_INTEGER,
-  required = true
-): OptionalString | RequiredString {
-  return required ? new RequiredString(minLength, maxLength) : new OptionalString(minLength, maxLength)
-}

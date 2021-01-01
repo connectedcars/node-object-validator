@@ -49,9 +49,3 @@ export class OptionalDateTimeOrDate extends DateTimeOrDateValidator<undefined | 
     super(options, false)
   }
 }
-
-export function DateTimeOrDate(required: false): OptionalDateTimeOrDate
-export function DateTimeOrDate(required?: true): RequiredDateTimeOrDate
-export function DateTimeOrDate(required = true): OptionalDateTimeOrDate | RequiredDateTimeOrDate {
-  return required ? new RequiredDateTimeOrDate() : new OptionalDateTimeOrDate()
-}

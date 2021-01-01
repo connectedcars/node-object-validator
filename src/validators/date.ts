@@ -73,9 +73,3 @@ export class OptionalDate extends DateValidator<null | undefined> {
     super(options, false)
   }
 }
-
-export function DateObject(required: false): OptionalDate
-export function DateObject(required?: true): RequiredDate
-export function DateObject(required = true): OptionalDate | RequiredDate {
-  return required ? new RequiredDate() : new OptionalDate()
-}

@@ -1,9 +1,10 @@
-import { CodeGenResult, ValidatorBase, ValidatorOptions } from '../common'
+import { CodeGenResult, Validator, ValidatorBase, ValidatorOptions } from '../common'
 import { NotArrayFail, RequiredFail, ValidationErrorContext, ValidationFailure, WrongLengthFail } from '../errors'
-import { SchemaToType, ValidatorTypes } from '../types'
 
-export function validateArray<T extends ValidatorTypes = ValidatorTypes, O = never>(
-  schema: RequiredArray<T> | OptionalArray<T> | ArrayValidator<T, O>,
+// TODO: Implement isArray function
+
+export function validateArray(
+  schema: Validator,
   value: unknown,
   minLength = 0,
   maxLength = Number.MAX_SAFE_INTEGER,
@@ -18,23 +19,21 @@ export function validateArray<T extends ValidatorTypes = ValidatorTypes, O = nev
     ]
   }
   const errors = []
-  const validator = schema.schema
+  const validator = schema
   for (const [i, item] of value.entries()) {
     errors.push(...validator.validate(item, { key: `${context?.key || ''}[${i}]` }))
   }
   return errors
 }
 
-export class ArrayValidator<T extends ValidatorTypes = ValidatorTypes, O = never> extends ValidatorBase<
-  SchemaToType<T> | O
-> {
-  public schema: T
+export class ArrayValidator<T extends Array<unknown>, O = never> extends ValidatorBase<T | O> {
+  public schema: Validator
   private minLength: number
   private maxLength: number
   private required: boolean
 
   public constructor(
-    schema: T,
+    schema: Validator,
     minLength = 0,
     maxLength = Number.MAX_SAFE_INTEGER,
     options?: ValidatorOptions,
@@ -54,7 +53,7 @@ export class ArrayValidator<T extends ValidatorTypes = ValidatorTypes, O = never
     if (value == null) {
       return this.required ? [new RequiredFail(`Is required`, context)] : []
     }
-    return validateArray(this, value, this.minLength, this.maxLength, context)
+    return validateArray(this.schema, value, this.minLength, this.maxLength, context)
   }
 
   public codeGen(
@@ -109,41 +108,28 @@ export class ArrayValidator<T extends ValidatorTypes = ValidatorTypes, O = never
   }
 }
 
-export class RequiredArray<T extends ValidatorTypes = ValidatorTypes> extends ArrayValidator<T> {
+export class RequiredArray<T extends Array<unknown>> extends ArrayValidator<T> {
   private validatorType: 'RequiredArray' = 'RequiredArray'
 
-  public constructor(schema: T, minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+  public constructor(
+    schema: Validator,
+    minLength = 0,
+    maxLength = Number.MAX_SAFE_INTEGER,
+    options?: ValidatorOptions
+  ) {
     super(schema, minLength, maxLength, options)
   }
 }
 
-export class OptionalArray<T extends ValidatorTypes = ValidatorTypes> extends ArrayValidator<T, null | undefined> {
+export class OptionalArray<T extends Array<unknown>> extends ArrayValidator<T, null | undefined> {
   private validatorType: 'OptionalArray' = 'OptionalArray'
 
-  public constructor(schema: T, minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+  public constructor(
+    schema: Validator,
+    minLength = 0,
+    maxLength = Number.MAX_SAFE_INTEGER,
+    options?: ValidatorOptions
+  ) {
     super(schema, minLength, maxLength, options, false)
   }
-}
-
-export function TypedArray<T extends ValidatorTypes = ValidatorTypes>(
-  schema: T,
-  minLength: number,
-  maxLength: number,
-  required: false
-): OptionalArray<T>
-export function TypedArray<T extends ValidatorTypes = ValidatorTypes>(
-  schema: T,
-  minLength: number,
-  maxLength: number,
-  required?: true
-): RequiredArray<T>
-export function TypedArray<T extends ValidatorTypes = ValidatorTypes>(
-  schema: T,
-  minLength = 0,
-  maxLength = Number.MAX_SAFE_INTEGER,
-  required = true
-): OptionalArray<T> | RequiredArray<T> {
-  return required
-    ? new RequiredArray<T>(schema, minLength, maxLength)
-    : new OptionalArray<T>(schema, minLength, maxLength)
 }

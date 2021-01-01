@@ -1,5 +1,5 @@
 import { NotRfc3339Fail, RequiredFail, WrongLengthFail } from '../errors'
-import { DateTime, DateTimeValidator, OptionalDateTime, RequiredDateTime, validateDateTime } from './datetime'
+import { DateTimeValidator, OptionalDateTime, RequiredDateTime, validateDateTime } from './datetime'
 
 describe.each([false, true])('DateTime (optimize: %s)', optimize => {
   describe('validateDateTime', () => {
@@ -65,20 +65,6 @@ describe.each([false, true])('DateTime (optimize: %s)', optimize => {
       const validator = new OptionalDateTime({ optimize })
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
-    })
-  })
-
-  describe('DateTime', () => {
-    it('accepts empty value', () => {
-      const validator = DateTime(false)
-      expect(validator.validate(null)).toStrictEqual([])
-      expect(validator.validate(undefined)).toStrictEqual([])
-    })
-
-    it('rejects empty value', () => {
-      const validator = DateTime()
-      expect(validator.validate(null).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
-      expect(validator.validate(undefined).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
     })
   })
 })

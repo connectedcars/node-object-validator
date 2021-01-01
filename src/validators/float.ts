@@ -92,13 +92,3 @@ export class OptionalFloat extends FloatValidator<undefined | null> {
     super(min, max, options, false)
   }
 }
-
-export function Float(min: number, max: number, required: false): OptionalFloat
-export function Float(min: number, max: number, required?: true): RequiredFloat
-export function Float(
-  min = Number.MIN_SAFE_INTEGER,
-  max = Number.MAX_SAFE_INTEGER,
-  required = true
-): OptionalFloat | RequiredFloat {
-  return required ? new RequiredFloat(min, max) : new OptionalFloat(min, max)
-}

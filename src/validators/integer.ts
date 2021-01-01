@@ -97,13 +97,3 @@ export class OptionalInteger extends IntegerValidator<undefined | null> {
     super(min, max, options, false)
   }
 }
-
-export function Integer(min: number, max: number, required: false): OptionalInteger
-export function Integer(min: number, max: number, required?: true): RequiredInteger
-export function Integer(
-  min = Number.MIN_SAFE_INTEGER,
-  max = Number.MAX_SAFE_INTEGER,
-  required = true
-): OptionalInteger | RequiredInteger {
-  return required ? new RequiredInteger(min, max) : new OptionalInteger(min, max)
-}

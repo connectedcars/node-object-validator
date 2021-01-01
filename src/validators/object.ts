@@ -1,38 +1,37 @@
-import { CodeGenResult, ValidatorBase, ValidatorOptions } from '../common'
+import { CodeGenResult, Validator, ValidatorBase, ValidatorOptions } from '../common'
 import { NotObjectFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
-import { ObjectSchema, SchemaToType } from '../types'
 
 // TODO: Fail on empty object if the scheme has one required property
 
-export function isObject(value: unknown): value is { [key: string]: unknown } {
+// TODO: Add isObject(scheme, etc.) function
+
+function isObjectType(value: unknown): value is { [key: string]: unknown } {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
-export function validateObject<T extends ObjectSchema = ObjectSchema, O = never>(
-  schema: RequiredObject<T> | OptionalObject<T> | ObjectValidator<T, O>,
+export function validateObject(
+  schema: Record<string, Validator>,
   value: unknown,
   context?: ValidationErrorContext
 ): ValidationFailure[] {
   const errors: ValidationFailure[] = []
-  if (!isObject(value)) {
+  if (!isObjectType(value)) {
     errors.push(new NotObjectFail(`Must be an object (received "${value}")`, context))
     return errors
   }
-  for (const key of Object.keys(schema.schema)) {
-    const validator = schema.schema[key]
+  for (const key of Object.keys(schema)) {
+    const validator = schema[key]
     const keyName = context?.key ? `${context.key}['${key}']` : key
     errors.push(...validator.validate(value[key], { key: keyName }))
   }
   return errors
 }
 
-export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> extends ValidatorBase<
-  SchemaToType<T> | O
-> {
-  public schema: T
+export class ObjectValidator<T extends Record<string, unknown>, O = never> extends ValidatorBase<T | O> {
+  public schema: Record<string, Validator>
   private required: boolean
 
-  public constructor(schema: T, options?: ValidatorOptions, required = true) {
+  public constructor(schema: Record<string, Validator>, options?: ValidatorOptions, required = true) {
     super()
     this.schema = schema
     this.required = required
@@ -45,7 +44,7 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
     if (value == null) {
       return this.required ? [new RequiredFail(`Is required`, context)] : []
     }
-    return validateObject(this, value, context)
+    return validateObject(this.schema, value, context)
   }
 
   public codeGen(
@@ -101,31 +100,16 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
   }
 }
 
-export class RequiredObject<T extends ObjectSchema = ObjectSchema> extends ObjectValidator<T> {
+export class RequiredObject<T extends Record<string, unknown>> extends ObjectValidator<T> {
   private validatorType: 'RequiredObject' = 'RequiredObject'
-  public constructor(schema: T, options?: ValidatorOptions) {
+  public constructor(schema: Record<string, Validator>, options?: ValidatorOptions) {
     super(schema, options)
   }
 }
 
-export class OptionalObject<T extends ObjectSchema = ObjectSchema> extends ObjectValidator<T, null | undefined> {
+export class OptionalObject<T extends Record<string, unknown>> extends ObjectValidator<T, null | undefined> {
   private validatorType: 'OptionalObject' = 'OptionalObject'
-  public constructor(schema: T, options?: ValidatorOptions) {
+  public constructor(schema: Record<string, Validator>, options?: ValidatorOptions) {
     super(schema, options, false)
   }
-}
-
-export function TypedObject<T extends ObjectSchema = ObjectSchema>(
-  schema: ObjectSchema,
-  required: false
-): OptionalObject<T>
-export function TypedObject<T extends ObjectSchema = ObjectSchema>(
-  schema: ObjectSchema,
-  required?: true
-): RequiredObject<T>
-export function TypedObject<T extends ObjectSchema = ObjectSchema>(
-  schema: T,
-  required = true
-): OptionalObject<T> | RequiredObject<T> {
-  return required ? new RequiredObject(schema) : new OptionalObject(schema)
 }
