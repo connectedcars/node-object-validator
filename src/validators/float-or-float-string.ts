@@ -49,11 +49,12 @@ export class FloatOrFloatStringValidator<O = never> extends ValidatorBase<string
   private max: number
   private required: boolean
 
-  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions, required = true) {
+  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super()
-    this.required = required
     this.min = min
     this.max = max
+    const mergedOptions = { required: true, optimize: true, ...options }
+    this.required = mergedOptions.required
   }
 
   public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
@@ -68,7 +69,7 @@ export class RequiredFloatOrFloatString extends FloatOrFloatStringValidator {
   private validatorType: 'RequiredFloatOrFloatString' = 'RequiredFloatOrFloatString'
 
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(min, max, options)
+    super(min, max, { ...options, required: true })
   }
 }
 
@@ -76,6 +77,6 @@ export class OptionalFloatOrFloatString extends FloatOrFloatStringValidator<unde
   private validatorType: 'OptionalFloatString' = 'OptionalFloatString'
 
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(min, max, options, false)
+    super(min, max, { ...options, required: false })
   }
 }

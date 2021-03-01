@@ -23,9 +23,10 @@ export function validateDateTimeOrDate(value: unknown, context?: ValidationError
 export class DateTimeOrDateValidator<O = never> extends ValidatorBase<string | O> {
   public required: boolean
 
-  public constructor(options?: ValidatorOptions, required = true) {
+  public constructor(options?: ValidatorOptions) {
     super()
-    this.required = required
+    const mergedOptions = { required: true, optimize: true, ...options }
+    this.required = mergedOptions.required
   }
 
   public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
@@ -39,13 +40,13 @@ export class DateTimeOrDateValidator<O = never> extends ValidatorBase<string | O
 export class RequiredDateTimeOrDate extends DateTimeOrDateValidator {
   private validatorType: 'RequiredDateTimeOrDateValidator' = 'RequiredDateTimeOrDateValidator'
   public constructor(options?: ValidatorOptions) {
-    super(options)
+    super({ ...options, required: true })
   }
 }
 
 export class OptionalDateTimeOrDate extends DateTimeOrDateValidator<undefined | null> {
   private validatorType: 'OptionalDateTimeOrDateValidator' = 'OptionalDateTimeOrDateValidator'
   public constructor(options?: ValidatorOptions) {
-    super(options, false)
+    super({ ...options, required: false })
   }
 }

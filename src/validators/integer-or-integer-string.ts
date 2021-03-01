@@ -51,11 +51,12 @@ export class IntegerOrIntegerStringValidator<O = never> extends ValidatorBase<st
   private max: number
   private required: boolean
 
-  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions, required = true) {
+  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super()
-    this.required = required
     this.min = min
     this.max = max
+    const mergedOptions = { required: true, optimize: true, ...options }
+    this.required = mergedOptions.required
   }
 
   public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
@@ -70,7 +71,7 @@ export class RequiredIntegerOrIntegerString extends IntegerOrIntegerStringValida
   private validatorType: 'RequiredIntegerOrIntegerString' = 'RequiredIntegerOrIntegerString'
 
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(min, max, options)
+    super(min, max, { ...options, required: true })
   }
 }
 
@@ -78,6 +79,6 @@ export class OptionalIntegerOrIntegerString extends IntegerOrIntegerStringValida
   private validatorType: 'OptionalIntegerString' = 'OptionalIntegerString'
 
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(min, max, options, false)
+    super(min, max, { ...options, required: false })
   }
 }

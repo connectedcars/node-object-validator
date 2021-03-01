@@ -21,17 +21,13 @@ export class IntegerValidator<O = never> extends ValidatorBase<number | O> {
   private max: number
   private required: boolean
 
-  public constructor(
-    min = Number.MIN_SAFE_INTEGER,
-    max = Number.MAX_SAFE_INTEGER,
-    options?: ValidatorOptions,
-    required = true
-  ) {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super()
     this.min = min
     this.max = max
-    this.required = required
-    if (options?.optimize) {
+    const mergedOptions = { required: true, optimize: true, ...options }
+    this.required = mergedOptions.required
+    if (mergedOptions.optimize) {
       this.validate = this.optimize()
     }
   }
@@ -86,7 +82,7 @@ export class RequiredInteger extends IntegerValidator {
   private validatorType: 'RequiredInteger' = 'RequiredInteger'
 
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(min, max, options)
+    super(min, max, { ...options, required: true })
   }
 }
 
@@ -94,6 +90,6 @@ export class OptionalInteger extends IntegerValidator<undefined | null> {
   private validatorType: 'OptionalInteger' = 'OptionalInteger'
 
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(min, max, options, false)
+    super(min, max, { ...options, required: false })
   }
 }

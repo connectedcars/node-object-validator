@@ -37,16 +37,12 @@ export class IntegerStringValidator<O = never> extends ValidatorBase<string | O>
   private max: number
   private required: boolean
 
-  public constructor(
-    min = Number.MIN_SAFE_INTEGER,
-    max = Number.MAX_SAFE_INTEGER,
-    options?: ValidatorOptions,
-    required = true
-  ) {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super()
     this.min = min
     this.max = max
-    this.required = required
+    const mergedOptions = { required: true, optimize: true, ...options }
+    this.required = mergedOptions.required
   }
 
   public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
@@ -60,13 +56,13 @@ export class IntegerStringValidator<O = never> extends ValidatorBase<string | O>
 export class RequiredIntegerString extends IntegerStringValidator {
   private validatorType: 'RequiredIntegerString' = 'RequiredIntegerString'
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(min, max, options)
+    super(min, max, { ...options, required: true })
   }
 }
 
 export class OptionalIntegerString extends IntegerStringValidator<undefined | null> {
   private validatorType: 'OptionalIntegerString' = 'OptionalIntegerString'
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(min, max, options, false)
+    super(min, max, { ...options, required: false })
   }
 }

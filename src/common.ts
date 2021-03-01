@@ -16,6 +16,7 @@ export type ValidatorOptions = {
    * Generate an optimized function for doing the validation (default: false)
    */
   optimize?: boolean
+  required?: boolean
 }
 
 export interface Validator {

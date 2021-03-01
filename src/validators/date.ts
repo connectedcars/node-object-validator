@@ -11,10 +11,11 @@ export function validateDate(value: unknown, context?: ValidationErrorContext): 
 export class DateValidator<O = never> extends ValidatorBase<Date | O> {
   private required: boolean
 
-  public constructor(options?: ValidatorOptions, required = true) {
+  public constructor(options?: ValidatorOptions) {
     super()
-    this.required = required
-    if (options?.optimize) {
+    const mergedOptions = { required: true, optimize: true, ...options }
+    this.required = mergedOptions.required
+    if (mergedOptions.optimize) {
       this.validate = this.optimize()
     }
   }
@@ -63,13 +64,13 @@ export class DateValidator<O = never> extends ValidatorBase<Date | O> {
 export class RequiredDate extends DateValidator {
   private validatorType: 'RequiredDate' = 'RequiredDate'
   public constructor(options?: ValidatorOptions) {
-    super(options)
+    super({ ...options, required: true })
   }
 }
 
 export class OptionalDate extends DateValidator<null | undefined> {
   private validatorType: 'OptionalDate' = 'OptionalDate'
   public constructor(options?: ValidatorOptions) {
-    super(options, false)
+    super({ ...options, required: false })
   }
 }

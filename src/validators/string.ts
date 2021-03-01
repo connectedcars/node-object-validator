@@ -26,12 +26,13 @@ export class StringValidator<O = never> extends ValidatorBase<string | O> {
   private maxLength: number
   private required: boolean
 
-  public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions, required = true) {
+  public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super()
     this.minLength = minLength
     this.maxLength = maxLength
-    this.required = required
-    if (options?.optimize) {
+    const mergedOptions = { required: true, optimize: true, ...options }
+    this.required = mergedOptions.required
+    if (mergedOptions.optimize) {
       this.validate = this.optimize()
     }
   }
@@ -86,7 +87,7 @@ export class RequiredString extends StringValidator {
   private validatorType: 'RequiredString' = 'RequiredString'
 
   public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(minLength, maxLength, options)
+    super(minLength, maxLength, { ...options, required: true })
   }
 }
 
@@ -94,6 +95,6 @@ export class OptionalString extends StringValidator<undefined | null> {
   private validatorType: 'OptionalString' = 'OptionalString'
 
   public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(minLength, maxLength, options, false)
+    super(minLength, maxLength, { ...options, required: false })
   }
 }

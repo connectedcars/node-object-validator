@@ -28,11 +28,12 @@ export class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
   private regex: RegExp
   private required: boolean
 
-  public constructor(regex: RegExp, options?: ValidatorOptions, required = true) {
+  public constructor(regex: RegExp, options?: ValidatorOptions) {
     super()
     this.regex = regex
-    this.required = required
-    if (options?.optimize) {
+    const mergedOptions = { required: true, optimize: true, ...options }
+    this.required = mergedOptions.required
+    if (mergedOptions.optimize) {
       this.validate = this.optimize()
     }
   }
@@ -92,7 +93,7 @@ export class RequiredRegexMatch extends RegexMatchValidator<string> {
   private validatorType: 'RequiredRegex' = 'RequiredRegex'
 
   public constructor(regex: RegExp, options?: ValidatorOptions) {
-    super(regex, options)
+    super(regex, { ...options, required: true })
   }
 }
 
@@ -100,6 +101,6 @@ export class OptionalRegexMatch extends RegexMatchValidator<undefined | null> {
   private validatorType: 'OptionalRegex' = 'OptionalRegex'
 
   public constructor(regex: RegExp, options?: ValidatorOptions) {
-    super(regex, options, false)
+    super(regex, { ...options, required: false })
   }
 }

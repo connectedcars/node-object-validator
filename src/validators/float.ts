@@ -21,12 +21,13 @@ export class FloatValidator<O = never> extends ValidatorBase<number | O> {
   private max: number
   private required: boolean
 
-  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions, required = true) {
+  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super()
     this.min = min
     this.max = max
-    this.required = required
-    if (options?.optimize) {
+    const mergedOptions = { required: true, optimize: true, ...options }
+    this.required = mergedOptions.required
+    if (mergedOptions.optimize) {
       this.validate = this.optimize()
     }
   }
@@ -81,7 +82,7 @@ export class RequiredFloat extends FloatValidator {
   private validatorType: 'RequiredFloat' = 'RequiredFloat'
 
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(min, max, options)
+    super(min, max, { ...options, required: true })
   }
 }
 
@@ -89,6 +90,6 @@ export class OptionalFloat extends FloatValidator<undefined | null> {
   private validatorType: 'OptionalFloat' = 'OptionalFloat'
 
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(min, max, options, false)
+    super(min, max, { ...options, required: false })
   }
 }
