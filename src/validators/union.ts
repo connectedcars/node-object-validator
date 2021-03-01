@@ -16,7 +16,7 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
   public constructor(schema: Validator[], options?: ValidatorOptions) {
     super()
     this.schema = schema
-    const mergedOptions = { required: true, optimize: true, ...options }
+    const mergedOptions = { required: true, optimize: false, ...options }
     this.required = mergedOptions.required
     if (mergedOptions.optimize) {
       this.validate = this.optimize()

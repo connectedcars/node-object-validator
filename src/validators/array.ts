@@ -36,15 +36,15 @@ export class ArrayValidator<T extends Array<unknown>, O = never> extends Validat
     schema: Validator,
     minLength = 0,
     maxLength = Number.MAX_SAFE_INTEGER,
-    options?: ValidatorOptions,
-    required = true
+    options?: ValidatorOptions
   ) {
     super()
     this.schema = schema
     this.minLength = minLength
     this.maxLength = maxLength
-    this.required = required
-    if (options?.optimize) {
+    const mergedOptions = { required: true, optimize: false, ...options }
+    this.required = mergedOptions.required
+    if (mergedOptions.optimize) {
       this.validate = this.optimize()
     }
   }
@@ -117,7 +117,7 @@ export class RequiredArray<T extends Array<unknown>> extends ArrayValidator<T> {
     maxLength = Number.MAX_SAFE_INTEGER,
     options?: ValidatorOptions
   ) {
-    super(schema, minLength, maxLength, options)
+    super(schema, minLength, maxLength, { ...options, required: true })
   }
 }
 
@@ -130,6 +130,6 @@ export class OptionalArray<T extends Array<unknown>> extends ArrayValidator<T, n
     maxLength = Number.MAX_SAFE_INTEGER,
     options?: ValidatorOptions
   ) {
-    super(schema, minLength, maxLength, options, false)
+    super(schema, minLength, maxLength, { ...options, required: false })
   }
 }

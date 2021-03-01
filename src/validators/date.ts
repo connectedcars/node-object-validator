@@ -13,7 +13,7 @@ export class DateValidator<O = never> extends ValidatorBase<Date | O> {
 
   public constructor(options?: ValidatorOptions) {
     super()
-    const mergedOptions = { required: true, optimize: true, ...options }
+    const mergedOptions = { required: true, optimize: false, ...options }
     this.required = mergedOptions.required
     if (mergedOptions.optimize) {
       this.validate = this.optimize()

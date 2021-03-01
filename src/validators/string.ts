@@ -30,7 +30,7 @@ export class StringValidator<O = never> extends ValidatorBase<string | O> {
     super()
     this.minLength = minLength
     this.maxLength = maxLength
-    const mergedOptions = { required: true, optimize: true, ...options }
+    const mergedOptions = { required: true, optimize: false, ...options }
     this.required = mergedOptions.required
     if (mergedOptions.optimize) {
       this.validate = this.optimize()

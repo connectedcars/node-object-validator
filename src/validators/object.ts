@@ -36,7 +36,6 @@ export class ObjectValidator<T extends Record<string, unknown>, O = never> exten
     this.schema = schema
     const mergedOptions = { required: true, optimize: false, ...options }
     this.required = mergedOptions.required
-    console.log(mergedOptions.optimize)
     if (mergedOptions.optimize) {
       this.validate = this.optimize()
     }

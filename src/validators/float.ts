@@ -25,7 +25,7 @@ export class FloatValidator<O = never> extends ValidatorBase<number | O> {
     super()
     this.min = min
     this.max = max
-    const mergedOptions = { required: true, optimize: true, ...options }
+    const mergedOptions = { required: true, optimize: false, ...options }
     this.required = mergedOptions.required
     if (mergedOptions.optimize) {
       this.validate = this.optimize()

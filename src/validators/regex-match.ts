@@ -31,7 +31,7 @@ export class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
   public constructor(regex: RegExp, options?: ValidatorOptions) {
     super()
     this.regex = regex
-    const mergedOptions = { required: true, optimize: true, ...options }
+    const mergedOptions = { required: true, optimize: false, ...options }
     this.required = mergedOptions.required
     if (mergedOptions.optimize) {
       this.validate = this.optimize()

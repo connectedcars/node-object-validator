@@ -55,7 +55,7 @@ export class IntegerOrIntegerStringValidator<O = never> extends ValidatorBase<st
     super()
     this.min = min
     this.max = max
-    const mergedOptions = { required: true, optimize: true, ...options }
+    const mergedOptions = { required: true, optimize: false, ...options }
     this.required = mergedOptions.required
   }
 

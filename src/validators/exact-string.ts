@@ -19,7 +19,7 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
   public constructor(expected: string, options?: ValidatorOptions) {
     super()
     this.expected = expected
-    const mergedOptions = { required: true, optimize: true, ...options }
+    const mergedOptions = { required: true, optimize: false, ...options }
     this.required = mergedOptions.required
     if (mergedOptions.optimize) {
       this.validate = this.optimize()
