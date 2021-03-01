@@ -1,6 +1,5 @@
 * Implement union
 * Implement required any/unknown validator
-* Implement is... functions for all validators
 * Implement convert
 const validator = new DateTimeValidator({ optimize, convert: value => new Date(value) })
 validator.convert('2020-01-01T010101Z') // Throws if validation fails

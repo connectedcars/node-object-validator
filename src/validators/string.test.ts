@@ -1,5 +1,26 @@
+import { AssertEqual } from '../common'
 import { NotStringFail, RequiredFail, WrongLengthFail } from '../errors'
-import { OptionalString, RequiredString, StringValidator, validateString } from './string'
+import { isString, OptionalString, RequiredString, StringValidator, validateString } from './string'
+
+describe('String (optimize: %s)', () => {
+  describe('validateString', () => {
+    it('requires value to be a string', () => {
+      const value = 'foo' as unknown
+      expect(validateString(value)).toStrictEqual([])
+    })
+  })
+  describe('isString', () => {
+    it('requires value to be a string', () => {
+      const value = 'foo' as unknown
+      if (isString(value)) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const itShouldCastNumberArray: AssertEqual<typeof value, string> = true
+      } else {
+        fail('did not validate but should')
+      }
+    })
+  })
+})
 
 describe.each([false, true])('String (optimize: %s)', optimize => {
   describe('validateString', () => {

@@ -1,13 +1,29 @@
+import { AssertEqual } from '../common'
 import { NotRfc3339Fail, RequiredFail, WrongLengthFail } from '../errors'
-import { DateTimeValidator, OptionalDateTime, RequiredDateTime, validateDateTime } from './datetime'
+import { DateTimeValidator, isDateTime, OptionalDateTime, RequiredDateTime, validateDateTime } from './datetime'
 
-describe.each([false, true])('DateTime (optimize: %s)', optimize => {
+describe('DateTime (optimize: %s)', () => {
   describe('validateDateTime', () => {
     it('requires value to be an RFC 3339 timestamp', () => {
-      expect(validateDateTime('2018-08-06T13:37:00Z')).toStrictEqual([])
+      const value = '2018-08-06T13:37:00Z' as unknown
+      expect(validateDateTime(value)).toStrictEqual([])
     })
   })
 
+  describe('isDateTime', () => {
+    it('should cast to string', () => {
+      const value = '2018-08-06T13:37:00Z' as unknown
+      if (isDateTime(value)) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const itShouldCastNumberArray: AssertEqual<typeof value, string> = true
+      } else {
+        fail('did not validate but should')
+      }
+    })
+  })
+})
+
+describe.each([false, true])('DateTime (optimize: %s)', optimize => {
   describe('DateTimeValidator', () => {
     it('should generate validation code and give same result', () => {
       const validator = new DateTimeValidator({ optimize })

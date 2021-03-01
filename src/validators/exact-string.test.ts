@@ -1,13 +1,35 @@
+import { AssertEqual } from '../common'
 import { NotExactStringFail, RequiredFail } from '../errors'
-import { ExactStringValidator, OptionalExactString, RequiredExactString, validateExactString } from './exact-string'
+import {
+  ExactStringValidator,
+  isExactString,
+  OptionalExactString,
+  RequiredExactString,
+  validateExactString
+} from './exact-string'
 
-describe.each([false, true])('validateExactString (optimize: %s)', optimize => {
+describe('validateExactString (optimize: %s)', () => {
   describe('validateExactString', () => {
     it('requires value to be exact string', () => {
-      expect(validateExactString('MyString', 'MyString')).toStrictEqual([])
+      const value = 'MyString' as unknown
+      expect(validateExactString(value, 'MyString')).toStrictEqual([])
     })
   })
 
+  describe('isExactString', () => {
+    it('should cast value to string', () => {
+      const value = 'MyString' as unknown
+      if (isExactString(value, 'MyString')) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const itShouldCastNumberArray: AssertEqual<typeof value, 'MyString'> = true
+      } else {
+        fail('did not validate but should')
+      }
+    })
+  })
+})
+
+describe.each([false, true])('validateExactString (optimize: %s)', optimize => {
   describe('ExactStringValidator', () => {
     it('should generate code for validation and give same result', () => {
       const validator = new ExactStringValidator('MyString', { optimize })

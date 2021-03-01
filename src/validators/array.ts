@@ -1,7 +1,19 @@
 import { CodeGenResult, Validator, ValidatorBase, ValidatorOptions } from '../common'
 import { NotArrayFail, RequiredFail, ValidationErrorContext, ValidationFailure, WrongLengthFail } from '../errors'
 
-// TODO: Implement isArray function
+export function isArray<T>(
+  schema: Validator,
+  value: unknown,
+  minLength = 0,
+  maxLength = Number.MAX_SAFE_INTEGER,
+  context?: ValidationErrorContext
+): value is T {
+  const errors = validateArray(schema, value, minLength, maxLength, context)
+  if (errors.length === 0) {
+    return true
+  }
+  return false
+}
 
 export function validateArray(
   schema: Validator,

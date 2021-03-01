@@ -1,6 +1,19 @@
 import { CodeGenResult, ValidatorBase, ValidatorOptions } from '../common'
 import { NotFloatFail, OutOfRangeFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
 
+export function isFloat(
+  value: unknown,
+  min = Number.MIN_SAFE_INTEGER,
+  max = Number.MAX_SAFE_INTEGER,
+  context?: ValidationErrorContext
+): value is number {
+  const errors = validateFloat(value, min, max, context)
+  if (errors.length === 0) {
+    return true
+  }
+  return false
+}
+
 export function validateFloat(
   value: unknown,
   min = Number.MIN_SAFE_INTEGER,

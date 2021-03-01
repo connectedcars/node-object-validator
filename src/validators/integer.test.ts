@@ -1,13 +1,29 @@
+import { AssertEqual } from '../common'
 import { NotIntegerFail, OutOfRangeFail, RequiredFail } from '../errors'
-import { IntegerValidator, OptionalInteger, RequiredInteger, validateInteger } from './integer'
+import { IntegerValidator, isInteger, OptionalInteger, RequiredInteger, validateInteger } from './integer'
 
-describe.each([false, true])('Integer (optimize: %s)', optimize => {
+describe('Integer', () => {
   describe('validateInteger', () => {
     it('requires value to be an integer', () => {
-      expect(validateInteger(0, -1, 1)).toStrictEqual([])
+      const value = 0 as unknown
+      expect(validateInteger(value, -1, 1)).toStrictEqual([])
     })
   })
 
+  describe('isInteger', () => {
+    it('should cast value to number', () => {
+      const value = 0 as unknown
+      if (isInteger(value)) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const itShouldCastNumberArray: AssertEqual<typeof value, number> = true
+      } else {
+        fail('did not validate but should')
+      }
+    })
+  })
+})
+
+describe.each([false, true])('Integer (optimize: %s)', optimize => {
   describe('IntegerValidator', () => {
     it('should generate validation code and give same result', () => {
       const validator = new IntegerValidator(1, 30, { optimize })

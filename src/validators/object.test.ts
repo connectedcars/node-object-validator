@@ -1,27 +1,43 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { AssertEqual } from '../common'
 import { NotArrayFail, NotIntegerFail, RequiredFail } from '../errors'
 import { OptionalArray, RequiredArray } from './array'
 import { OptionalDate } from './date'
 import { RequiredFloat } from './float'
 import { OptionalInteger, RequiredInteger } from './integer'
-import { ObjectValidator, OptionalObject, RequiredObject, validateObject } from './object'
+import { isObject, ObjectValidator, OptionalObject, RequiredObject, validateObject } from './object'
 import { RequiredRegexMatch } from './regex-match'
-
-// https://stackoverflow.com/questions/51651499/typescript-what-is-a-naked-type-parameter
-// https://2ality.com/2019/07/testing-static-types.html
-// Wrapping the types in an tuple force a specific type instead of allow any in the union
-export type AssertEqual<T, Expected> = [T, Expected] extends [Expected, T] ? true : never
 
 describe('Object', () => {
   describe('validateObject', () => {
     it('should validate simple object', () => {
+      const value = { int: 1 } as unknown
       const errors = validateObject(
         {
           int: new RequiredInteger(1, 2)
         },
-        { int: 1 }
+        value
       )
       expect(errors).toEqual([])
+    })
+  })
+
+  describe('isObject', () => {
+    it('should cast to simple object', () => {
+      const value = { int: 1 } as unknown
+      if (
+        isObject<{ int: number }>(
+          {
+            int: new RequiredInteger(1, 2)
+          },
+          value
+        )
+      ) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const itShouldCastNumberArray: AssertEqual<typeof value, { int: number }> = true
+      } else {
+        fail('did not validate but should')
+      }
     })
   })
 
@@ -131,7 +147,7 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
         const itShouldCastIntToNumber: AssertEqual<typeof unknownValue.int, number> = true
         const itShouldCastFloatToNumber: AssertEqual<typeof unknownValue.float, number> = true
       } else {
-        expect('did not validate but should').toBe('')
+        fail('did not validate but should')
       }
     })
 

@@ -1,5 +1,31 @@
+import { AssertEqual } from '../common'
 import { DoesNotMatchRegexFail, NotStringFail, RequiredFail } from '../errors'
-import { OptionalRegexMatch, RegexMatchValidator, RequiredRegexMatch, validateRegexMatch } from './regex-match'
+import {
+  isRegexMatch,
+  OptionalRegexMatch,
+  RegexMatchValidator,
+  RequiredRegexMatch,
+  validateRegexMatch
+} from './regex-match'
+
+describe.each([false, true])('Regex (optimize: %s)', () => {
+  describe('validateRegex', () => {
+    it('requires value to be a string', () => {
+      expect(validateRegexMatch('foo', /^.*$/)).toStrictEqual([])
+    })
+  })
+  describe('validateRegex', () => {
+    it('requires value to be a string', () => {
+      const value = 'foo' as unknown
+      if (isRegexMatch<'foo' | 'bar'>(value, /^(foo|bar)$/)) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const itShouldCastNumberArray: AssertEqual<typeof value, 'foo' | 'bar'> = true
+      } else {
+        fail('did not validate but should')
+      }
+    })
+  })
+})
 
 describe.each([false, true])('Regex (optimize: %s)', optimize => {
   describe('validateRegex', () => {

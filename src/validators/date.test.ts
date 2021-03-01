@@ -1,13 +1,29 @@
+import { AssertEqual } from '../common'
 import { NotDateFail, RequiredFail } from '../errors'
-import { DateValidator, OptionalDate, RequiredDate, validateDate } from './date'
+import { DateValidator, isDate, OptionalDate, RequiredDate, validateDate } from './date'
 
-describe.each([false, true])('Date (optimize: %s)', optimize => {
+describe('Date', () => {
   describe('validateDate', () => {
     it('should validate simple date', () => {
-      expect(validateDate(new Date('2018-08-06T13:37:00Z'))).toStrictEqual([])
+      const value = new Date('2018-08-06T13:37:00Z') as unknown
+      expect(validateDate(value)).toStrictEqual([])
     })
   })
 
+  describe('isDate', () => {
+    it('should cast value to Date', () => {
+      const value = new Date('2018-08-06T13:37:00Z') as unknown
+      if (isDate(value)) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const itShouldCastNumberArray: AssertEqual<typeof value, Date> = true
+      } else {
+        fail('did not validate but should')
+      }
+    })
+  })
+})
+
+describe.each([false, true])('Date (optimize: %s)', optimize => {
   describe('DateValidator', () => {
     it('should generate validation code and give same result', () => {
       const validator = new DateValidator({ optimize })

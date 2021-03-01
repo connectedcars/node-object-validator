@@ -9,6 +9,18 @@ import {
 } from '../errors'
 import { validateString } from './string'
 
+export function isRegexMatch<T extends string>(
+  value: unknown,
+  regex: RegExp,
+  context?: ValidationErrorContext
+): value is T {
+  const errors = validateRegexMatch(value, regex, context)
+  if (errors.length === 0) {
+    return true
+  }
+  return false
+}
+
 export function validateRegexMatch(
   value: unknown,
   regex: RegExp,

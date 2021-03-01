@@ -1,6 +1,14 @@
 import { Validator, ValidatorBase, ValidatorOptions } from '../common'
 import { RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
 
+export function isUnion<T>(schema: Validator[], value: unknown, context?: ValidationErrorContext): value is T {
+  const errors = validateUnion(schema, value, context)
+  if (errors.length === 0) {
+    return true
+  }
+  return false
+}
+
 export function validateUnion(
   schema: Validator[],
   value: unknown,

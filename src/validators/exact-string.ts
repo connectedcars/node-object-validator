@@ -1,6 +1,18 @@
 import { CodeGenResult, ValidatorBase, ValidatorOptions } from '../common'
 import { NotExactStringFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
 
+export function isExactString<T extends string>(
+  value: unknown,
+  expected: T,
+  context?: ValidationErrorContext
+): value is T {
+  const errors = validateExactString(value, expected, context)
+  if (errors.length === 0) {
+    return true
+  }
+  return false
+}
+
 export function validateExactString(
   value: unknown,
   expected: string,

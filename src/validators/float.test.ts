@@ -1,13 +1,27 @@
+import { AssertEqual } from '../common'
 import { NotFloatFail, OutOfRangeFail, RequiredFail } from '../errors'
-import { FloatValidator, OptionalFloat, RequiredFloat, validateFloat } from './float'
+import { FloatValidator, isFloat, OptionalFloat, RequiredFloat, validateFloat } from './float'
 
-describe.each([false, true])('Float (optimize: %s)', optimize => {
+describe('Float', () => {
   describe('validateFloat', () => {
     it('requires value to be a float', () => {
       expect(validateFloat(0.0001)).toStrictEqual([])
     })
   })
+  describe('isFloat', () => {
+    it('should cast value to float', () => {
+      const value = 0.0001 as unknown
+      if (isFloat(value)) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const itShouldCastNumberArray: AssertEqual<typeof value, number> = true
+      } else {
+        fail('did not validate but should')
+      }
+    })
+  })
+})
 
+describe.each([false, true])('Float (optimize: %s)', optimize => {
   describe('FloatValidator', () => {
     it('should generate validation code and give same result', () => {
       const validator = new FloatValidator(1, 2, { optimize })

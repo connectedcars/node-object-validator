@@ -1,10 +1,23 @@
 import { CodeGenResult, ValidatorBase, ValidatorOptions } from '../common'
 import { NotIntegerFail, OutOfRangeFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
 
+export function isInteger(
+  value: unknown,
+  min: number = Number.MIN_SAFE_INTEGER,
+  max: number = Number.MAX_SAFE_INTEGER,
+  context?: ValidationErrorContext
+): value is number {
+  const errors = validateInteger(value, min, max, context)
+  if (errors.length === 0) {
+    return true
+  }
+  return false
+}
+
 export function validateInteger(
   value: unknown,
-  min: number,
-  max: number,
+  min: number = Number.MIN_SAFE_INTEGER,
+  max: number = Number.MAX_SAFE_INTEGER,
   context?: ValidationErrorContext
 ): ValidationFailure[] {
   if (typeof value !== 'number' || !Number.isInteger(value)) {

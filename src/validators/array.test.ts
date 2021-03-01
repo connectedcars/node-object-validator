@@ -1,16 +1,32 @@
+import { AssertEqual } from '../common'
 import { RequiredFail } from '../errors'
-import { ArrayValidator, OptionalArray, RequiredArray, validateArray } from './array'
+import { ArrayValidator, isArray, OptionalArray, RequiredArray, validateArray } from './array'
 import { RequiredInteger } from './integer'
 import { RequiredObject } from './object'
 
-describe.each([false, true])('Array (optimize: %s)', optimize => {
+describe('Array', () => {
   describe('validateArray', () => {
     it('should validate simple array', () => {
-      const errors = validateArray(new RequiredInteger(), [1, 2, 3, 4])
+      const value = [1, 2, 3, 4] as unknown
+      const errors = validateArray(new RequiredInteger(), value)
       expect(errors).toEqual([])
     })
   })
 
+  describe('isArray', () => {
+    it('should cast value to number array', () => {
+      const value = [1, 2, 3, 4] as unknown
+      if (isArray<number[]>(new RequiredInteger(), value)) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const itShouldCastNumberArray: AssertEqual<typeof value, number[]> = true
+      } else {
+        fail('did not validate but should')
+      }
+    })
+  })
+})
+
+describe.each([false, true])('Array (optimize: %s)', optimize => {
   describe('ArrayValidator', () => {
     it('should validate and give correct result', () => {
       const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10, { optimize })

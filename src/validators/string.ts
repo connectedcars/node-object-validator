@@ -1,6 +1,19 @@
 import { CodeGenResult, ValidatorBase, ValidatorOptions } from '../common'
 import { NotStringFail, RequiredFail, ValidationErrorContext, ValidationFailure, WrongLengthFail } from '../errors'
 
+export function isString(
+  value: unknown,
+  minLength = 0,
+  maxLength: number = Number.MAX_SAFE_INTEGER,
+  context?: ValidationErrorContext
+): value is string {
+  const errors = validateString(value, minLength, maxLength, context)
+  if (errors.length === 0) {
+    return true
+  }
+  return false
+}
+
 export function validateString(
   value: unknown,
   minLength = 0,

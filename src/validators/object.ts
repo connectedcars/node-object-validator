@@ -1,9 +1,17 @@
 import { CodeGenResult, Validator, ValidatorBase, ValidatorOptions } from '../common'
 import { NotObjectFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
 
-// TODO: Fail on empty object if the scheme has one required property
-
-// TODO: Add isObject(scheme, etc.) function
+export function isObject<T extends Record<string, unknown>>(
+  schema: Record<string, Validator>,
+  value: unknown,
+  context?: ValidationErrorContext
+): value is T {
+  const errors = validateObject(schema, value, context)
+  if (errors.length === 0) {
+    return true
+  }
+  return false
+}
 
 function isObjectType(value: unknown): value is { [key: string]: unknown } {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -19,6 +27,7 @@ export function validateObject(
     errors.push(new NotObjectFail(`Must be an object (received "${value}")`, context))
     return errors
   }
+  // TODO: Fail early on empty object if the scheme has one required property
   for (const key of Object.keys(schema)) {
     const validator = schema[key]
     const keyName = context?.key ? `${context.key}['${key}']` : key
@@ -37,7 +46,7 @@ export class ObjectValidator<T extends Record<string, unknown>, O = never> exten
     const mergedOptions = { required: true, optimize: false, ...options }
     this.required = mergedOptions.required
     if (mergedOptions.optimize) {
-      this.optimize()
+      this.validate = this.optimize()
     }
   }
 
@@ -56,7 +65,7 @@ export class ObjectValidator<T extends Record<string, unknown>, O = never> exten
     },
     context?: ValidationErrorContext
   ): CodeGenResult {
-    const contextStr = context?.key ? `, { key: \`${context.key}\` }` : ', context'
+    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
     const objValueRef = `objValue${id()}`
     const schemaRef = `scheme${id()}`
     let imports: { [key: string]: unknown } = {

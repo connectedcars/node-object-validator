@@ -1,5 +1,10 @@
 import { ValidationErrorContext, ValidationFailure, ValidationsError } from './errors'
 
+// https://stackoverflow.com/questions/51651499/typescript-what-is-a-naked-type-parameter
+// https://2ality.com/2019/07/testing-static-types.html
+// Wrapping the types in an tuple force a specific type instead of allow any in the union
+export type AssertEqual<T, Expected> = [T, Expected] extends [Expected, T] ? true : never
+
 // TODO: Give better name
 export function isValidType<T>(value: unknown, errors: ValidationFailure[]): value is T {
   return errors.length === 0

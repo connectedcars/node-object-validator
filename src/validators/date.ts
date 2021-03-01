@@ -1,6 +1,14 @@
 import { CodeGenResult, ValidatorBase, ValidatorOptions } from '../common'
 import { NotDateFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
 
+export function isDate(value: unknown, context?: ValidationErrorContext): value is Date {
+  const errors = validateDate(value, context)
+  if (errors.length === 0) {
+    return true
+  }
+  return false
+}
+
 export function validateDate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
   if (!(value instanceof Date)) {
     return [new NotDateFail(`Must be a Date object`, context)]
