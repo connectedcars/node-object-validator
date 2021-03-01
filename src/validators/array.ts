@@ -45,7 +45,7 @@ export class ArrayValidator<T extends Array<unknown>, O = never> extends Validat
     const mergedOptions = { required: true, optimize: false, ...options }
     this.required = mergedOptions.required
     if (mergedOptions.optimize) {
-      this.validate = this.optimize()
+      this.optimize()
     }
   }
 

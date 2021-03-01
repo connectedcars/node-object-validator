@@ -37,7 +37,7 @@ export class ObjectValidator<T extends Record<string, unknown>, O = never> exten
     const mergedOptions = { required: true, optimize: false, ...options }
     this.required = mergedOptions.required
     if (mergedOptions.optimize) {
-      this.validate = this.optimize()
+      this.optimize()
     }
   }
 
@@ -56,7 +56,7 @@ export class ObjectValidator<T extends Record<string, unknown>, O = never> exten
     },
     context?: ValidationErrorContext
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
+    const contextStr = context?.key ? `, { key: \`${context.key}\` }` : ', context'
     const objValueRef = `objValue${id()}`
     const schemaRef = `scheme${id()}`
     let imports: { [key: string]: unknown } = {

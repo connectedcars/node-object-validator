@@ -22,7 +22,7 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
     const mergedOptions = { required: true, optimize: false, ...options }
     this.required = mergedOptions.required
     if (mergedOptions.optimize) {
-      this.validate = this.optimize()
+      this.optimize()
     }
   }
 

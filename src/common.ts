@@ -27,6 +27,7 @@ export interface Validator {
 export abstract class ValidatorBase<T> implements Validator {
   public schema?: unknown
   protected codeGenId = 1
+  private originalValidate: ((value: unknown, context?: ValidationErrorContext) => ValidationFailure[]) | null = null
 
   // TODO: implement convert JSON to validate object
 
@@ -56,7 +57,9 @@ export abstract class ValidatorBase<T> implements Validator {
     },
     context?: ValidationErrorContext
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
+    const contextStr = context
+      ? `, { key: (context && context.key ? \`\${context.key}['${context.key}']\` : \`${context.key}\`) }`
+      : ', context'
     const validatorName = `validator${id()}`
     const declarations = [`const ${validatorName} = ${validatorRef}`]
     const code = [`errors.push(...${validatorName}.validate(${valueRef}${contextStr}))`]
@@ -78,7 +81,9 @@ export abstract class ValidatorBase<T> implements Validator {
 
     try {
       const functionGenerator = new Function('imports', 'schema', functionBody)
-      const validateFunction = functionGenerator(imports, { schema: this.schema, validate: this.validate })
+      this.originalValidate = this.originalValidate ? this.originalValidate : this.validate
+      const validateFunction = functionGenerator(imports, { schema: this.schema, validate: this.originalValidate })
+      this.validate = validateFunction
       return validateFunction
     } catch (e) {
       throw new Error(`Failed to compile optimized function(${e.message}):\n${functionBody}`)

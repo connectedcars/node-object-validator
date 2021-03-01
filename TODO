@@ -1,4 +1,3 @@
-* Move required to options
 * Implement union
 * Implement required any/unknown validator
 * Implement is... functions for all validators

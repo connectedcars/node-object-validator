@@ -12,7 +12,7 @@ import { RequiredRegexMatch } from './regex-match'
 // Wrapping the types in an tuple force a specific type instead of allow any in the union
 export type AssertEqual<T, Expected> = [T, Expected] extends [Expected, T] ? true : never
 
-describe.each([false, true])('Object (optimize: %s)', optimize => {
+describe('Object', () => {
   describe('validateObject', () => {
     it('should validate simple object', () => {
       const errors = validateObject(
@@ -25,6 +25,36 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
     })
   })
 
+  it('should handle nested optimize', () => {
+    // Un optimized top validator should not include nested optimized validators
+    const objectValidator = new RequiredObject<{
+      requiredObject: { optionalInt?: number }
+    }>(
+      {
+        requiredObject: new RequiredObject(
+          {
+            optionalInt: new OptionalInteger(1, 2)
+          },
+          { optimize: true }
+        )
+      },
+      { optimize: true }
+    )
+
+    const unknownValue: unknown = {
+      requiredObject: {
+        optionalInt: '1'
+      }
+    }
+    expect(objectValidator.validate(unknownValue)).toEqual([
+      new NotIntegerFail(`Must be an integer (received "1")`, {
+        key: "requiredObject['optionalInt']"
+      })
+    ])
+  })
+})
+
+describe.each([false, true])('Object (optimize: %s)', optimize => {
   describe('ObjectValidator', () => {
     it('should validation and give expected result', () => {
       const objectValidator = new ObjectValidator(
