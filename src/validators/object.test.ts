@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { NotIntegerFail, RequiredFail } from '../errors'
+import { NotArrayFail, NotIntegerFail, RequiredFail } from '../errors'
 import { OptionalArray, RequiredArray } from './array'
 import { OptionalDate } from './date'
 import { RequiredFloat } from './float'
@@ -215,7 +215,7 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
         new NotIntegerFail(`Must be an integer (received "1")`, {
           key: 'optionalArray[0]'
         }),
-        new NotIntegerFail(`Must be an array (received "1")`, {
+        new NotArrayFail(`Must be an array (received "1")`, {
           key: 'optionalArrayArray[0]'
         })
       ])

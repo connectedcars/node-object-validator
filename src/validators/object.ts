@@ -31,11 +31,13 @@ export class ObjectValidator<T extends Record<string, unknown>, O = never> exten
   public schema: Record<string, Validator>
   private required: boolean
 
-  public constructor(schema: Record<string, Validator>, options?: ValidatorOptions, required = true) {
+  public constructor(schema: Record<string, Validator>, options?: ValidatorOptions) {
     super()
     this.schema = schema
-    this.required = required
-    if (options?.optimize) {
+    const mergedOptions = { required: true, optimize: false, ...options }
+    this.required = mergedOptions.required
+    console.log(mergedOptions.optimize)
+    if (mergedOptions.optimize) {
       this.validate = this.optimize()
     }
   }
@@ -103,13 +105,13 @@ export class ObjectValidator<T extends Record<string, unknown>, O = never> exten
 export class RequiredObject<T extends Record<string, unknown>> extends ObjectValidator<T> {
   private validatorType: 'RequiredObject' = 'RequiredObject'
   public constructor(schema: Record<string, Validator>, options?: ValidatorOptions) {
-    super(schema, options)
+    super(schema, { ...options, required: true })
   }
 }
 
 export class OptionalObject<T extends Record<string, unknown>> extends ObjectValidator<T, null | undefined> {
   private validatorType: 'OptionalObject' = 'OptionalObject'
   public constructor(schema: Record<string, Validator>, options?: ValidatorOptions) {
-    super(schema, options, false)
+    super(schema, { ...options, required: false })
   }
 }
