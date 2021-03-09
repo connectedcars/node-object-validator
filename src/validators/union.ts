@@ -14,19 +14,27 @@ export function validateUnion(
   value: unknown,
   context?: ValidationErrorContext
 ): ValidationFailure[] {
-  return []
+  let errors: ValidationFailure[] = []
+  for (const validator of schema) {
+    const currentErrors = validator.validate(value, context)
+    if (currentErrors.length === 0) {
+      return []
+    } else if (errors.length === 0) {
+      errors = currentErrors
+    } else if (currentErrors.length < errors.length) {
+      errors = currentErrors
+    }
+  }
+  return errors
 }
 
 export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
   public schema: Validator[]
-  private required: boolean
 
   public constructor(schema: Validator[], options?: ValidatorOptions) {
-    super()
+    super(options)
     this.schema = schema
-    const mergedOptions = { required: true, optimize: false, ...options }
-    this.required = mergedOptions.required
-    if (mergedOptions.optimize) {
+    if (options?.optimize) {
       this.optimize()
     }
   }
@@ -36,5 +44,17 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
       return this.required ? [new RequiredFail(`Is required`, context)] : []
     }
     return validateUnion(this.schema, value, context)
+  }
+}
+
+export class RequiredUnion<T> extends UnionValidator<T> {
+  public constructor(schema: Validator[], options?: ValidatorOptions) {
+    super(schema, { ...options, required: true })
+  }
+}
+
+export class OptionalUnion<T> extends UnionValidator<T, undefined | null> {
+  public constructor(schema: Validator[], options?: ValidatorOptions) {
+    super(schema, { ...options, required: false })
   }
 }
