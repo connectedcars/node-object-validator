@@ -86,7 +86,7 @@ export abstract class ValidatorBase<T> implements Validator {
 
     try {
       const functionGenerator = new Function('imports', 'schema', functionBody)
-      this.originalValidate = this.originalValidate ? this.originalValidate : this.validate
+      this.originalValidate = this.originalValidate ? this.originalValidate : this.validate.bind(this)
       const validateFunction = functionGenerator(imports, { schema: this.schema, validate: this.originalValidate })
       this.validate = validateFunction
       return validateFunction
