@@ -25,14 +25,14 @@ export function validateFloatString(
 export class FloatStringValidator<O = never> extends ValidatorBase<number | O> {
   private min: number
   private max: number
-  private required: boolean
 
   public constructor(min = 0, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super()
+    super(options)
     this.min = min
     this.max = max
-    const mergedOptions = { required: true, optimize: false, ...options }
-    this.required = mergedOptions.required
+    if (options?.optimize) {
+      this.optimize()
+    }
   }
 
   public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
@@ -44,16 +44,12 @@ export class FloatStringValidator<O = never> extends ValidatorBase<number | O> {
 }
 
 export class RequiredFloatString extends FloatStringValidator {
-  private validatorType: 'RequiredFloatString' = 'RequiredFloatString'
-
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super(min, max, { ...options, required: true })
   }
 }
 
 export class OptionalFloatString extends FloatStringValidator<undefined | null> {
-  private validatorType: 'OptionalFloatString' = 'OptionalFloatString'
-
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super(min, max, { ...options, required: false })
   }

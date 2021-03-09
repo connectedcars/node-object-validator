@@ -31,13 +31,9 @@ export function validateDateTime(value: unknown, context?: ValidationErrorContex
 }
 
 export class DateTimeValidator<O = never> extends ValidatorBase<string | O> {
-  public required: boolean
-
   public constructor(options?: ValidatorOptions) {
-    super()
-    const mergedOptions = { required: true, optimize: false, ...options }
-    this.required = mergedOptions.required
-    if (mergedOptions.optimize) {
+    super(options)
+    if (options?.optimize) {
       this.optimize()
     }
   }
@@ -95,14 +91,12 @@ export class DateTimeValidator<O = never> extends ValidatorBase<string | O> {
 }
 
 export class RequiredDateTime extends DateTimeValidator {
-  private validatorType: 'RequiredDateTime' = 'RequiredDateTime'
   public constructor(options?: ValidatorOptions) {
     super({ ...options, required: true })
   }
 }
 
 export class OptionalDateTime extends DateTimeValidator<undefined | null> {
-  private validatorType: 'OptionalDateTime' = 'OptionalDateTime'
   public constructor(options?: ValidatorOptions) {
     super({ ...options, required: false })
   }

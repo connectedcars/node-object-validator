@@ -42,7 +42,6 @@ export class ArrayValidator<T extends Array<unknown>, O = never> extends Validat
   public schema: Validator
   private minLength: number
   private maxLength: number
-  private required: boolean
 
   public constructor(
     schema: Validator,
@@ -50,13 +49,11 @@ export class ArrayValidator<T extends Array<unknown>, O = never> extends Validat
     maxLength = Number.MAX_SAFE_INTEGER,
     options?: ValidatorOptions
   ) {
-    super()
+    super(options)
     this.schema = schema
     this.minLength = minLength
     this.maxLength = maxLength
-    const mergedOptions = { required: true, optimize: false, ...options }
-    this.required = mergedOptions.required
-    if (mergedOptions.optimize) {
+    if (options?.optimize) {
       this.optimize()
     }
   }
@@ -121,8 +118,6 @@ export class ArrayValidator<T extends Array<unknown>, O = never> extends Validat
 }
 
 export class RequiredArray<T extends Array<unknown>> extends ArrayValidator<T> {
-  private validatorType: 'RequiredArray' = 'RequiredArray'
-
   public constructor(
     schema: Validator,
     minLength = 0,
@@ -134,8 +129,6 @@ export class RequiredArray<T extends Array<unknown>> extends ArrayValidator<T> {
 }
 
 export class OptionalArray<T extends Array<unknown>> extends ArrayValidator<T, null | undefined> {
-  private validatorType: 'OptionalArray' = 'OptionalArray'
-
   public constructor(
     schema: Validator,
     minLength = 0,

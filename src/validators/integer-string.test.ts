@@ -46,7 +46,7 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
       ])
     })
 
-    it('requires min value', function () {
+    it('requires min value', () => {
       const validator = new IntegerStringValidator(5, 500, { optimize })
       expect(validator.validate('-1')).toStrictEqual([new OutOfRangeFail('Must be between 5 and 500 (received "-1")')])
       expect(validator.validate('0')).toStrictEqual([new OutOfRangeFail('Must be between 5 and 500 (received "0")')])

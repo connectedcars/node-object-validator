@@ -26,14 +26,11 @@ export function validateExactString(
 
 export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
   private expected: string
-  private required: boolean
 
   public constructor(expected: string, options?: ValidatorOptions) {
-    super()
+    super(options)
     this.expected = expected
-    const mergedOptions = { required: true, optimize: false, ...options }
-    this.required = mergedOptions.required
-    if (mergedOptions.optimize) {
+    if (options?.optimize) {
       this.optimize()
     }
   }
@@ -81,16 +78,12 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
 }
 
 export class RequiredExactString extends ExactStringValidator {
-  private validatorType: 'RequiredExactString' = 'RequiredExactString'
-
   public constructor(expected: string, options?: ValidatorOptions) {
     super(expected, { ...options, required: true })
   }
 }
 
 export class OptionalExactString extends ExactStringValidator<undefined | null> {
-  private validatorType: 'OptionalExactString' = 'OptionalExactString'
-
   public constructor(expected: string, options?: ValidatorOptions) {
     super(expected, { ...options, required: false })
   }

@@ -43,7 +43,6 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
 
   describe('RequiredArray', () => {
     it('accepts empty value', () => {
-      // TODO: Support multidimensional [{ .Scheme }, RequiredString(), etc. ]
       const validator = new RequiredArray(new RequiredObject({}), 0, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
       expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])

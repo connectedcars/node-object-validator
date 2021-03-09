@@ -32,15 +32,12 @@ export function validateFloat(
 export class FloatValidator<O = never> extends ValidatorBase<number | O> {
   private min: number
   private max: number
-  private required: boolean
 
   public constructor(min = 0, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super()
+    super(options)
     this.min = min
     this.max = max
-    const mergedOptions = { required: true, optimize: false, ...options }
-    this.required = mergedOptions.required
-    if (mergedOptions.optimize) {
+    if (options?.optimize) {
       this.optimize()
     }
   }
@@ -76,14 +73,14 @@ export class FloatValidator<O = never> extends ValidatorBase<number | O> {
       `  }`,
       ...(this.required ? [
         `} else {`,
-        `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
+        `  errors.push(new RequiredFail(\`Is required\`${contextStr}))`] : []),
         '}'
     ]
     return [
       {
         OutOfRangeFail: OutOfRangeFail,
         NotFloatFail: NotFloatFail,
-        RequiredError: RequiredFail
+        RequiredFail: RequiredFail
       },
       declarations,
       code
@@ -92,16 +89,12 @@ export class FloatValidator<O = never> extends ValidatorBase<number | O> {
 }
 
 export class RequiredFloat extends FloatValidator {
-  private validatorType: 'RequiredFloat' = 'RequiredFloat'
-
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super(min, max, { ...options, required: true })
   }
 }
 
 export class OptionalFloat extends FloatValidator<undefined | null> {
-  private validatorType: 'OptionalFloat' = 'OptionalFloat'
-
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super(min, max, { ...options, required: false })
   }

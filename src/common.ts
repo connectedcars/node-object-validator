@@ -31,10 +31,14 @@ export interface Validator {
 
 export abstract class ValidatorBase<T> implements Validator {
   public schema?: unknown
+  public required: boolean
   protected codeGenId = 1
   private originalValidate: ((value: unknown, context?: ValidationErrorContext) => ValidationFailure[]) | null = null
 
-  // TODO: implement convert JSON to validate object
+  public constructor(options?: ValidatorOptions) {
+    const mergedOptions = { required: true, ...options }
+    this.required = mergedOptions.required
+  }
 
   public isValid(obj: unknown): obj is T {
     const errors = this.validate(obj)
