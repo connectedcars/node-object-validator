@@ -27,6 +27,7 @@
         ]
       }
 
+* Optimize union validation on RequiredObject with same name ExactString on all objects
 * Implement only allowing known keys
 * Implement support for aliases:
 
