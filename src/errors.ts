@@ -26,6 +26,7 @@ export class ValidationsError extends Error {
   public constructor(message: string, errors: ValidationFailure[]) {
     super(message)
     this.errors = errors
+    this.name = this.constructor.name
   }
 }
 
