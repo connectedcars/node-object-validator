@@ -1,9 +1,4 @@
-* Implement union
 * Implement required any/unknown validator
-* Implement convert
-const validator = new DateTimeValidator({ optimize, convert: value => new Date(value) })
-validator.convert('2020-01-01T010101Z') // Throws if validation fails
-
 * Test with real data:
 
 {
@@ -33,3 +28,14 @@ validator.convert('2020-01-01T010101Z') // Throws if validation fails
       }
 
 * Implement only allowing known keys
+* Implement support for aliases:
+
+let objectValidator({
+  exact: 'exact_match',
+  regexMatch: /my regex match/,
+  date: '2021-01-01T15:58:51.099197Z',
+  integer: 1,
+  float: 1.1
+})
+
+* Implement support for sample validators

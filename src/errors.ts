@@ -46,3 +46,10 @@ export class NotStringFail extends ValidationFailure {}
 export class OutOfRangeFail extends ValidationFailure {}
 export class RequiredFail extends ValidationFailure {}
 export class WrongLengthFail extends ValidationFailure {}
+export class UnionFail extends ValidationFailure {
+  public errors: ValidationFailure[]
+  public constructor(message: string, errors: ValidationFailure[], context?: ValidationErrorContext) {
+    super(message, context)
+    this.errors = errors
+  }
+}
