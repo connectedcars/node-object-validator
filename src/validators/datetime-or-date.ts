@@ -2,7 +2,7 @@
 
 import { validateDate, validateDateTime } from '..'
 import { isValidType, ValidatorBase, ValidatorOptions } from '../common'
-import { NotDatetimeOrDateFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
+import { NotDatetimeOrDateFail, ValidationErrorContext, ValidationFailure } from '../errors'
 
 export function validateDateTimeOrDate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
   const dateError = validateDate(value, context)
@@ -28,10 +28,7 @@ export class DateTimeOrDateValidator<O = never> extends ValidatorBase<string | O
     }
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
-    if (value == null) {
-      return this.required ? [new RequiredFail(`Is required`, context)] : []
-    }
+  protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
     return validateDateTimeOrDate(value, context)
   }
 }

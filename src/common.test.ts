@@ -3,12 +3,12 @@ import { ValidationErrorContext, ValidationFailure } from './errors'
 
 class OneValidator extends ValidatorBase<number> {
   public constructor(options?: ValidatorOptions) {
-    super()
+    super(options)
     if (options?.optimize) {
-      this.validate = this.optimize()
+      this.optimize()
     }
   }
-  public validate(value: unknown, context?: ValidationErrorContext | undefined): ValidationFailure[] {
+  protected validateValue(value: unknown, context?: ValidationErrorContext | undefined): ValidationFailure[] {
     if (value !== 1) {
       return [new ValidationFailure(`value is not 1`, context)]
     }
@@ -16,11 +16,16 @@ class OneValidator extends ValidatorBase<number> {
   }
 }
 
-describe.each([false, true])('Common (optimize: %s)', optimize => {
+describe('Common', () => {
   describe('ValidatorBase', () => {
     describe('codeGen', () => {
-      it(`should validate with the default codeGen implementation`, () => {
-        const validator = new OneValidator({ optimize })
+      it(`should validate with the default codeGen implementation with optimize false`, () => {
+        const validator = new OneValidator({ optimize: false })
+        expect(validator.validate(1)).toStrictEqual([])
+      })
+
+      it(`should validate with the default codeGen implementation with optimize true`, () => {
+        const validator = new OneValidator({ optimize: true })
         expect(validator.validate(1)).toStrictEqual([])
       })
     })

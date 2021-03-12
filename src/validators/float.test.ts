@@ -25,11 +25,10 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
   describe('FloatValidator', () => {
     it('should generate validation code and give same result', () => {
       const validator = new FloatValidator(1, 2, { optimize })
-      const str = validator.validate.toString()
       if (optimize) {
-        expect(str).toMatch(/generatedFunction = true/)
+        expect(validator['optimizedValidate']).not.toBeNull()
       } else {
-        expect(str).not.toMatch(/generatedFunction = true/)
+        expect(validator['optimizedValidate']).toBeNull()
       }
       const errors = validator.validate(1.5)
       expect(errors).toEqual([])

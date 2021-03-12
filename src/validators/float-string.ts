@@ -1,6 +1,6 @@
 import { validateFloat, validateString } from '..'
 import { isValidType, ValidatorBase, ValidatorOptions } from '../common'
-import { NotFloatStringFail, RequiredFail, ValidationErrorContext, ValidationFailure, WrongLengthFail } from '../errors'
+import { NotFloatStringFail, ValidationErrorContext, ValidationFailure, WrongLengthFail } from '../errors'
 
 export function validateFloatString(
   value: unknown,
@@ -35,10 +35,7 @@ export class FloatStringValidator<O = never> extends ValidatorBase<number | O> {
     }
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
-    if (value == null) {
-      return this.required ? [new RequiredFail(`Is required`, context)] : []
-    }
+  protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
     return validateFloatString(value, this.min, this.max, context)
   }
 }

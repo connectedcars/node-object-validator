@@ -1,4 +1,4 @@
-import { ValidationErrorContext, ValidationFailure, ValidationsError } from './errors'
+import { RequiredFail, ValidationErrorContext, ValidationFailure, ValidationsError } from './errors'
 
 // https://stackoverflow.com/questions/51651499/typescript-what-is-a-naked-type-parameter
 // https://2ality.com/2019/07/testing-static-types.html
@@ -25,7 +25,7 @@ export type ValidatorOptions = {
 }
 
 export interface Validator {
-  validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[]
+  validate(value: unknown, context?: ValidationErrorContext, optimized?: boolean): ValidationFailure[]
   codeGen(valueRef: string, validatorRef: string, id: () => number, context?: ValidationErrorContext): CodeGenResult
 }
 
@@ -33,11 +33,12 @@ export abstract class ValidatorBase<T> implements Validator {
   public schema?: unknown
   public required: boolean
   protected codeGenId = 1
-  private originalValidate: ((value: unknown, context?: ValidationErrorContext) => ValidationFailure[]) | null = null
+  protected optimizedValidate: ((value: unknown, context?: ValidationErrorContext) => ValidationFailure[]) | null
 
   public constructor(options?: ValidatorOptions) {
     const mergedOptions = { required: true, ...options }
     this.required = mergedOptions.required
+    this.optimizedValidate = null
   }
 
   public isValid(obj: unknown): obj is T {
@@ -58,6 +59,16 @@ export abstract class ValidatorBase<T> implements Validator {
     }
   }
 
+  public validate(value: unknown, context?: ValidationErrorContext, optimized?: boolean): ValidationFailure[] {
+    if (optimized !== false && this.optimizedValidate !== null) {
+      return this.optimizedValidate(value, context)
+    }
+    if (value == null) {
+      return this.required ? [new RequiredFail(`Is required`, context)] : []
+    }
+    return this.validateValue(value, context, false)
+  }
+
   public codeGen(
     valueRef: string,
     validatorRef: string,
@@ -71,11 +82,11 @@ export abstract class ValidatorBase<T> implements Validator {
       : ', context'
     const validatorName = `validator${id()}`
     const declarations = [`const ${validatorName} = ${validatorRef}`]
-    const code = [`errors.push(...${validatorName}.validate(${valueRef}${contextStr}))`]
+    const code = [`errors.push(...${validatorName}.validate(${valueRef}${contextStr}, false))`]
     return [{}, declarations, code]
   }
 
-  public optimize(): (value: unknown) => ValidationFailure[] {
+  protected optimize(): void {
     const [imports, declarations, code] = this.codeGen('value', 'schema')
     const functionBody = [
       ...Object.keys(imports).map(i => `const ${i} = imports['${i}']`),
@@ -90,14 +101,16 @@ export abstract class ValidatorBase<T> implements Validator {
 
     try {
       const functionGenerator = new Function('imports', 'schema', functionBody)
-      this.originalValidate = this.originalValidate ? this.originalValidate : this.validate.bind(this)
-      const validateFunction = functionGenerator(imports, { schema: this.schema, validate: this.originalValidate })
-      this.validate = validateFunction
-      return validateFunction
+      const validateFunction = functionGenerator(imports, { schema: this.schema, validate: this.validate.bind(this) })
+      this.optimizedValidate = validateFunction
     } catch (e) {
       throw new Error(`Failed to compile optimized function(${e.message}):\n${functionBody}`)
     }
   }
 
-  public abstract validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[]
+  protected abstract validateValue(
+    value: unknown,
+    context?: ValidationErrorContext,
+    optimized?: boolean
+  ): ValidationFailure[]
 }

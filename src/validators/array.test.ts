@@ -30,11 +30,10 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
   describe('ArrayValidator', () => {
     it('should validate and give correct result', () => {
       const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10, { optimize })
-      const str = arrayValidator.validate.toString()
       if (optimize) {
-        expect(str).toMatch(/generatedFunction = true/)
+        expect(arrayValidator['optimizedValidate']).not.toBeNull()
       } else {
-        expect(str).not.toMatch(/generatedFunction = true/)
+        expect(arrayValidator['optimizedValidate']).toBeNull()
       }
       const errors = arrayValidator.validate([1, 2, 4, 5])
       expect(errors).toEqual([])

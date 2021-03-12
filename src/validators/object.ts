@@ -20,7 +20,8 @@ function isObjectType(value: unknown): value is { [key: string]: unknown } {
 export function validateObject(
   schema: Record<string, Validator>,
   value: unknown,
-  context?: ValidationErrorContext
+  context?: ValidationErrorContext,
+  optimized?: boolean
 ): ValidationFailure[] {
   const errors: ValidationFailure[] = []
   if (!isObjectType(value)) {
@@ -31,7 +32,7 @@ export function validateObject(
   for (const key of Object.keys(schema)) {
     const validator = schema[key]
     const keyName = context?.key ? `${context.key}['${key}']` : key
-    errors.push(...validator.validate(value[key], { key: keyName }))
+    errors.push(...validator.validate(value[key], { key: keyName }, optimized))
   }
   return errors
 }
@@ -45,13 +46,6 @@ export class ObjectValidator<T extends Record<string, unknown>, O = never> exten
     if (options?.optimize) {
       this.optimize()
     }
-  }
-
-  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
-    if (value == null) {
-      return this.required ? [new RequiredFail(`Is required`, context)] : []
-    }
-    return validateObject(this.schema, value, context)
   }
 
   public codeGen(
@@ -104,6 +98,10 @@ export class ObjectValidator<T extends Record<string, unknown>, O = never> exten
     )
 
     return [imports, declarations, code]
+  }
+
+  protected validateValue(value: unknown, context?: ValidationErrorContext, optimized?: boolean): ValidationFailure[] {
+    return validateObject(this.schema, value, context, optimized)
   }
 }
 

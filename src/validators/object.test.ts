@@ -100,11 +100,10 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
         optionalDate: new Date(),
         regexMatch: 'hello'
       }
-      const str = objectValidator.validate.toString()
       if (optimize) {
-        expect(str).toMatch(/generatedFunction = true/)
+        expect(objectValidator['optimizedValidate']).not.toBeNull()
       } else {
-        expect(str).not.toMatch(/generatedFunction = true/)
+        expect(objectValidator['optimizedValidate']).toBeNull()
       }
       const errors = objectValidator.validate(unknownValue)
       expect(errors).toEqual([])

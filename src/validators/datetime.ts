@@ -38,13 +38,6 @@ export class DateTimeValidator<O = never> extends ValidatorBase<string | O> {
     }
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
-    if (value == null) {
-      return this.required ? [new RequiredFail(`Is required`, context)] : []
-    }
-    return validateDateTime(value, context)
-  }
-
   public codeGen(
     valueRef: string,
     validatorRef: string,
@@ -87,6 +80,10 @@ export class DateTimeValidator<O = never> extends ValidatorBase<string | O> {
       declarations,
       code
     ]
+  }
+
+  protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
+    return validateDateTime(value, context)
   }
 }
 

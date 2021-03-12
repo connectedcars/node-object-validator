@@ -42,13 +42,6 @@ export class IntegerValidator<O = never> extends ValidatorBase<number | O> {
     }
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
-    if (value == null) {
-      return this.required ? [new RequiredFail(`Is required`, context)] : []
-    }
-    return validateInteger(value, this.min, this.max, context)
-  }
-
   public codeGen(
     valueRef: string,
     validatorRef: string,
@@ -85,6 +78,10 @@ export class IntegerValidator<O = never> extends ValidatorBase<number | O> {
       declarations,
       code
     ]
+  }
+
+  protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
+    return validateInteger(value, this.min, this.max, context)
   }
 }
 

@@ -1,11 +1,5 @@
 import { isValidType, ValidatorBase, ValidatorOptions } from '../common'
-import {
-  NotIntegerStringFail,
-  RequiredFail,
-  ValidationErrorContext,
-  ValidationFailure,
-  WrongLengthFail
-} from '../errors'
+import { NotIntegerStringFail, ValidationErrorContext, ValidationFailure, WrongLengthFail } from '../errors'
 import { validateInteger } from './integer'
 import { validateString } from './string'
 
@@ -45,10 +39,7 @@ export class IntegerStringValidator<O = never> extends ValidatorBase<string | O>
     }
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
-    if (value == null) {
-      return this.required ? [new RequiredFail(`Is required`, context)] : []
-    }
+  protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
     return validateIntegerString(value, this.min, this.max, context)
   }
 }

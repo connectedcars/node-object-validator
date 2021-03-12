@@ -24,13 +24,6 @@ export class DateValidator<O = never> extends ValidatorBase<Date | O> {
     }
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
-    if (value == null) {
-      return this.required ? [new RequiredFail(`Is required`, context)] : []
-    }
-    return validateDate(value, context)
-  }
-
   public codeGen(
     valueRef: string,
     validatorRef: string,
@@ -62,6 +55,10 @@ export class DateValidator<O = never> extends ValidatorBase<Date | O> {
       declarations,
       code
     ]
+  }
+
+  protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
+    return validateDate(value, context)
   }
 }
 

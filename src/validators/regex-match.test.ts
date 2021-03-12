@@ -37,11 +37,10 @@ describe.each([false, true])('Regex (optimize: %s)', optimize => {
   describe('RegexValidator', () => {
     it('should generate validation code and give same result', () => {
       const validator = new RegexMatchValidator(/^.*$/, { optimize })
-      const str = validator.validate.toString()
       if (optimize) {
-        expect(str).toMatch(/generatedFunction = true/)
+        expect(validator['optimizedValidate']).not.toBeNull()
       } else {
-        expect(str).not.toMatch(/generatedFunction = true/)
+        expect(validator['optimizedValidate']).toBeNull()
       }
       const errors = validator.validate('2018-08-06T13:37:00Z')
       expect(errors).toEqual([])

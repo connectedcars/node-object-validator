@@ -20,7 +20,8 @@ export function validateArray(
   value: unknown,
   minLength = 0,
   maxLength = Number.MAX_SAFE_INTEGER,
-  context?: ValidationErrorContext
+  context?: ValidationErrorContext,
+  optimized?: boolean
 ): ValidationFailure[] {
   if (!Array.isArray(value)) {
     return [new NotArrayFail(`Must be an array (received "${value}")`, context)]
@@ -33,7 +34,7 @@ export function validateArray(
   const errors = []
   const validator = schema
   for (const [i, item] of value.entries()) {
-    errors.push(...validator.validate(item, { key: `${context?.key || ''}[${i}]` }))
+    errors.push(...validator.validate(item, { key: `${context?.key || ''}[${i}]` }, optimized))
   }
   return errors
 }
@@ -56,13 +57,6 @@ export class ArrayValidator<T extends Array<unknown>, O = never> extends Validat
     if (options?.optimize) {
       this.optimize()
     }
-  }
-
-  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
-    if (value == null) {
-      return this.required ? [new RequiredFail(`Is required`, context)] : []
-    }
-    return validateArray(this.schema, value, this.minLength, this.maxLength, context)
   }
 
   public codeGen(
@@ -114,6 +108,10 @@ export class ArrayValidator<T extends Array<unknown>, O = never> extends Validat
     ]
 
     return [imports, declarations, code]
+  }
+
+  protected validateValue(value: unknown, context?: ValidationErrorContext, optimized?: boolean): ValidationFailure[] {
+    return validateArray(this.schema, value, this.minLength, this.maxLength, context, optimized)
   }
 }
 

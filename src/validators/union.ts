@@ -12,11 +12,12 @@ export function isUnion<T>(schema: Validator[], value: unknown, context?: Valida
 export function validateUnion(
   schema: Validator[],
   value: unknown,
-  context?: ValidationErrorContext
+  context?: ValidationErrorContext,
+  optimized?: boolean
 ): ValidationFailure[] {
   const errors: ValidationFailure[] = []
   for (const [index, validator] of schema.entries()) {
-    const currentErrors = validator.validate(value, context)
+    const currentErrors = validator.validate(value, context, optimized)
     if (currentErrors.length === 0) {
       return []
     } else {
@@ -39,13 +40,6 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
     if (options?.optimize) {
       this.optimize()
     }
-  }
-
-  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
-    if (value == null) {
-      return this.required ? [new RequiredFail(`Is required`, context)] : []
-    }
-    return validateUnion(this.schema, value, context)
   }
 
   public codeGen(
@@ -115,6 +109,10 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
     )
 
     return [imports, declarations, code]
+  }
+
+  protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
+    return validateUnion(this.schema, value, context)
   }
 }
 

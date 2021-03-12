@@ -2,7 +2,7 @@
 
 import { validateInteger, validateIntegerString } from '..'
 import { isValidType, ValidatorBase, ValidatorOptions } from '../common'
-import { NotIntegerOrIntegerStringFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
+import { NotIntegerOrIntegerStringFail, ValidationErrorContext, ValidationFailure } from '../errors'
 
 export function validateIntegerOrIntegerString(
   value: unknown,
@@ -59,10 +59,7 @@ export class IntegerOrIntegerStringValidator<O = never> extends ValidatorBase<st
     }
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
-    if (value == null) {
-      return this.required ? [new RequiredFail(`Is required`, context)] : []
-    }
+  protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
     return validateIntegerOrIntegerString(value, this.min, this.max, context)
   }
 }

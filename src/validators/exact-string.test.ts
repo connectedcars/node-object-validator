@@ -33,11 +33,10 @@ describe.each([false, true])('validateExactString (optimize: %s)', optimize => {
   describe('ExactStringValidator', () => {
     it('should generate code for validation and give same result', () => {
       const validator = new ExactStringValidator('MyString', { optimize })
-      const str = validator.validate.toString()
       if (optimize) {
-        expect(str).toMatch(/generatedFunction = true/)
+        expect(validator['optimizedValidate']).not.toBeNull()
       } else {
-        expect(str).not.toMatch(/generatedFunction = true/)
+        expect(validator['optimizedValidate']).toBeNull()
       }
       const errors = validator.validate('MyString')
       expect(errors).toEqual([])

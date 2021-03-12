@@ -27,11 +27,10 @@ describe.each([false, true])('Date (optimize: %s)', optimize => {
   describe('DateValidator', () => {
     it('should generate validation code and give same result', () => {
       const validator = new DateValidator({ optimize })
-      const str = validator.validate.toString()
       if (optimize) {
-        expect(str).toMatch(/generatedFunction = true/)
+        expect(validator['optimizedValidate']).not.toBeNull()
       } else {
-        expect(str).not.toMatch(/generatedFunction = true/)
+        expect(validator['optimizedValidate']).toBeNull()
       }
       const errors = validator.validate(new Date())
       expect(errors).toEqual([])

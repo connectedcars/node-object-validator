@@ -2,7 +2,7 @@
 
 import { validateFloat, validateFloatString } from '..'
 import { isValidType, ValidatorBase, ValidatorOptions } from '../common'
-import { NotFloatOrFloatStringFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
+import { NotFloatOrFloatStringFail, ValidationErrorContext, ValidationFailure } from '../errors'
 
 export function validateFloatOrFloatString(
   value: unknown,
@@ -57,10 +57,7 @@ export class FloatOrFloatStringValidator<O = never> extends ValidatorBase<string
     }
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
-    if (value == null) {
-      return this.required ? [new RequiredFail(`Is required`, context)] : []
-    }
+  protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
     return validateFloatOrFloatString(value, this.min, this.max, context)
   }
 }
