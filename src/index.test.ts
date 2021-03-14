@@ -1,3 +1,4 @@
+import { NotExactStringFail, NotStringFail, RequiredFail, UnionFail } from './errors'
 import {
   ObjectValidator,
   OptionalObject,
@@ -9,8 +10,17 @@ import {
   RequiredInteger,
   RequiredIntegerOrIntegerString,
   RequiredObject,
+  RequiredRegexMatch,
   RequiredString
 } from './index'
+import { OptionalArray } from './validators/array'
+import { DateTimeValidator } from './validators/datetime'
+import { ExactStringValidator } from './validators/exact-string'
+import { OptionalInteger } from './validators/integer'
+import { RegexMatchValidator } from './validators/regex-match'
+import { OptionalString, StringValidator } from './validators/string'
+import { RequiredUnion, UnionValidator } from './validators/union'
+import { UnknownValidator } from './validators/unknown'
 
 describe.each([false, true])('Shorthand validation of complex objects (optimize: %s)', optimize => {
   const validator = new ObjectValidator(
@@ -240,6 +250,194 @@ describe.each([false, true])('Shorthand validation of complex objects (optimize:
     })
     expect(errors.map(e => e.toString())).toEqual([
       `OutOfRangeFail: Field 'positions[1]['accuracy']' must be between 0 and 20 (received "21")`
+    ])
+  })
+})
+
+describe.each([false, true])('Complex objects with unions using full syntax (optimize: %s)', optimize => {
+  const buildUpdateMessageValidator = new ObjectValidator(
+    {
+      buildId: new StringValidator(),
+      repoUrl: new RegexMatchValidator(/^http[s]?:\/\//),
+      branchName: new StringValidator(),
+      commitSha: new RequiredRegexMatch(/[0-9A-Fa-f]+/),
+      tag: new StringValidator(),
+      imageName: new StringValidator(),
+      state: new StringValidator(),
+      timestamp: new DateTimeValidator(),
+      stepStarted: new DateTimeValidator(),
+      cmd: new StringValidator(0, 1000, { required: false }),
+      error: new StringValidator(0, 8000, { required: false }),
+      currentDir: new StringValidator(0, 1000, { required: false }),
+      message: new UnknownValidator()
+    },
+    { optimize }
+  )
+
+  it('should validate step update', () => {
+    const stepUpdateExample = {
+      cmd: 'apt-get update && apt-get install -y mysql-server',
+      state: 'end',
+      buildId: '12345',
+      repoUrl: 'https://github.com/connectedcars/node-test',
+      branchName: 'master',
+      commitSha: '9bd9e28e0ddc48e1193d8558a56a041697f6a74f',
+      tag: '',
+      imageName: 'gcr.io/connectedcars-staging/node-test.master:9bd9e28e0ddc48e1193d8558a56a041697f6a74f',
+      started: '2021-01-01T15:58:51.237365219Z',
+      timestamp: '2021-01-01T15:58:51.237365219Z',
+      stepStarted: '2021-01-01T15:58:51.237365219Z',
+      message: [
+        {
+          command: 'apt-get update && apt-get install -y mysql-server',
+          step: 7,
+          stepTotal: 15,
+          stageStep: 5,
+          stage: '',
+          started: '2021-01-01T15:58:51.099197Z',
+          stopped: '2021-01-01T15:58:51.237365219Z',
+          duration: 9834000
+        }
+      ]
+    }
+    expect(buildUpdateMessageValidator.validate(stepUpdateExample)).toEqual([])
+  })
+
+  const checkRunOutputValidator = new OptionalObject({
+    title: new RequiredString(0, 255),
+    summary: new RequiredString(0, 255),
+    text: new OptionalString(),
+    annotations: new OptionalArray(
+      new RequiredObject({
+        path: new RequiredString(),
+        start_line: new RequiredInteger(),
+        end_line: new RequiredInteger(),
+        start_column: new OptionalInteger(),
+        end_column: new OptionalInteger(),
+        annotation_level: new RequiredUnion([
+          new ExactStringValidator('notice'),
+          new ExactStringValidator('warning'),
+          new ExactStringValidator('failure')
+        ]),
+        message: new RequiredString(),
+        title: new OptionalString(),
+        raw_details: new RequiredString()
+      }),
+      0,
+      50
+    ),
+    images: new OptionalArray(
+      new RequiredObject({
+        alt: new RequiredString(),
+        image_url: new RequiredString(),
+        caption: new OptionalString(),
+        actions: new OptionalObject({
+          label: new RequiredString(),
+          description: new RequiredString(),
+          identifier: new RequiredString()
+        })
+      })
+    )
+  })
+
+  const checkConclusionValidator = new RequiredUnion([
+    new RequiredExactString('success'),
+    new RequiredExactString('failure'),
+    new RequiredExactString('neutral'),
+    new RequiredExactString('cancelled'),
+    new RequiredExactString('skipped'),
+    new RequiredExactString('timed_out'),
+    new RequiredExactString('action_required')
+  ])
+
+  const checkRunStartedValidator = new ObjectValidator({
+    name: new RequiredString(),
+    head_sha: new RequiredString(),
+    details_url: new OptionalString(),
+    external_id: new OptionalString(),
+    status: new RequiredUnion([new ExactStringValidator('queued'), new ExactStringValidator('in_progress')]),
+    started_at: new OptionalString(),
+    output: checkRunOutputValidator
+  })
+
+  const checkRunCompletedValidator = new ObjectValidator({
+    name: new RequiredString(),
+    head_sha: new RequiredString(),
+    details_url: new OptionalString(),
+    external_id: new OptionalString(),
+    status: new ExactStringValidator('completed'),
+    started_at: new OptionalString(),
+    conclusion: checkConclusionValidator,
+    completed_at: new DateTimeValidator(),
+    output: checkRunOutputValidator
+  })
+
+  const checkRunValidator = new UnionValidator([checkRunStartedValidator, checkRunCompletedValidator])
+
+  it('should validate completed checkrun', () => {
+    const sample = {
+      name: 'audit',
+      head_sha: 'c61a4ae014360e064eb2a9f76c8a6a55d05e5b88',
+      conclusion: 'success',
+      status: 'completed',
+      completed_at: '2020-10-15T20:52:48.294508Z',
+      output: {
+        title: 'npm audit security report',
+        summary: 'Found **0** vulnerabilities in 4982 scanned packages',
+        text: ''
+      }
+    }
+    expect(checkRunCompletedValidator.validate(sample)).toEqual([])
+    expect(checkRunValidator.validate(sample)).toEqual([])
+  })
+
+  it('should validate completed checkrun', () => {
+    const sample = {
+      name: 'audit',
+      head_sha: 'c61a4ae014360e064eb2a9f76c8a6a55d05e5b88',
+      status: 'in_progress',
+      completed_at: '2020-10-15T20:52:48.294508Z'
+    }
+    expect(checkRunStartedValidator.validate(sample)).toEqual([])
+    expect(checkRunValidator.validate(sample)).toEqual([])
+  })
+
+  it('should fail validation of checkun because of wrong status', () => {
+    const sample = {
+      name: 'audit',
+      head_sha: 'c61a4ae014360e064eb2a9f76c8a6a55d05e5b88',
+      status: 'unknown',
+      completed_at: '2020-10-15T20:52:48.294508Z'
+    }
+    expect(checkRunValidator.validate(sample)).toEqual([
+      new UnionFail(
+        `Union entry failed validation with 2 errors`,
+        [
+          new UnionFail(
+            `Union entry failed validation with 1 errors`,
+            [new NotExactStringFail('Must strictly equal "queued" (received "unknown")', { key: `(0)['status'](0)` })],
+            { key: "(0)['status'](0)" }
+          ),
+          new UnionFail(
+            `Union entry failed validation with 1 errors`,
+            [
+              new NotExactStringFail('Must strictly equal "in_progress" (received "unknown")', {
+                key: `(0)['status'](1)`
+              })
+            ],
+            { key: "(0)['status'](1)" }
+          )
+        ],
+        { key: '(0)' }
+      ),
+      new UnionFail(
+        `Union entry failed validation with 2 errors`,
+        [
+          new NotExactStringFail('Must strictly equal "completed" (received "unknown")', { key: `(1)['status']` }),
+          new RequiredFail('Is required', { key: `(1)['conclusion']` })
+        ],
+        { key: '(1)' }
+      )
     ])
   })
 })
