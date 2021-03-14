@@ -40,19 +40,20 @@ describe.each([false, true])('DateTime (optimize: %s)', optimize => {
       const validator = new DateTimeValidator({ optimize })
       expect(validator.validate('2018-08-06T13:37:00Z')).toStrictEqual([])
       expect(validator.validate('2018-08-06T13:37:00.000Z')).toStrictEqual([])
+      expect(validator.validate('2018-08-06T13:37:00.000000Z')).toStrictEqual([])
       expect(validator.validate('2018-08-06T13:37:00+00:00')).toStrictEqual([])
       expect(validator.validate('2018-08-06T13:37:00.000+00:00')).toStrictEqual([])
       expect(validator.validate('')).toStrictEqual([
-        new WrongLengthFail('Must contain between 20 and 29 characters (received "")')
+        new WrongLengthFail('Must contain between 20 and 30 characters (received "")')
       ])
       expect(validator.validate('2018-08-06')).toStrictEqual([
-        new WrongLengthFail('Must contain between 20 and 29 characters (received "2018-08-06")')
+        new WrongLengthFail('Must contain between 20 and 30 characters (received "2018-08-06")')
       ])
       expect(validator.validate('2018-08-06T13:37:00')).toStrictEqual([
-        new WrongLengthFail('Must contain between 20 and 29 characters (received "2018-08-06T13:37:00")')
+        new WrongLengthFail('Must contain between 20 and 30 characters (received "2018-08-06T13:37:00")')
       ])
       expect(validator.validate('13:37:00')).toStrictEqual([
-        new WrongLengthFail('Must contain between 20 and 29 characters (received "13:37:00")')
+        new WrongLengthFail('Must contain between 20 and 30 characters (received "13:37:00")')
       ])
       expect(validator.validate('2018-08-ABT13:37:00Z')).toStrictEqual([
         new NotRfc3339Fail('Must be formatted as an RFC 3339 timestamp (received "2018-08-ABT13:37:00Z")')
@@ -62,7 +63,7 @@ describe.each([false, true])('DateTime (optimize: %s)', optimize => {
     it('requires value to show correct context on error', () => {
       const validator = new DateTimeValidator({ optimize })
       expect(validator.validate('', { key: 'myDate' }).map(e => e.toString())).toStrictEqual([
-        `WrongLengthFail: Field 'myDate' must contain between 20 and 29 characters (received "")`
+        `WrongLengthFail: Field 'myDate' must contain between 20 and 30 characters (received "")`
       ])
     })
   })
