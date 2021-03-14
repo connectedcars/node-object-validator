@@ -23,12 +23,6 @@ describe('String (optimize: %s)', () => {
 })
 
 describe.each([false, true])('String (optimize: %s)', optimize => {
-  describe('validateString', () => {
-    it('requires value to be a string', () => {
-      expect(validateString('foo')).toStrictEqual([])
-    })
-  })
-
   describe('StringValidator', () => {
     it('should generate validation code and give same result', () => {
       const validator = new StringValidator(1, 30, { optimize })
