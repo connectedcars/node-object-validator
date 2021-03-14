@@ -82,8 +82,22 @@ export abstract class ValidatorBase<T> implements Validator {
       : ', context'
     const validatorName = `validator${id()}`
     const declarations = [`const ${validatorName} = ${validatorRef}`]
-    const code = [`errors.push(...${validatorName}.validate(${valueRef}${contextStr}, false))`]
-    return [{}, declarations, code]
+    // prettier-ignore
+    const code: string[] = [
+      `if (${valueRef} != null) {`,
+      `  errors.push(...${validatorName}.validateValue(${valueRef}${contextStr}))`,
+    ...(this.required ? [
+      `} else {`,
+      `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
+      '}'
+    ]
+    return [
+      {
+        RequiredError: RequiredFail
+      },
+      declarations,
+      code
+    ]
   }
 
   protected optimize(): void {
@@ -101,7 +115,10 @@ export abstract class ValidatorBase<T> implements Validator {
 
     try {
       const functionGenerator = new Function('imports', 'schema', functionBody)
-      const validateFunction = functionGenerator(imports, { schema: this.schema, validate: this.validate.bind(this) })
+      const validateFunction = functionGenerator(imports, {
+        schema: this.schema,
+        validateValue: this.validateValue.bind(this)
+      })
       this.optimizedValidate = validateFunction
     } catch (e) {
       throw new Error(`Failed to compile optimized function(${e.message}):\n${functionBody}`)

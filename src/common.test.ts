@@ -1,5 +1,5 @@
 import { ValidatorBase, ValidatorOptions } from './common'
-import { ValidationErrorContext, ValidationFailure } from './errors'
+import { RequiredFail, ValidationErrorContext, ValidationFailure } from './errors'
 
 class OneValidator extends ValidatorBase<number> {
   public constructor(options?: ValidatorOptions) {
@@ -16,18 +16,19 @@ class OneValidator extends ValidatorBase<number> {
   }
 }
 
-describe('Common', () => {
+describe.each([false, true])('Common (optimize: %s)', optimize => {
   describe('ValidatorBase', () => {
-    describe('codeGen', () => {
-      it(`should validate with the default codeGen implementation with optimize false`, () => {
-        const validator = new OneValidator({ optimize: false })
-        expect(validator.validate(1)).toStrictEqual([])
-      })
-
-      it(`should validate with the default codeGen implementation with optimize true`, () => {
-        const validator = new OneValidator({ optimize: true })
-        expect(validator.validate(1)).toStrictEqual([])
-      })
+    it(`should validate with the default codeGen implementation with optimize ${optimize}`, () => {
+      const validator = new OneValidator({ optimize: optimize })
+      if (optimize) {
+        expect(validator['optimizedValidate']).not.toBeNull()
+      } else {
+        expect(validator['optimizedValidate']).toBeNull()
+      }
+      expect(validator.validate(1)).toStrictEqual([])
+      expect(validator.validate(2)).toStrictEqual([new ValidationFailure(`value is not 1`)])
+      expect(validator.validate(null)).toStrictEqual([new RequiredFail(`Is required`)])
+      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail(`Is required`)])
     })
   })
 })
