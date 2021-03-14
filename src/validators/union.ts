@@ -17,13 +17,14 @@ export function validateUnion(
 ): ValidationFailure[] {
   const errors: ValidationFailure[] = []
   for (const [index, validator] of schema.entries()) {
-    const currentErrors = validator.validate(value, context, optimized)
+    const propName = `${context?.key || ''}(${index})`
+    const currentErrors = validator.validate(value, { key: propName }, optimized)
     if (currentErrors.length === 0) {
       return []
     } else {
       errors.push(
         new UnionFail(`Union entry failed validation with ${currentErrors.length} errors`, currentErrors, {
-          key: `${context?.key || ''}(${index})`
+          key: propName
         })
       )
     }
@@ -50,7 +51,7 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
     },
     context?: ValidationErrorContext
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
+    const contextStr = context?.key ? `, { key: \`${context.key}\` }` : ', context'
     const unionValueRef = `unionValue${id()}`
     const schemaRef = `scheme${id()}`
     let imports: { [key: string]: unknown } = {
@@ -68,12 +69,10 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
       `  let errors = []`,
     ]
     for (const [index, validator] of this.schema.entries()) {
-      const [propImports, propDeclarations, propCode] = validator.codeGen(
-        unionValueRef,
-        `${schemaRef}[${index}]`,
-        id,
-        context
-      )
+      const propName = context?.key ? `${context.key}('${index}')` : `(${index})`
+      const [propImports, propDeclarations, propCode] = validator.codeGen(unionValueRef, `${schemaRef}[${index}]`, id, {
+        key: propName
+      })
       imports = { ...imports, ...propImports }
       declarations.push(...propDeclarations)
       if (index > 0) {
@@ -90,7 +89,7 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
       code.push(
         `  if (errors.length > 0) {`,
         `    ${unionValueRef}Errors.push(`,
-        `      new UnionFail(\`Union entry failed validation with \${errors.length} errors\`, errors${contextStr})`,
+        `      new UnionFail(\`Union entry failed validation with \${errors.length} errors\`, errors, { key: '${propName}' })`,
         '    )',
         `  } else {`,
         `    ${unionValueRef}Errors = []`,

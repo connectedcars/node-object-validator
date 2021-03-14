@@ -1,3 +1,4 @@
+import { NotExactStringFail, NotStringFail, RequiredFail, UnionFail } from '../errors'
 import { RequiredExactString } from './exact-string'
 import { RequiredFloat } from './float'
 import { RequiredObject } from './object'
@@ -78,6 +79,33 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         error: 'some error'
       })
       expect(errors).toEqual([])
+    })
+
+    it('should faile validation of error message', () => {
+      const errors = messageValidator.validate({
+        type: 'error',
+        value: 1.0
+      })
+      expect(errors).toEqual([
+        new UnionFail(
+          `Union entry failed validation with 1 errors`,
+          [new NotExactStringFail('Must strictly equal "number" (received "error")', { key: `(0)['type']` })],
+          { key: '(0)' }
+        ),
+        new UnionFail(
+          `Union entry failed validation with 2 errors`,
+          [
+            new NotExactStringFail('Must strictly equal "string" (received "error")', { key: `(1)['type']` }),
+            new NotStringFail('Must be a string (received "1")', { key: `(1)['value']` })
+          ],
+          { key: '(1)' }
+        ),
+        new UnionFail(
+          `Union entry failed validation with 1 errors`,
+          [new RequiredFail('Is required', { key: `(2)['error']` })],
+          { key: '(2)' }
+        )
+      ])
     })
   })
 
