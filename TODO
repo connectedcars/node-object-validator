@@ -1,4 +1,3 @@
-* Implement required any/unknown validator
 * Test with real data:
 
 {
@@ -27,6 +26,7 @@
         ]
       }
 
+* Add support for exit on first failure
 * Optimize union validation on RequiredObject with same name ExactString on all objects
 * Implement only allowing known keys
 * Implement support for aliases:
