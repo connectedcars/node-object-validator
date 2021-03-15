@@ -54,3 +54,5 @@ export class UnionFail extends ValidationFailure {
     this.errors = errors
   }
 }
+export class NotBooleanFail extends ValidationFailure {}
+export class NotNullFail extends ValidationFailure {}

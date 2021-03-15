@@ -12,3 +12,4 @@ let objectValidator({
 })
 
 * Implement support for sample validators
+* Look at JS pretty priting of values, fx. [] becomes "", const printedValue = Array.isArray(value) && value.length === 0 ? '[]' : `${value}`

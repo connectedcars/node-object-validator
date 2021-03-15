@@ -22,6 +22,7 @@ export type ValidatorOptions = {
    */
   optimize?: boolean
   required?: boolean
+  nullCheck?: boolean
 }
 
 export interface Validator {
@@ -29,15 +30,24 @@ export interface Validator {
   codeGen(valueRef: string, validatorRef: string, id: () => number, context?: ValidationErrorContext): CodeGenResult
 }
 
+export function isValidator(value: unknown): value is Validator {
+  if (value instanceof ValidatorBase) {
+    return true
+  }
+  return false
+}
+
 export abstract class ValidatorBase<T> implements Validator {
   public schema?: unknown
   public required: boolean
+  public nullCheck: boolean
   protected codeGenId = 1
   protected optimizedValidate: ((value: unknown, context?: ValidationErrorContext) => ValidationFailure[]) | null
 
   public constructor(options?: ValidatorOptions) {
-    const mergedOptions = { required: true, ...options }
+    const mergedOptions = { required: true, nullCheck: true, ...options }
     this.required = mergedOptions.required
+    this.nullCheck = mergedOptions.nullCheck
     this.optimizedValidate = null
   }
 
@@ -63,7 +73,7 @@ export abstract class ValidatorBase<T> implements Validator {
     if (optimized !== false && this.optimizedValidate !== null) {
       return this.optimizedValidate(value, context)
     }
-    if (value == null) {
+    if (this.nullCheck && value == null) {
       return this.required ? [new RequiredFail(`Is required`, context)] : []
     }
     return this.validateValue(value, context, false)
