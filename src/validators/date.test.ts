@@ -57,7 +57,7 @@ describe.each([false, true])('Date (optimize: %s)', optimize => {
   })
 
   describe('OptionalStringValue', () => {
-    it('accepts empty value', () => {
+    it('rejects empty value', () => {
       const validator = new RequiredDate({ optimize })
       expect(validator.validate(null)).toEqual([new RequiredFail('Is required')])
       expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])

@@ -80,7 +80,7 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
   })
 
   describe('RequiredInteger', () => {
-    it('accepts empty value', () => {
+    it('rejects empty value', () => {
       const validator = new RequiredInteger(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
       expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])

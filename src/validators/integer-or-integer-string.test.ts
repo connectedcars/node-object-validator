@@ -127,7 +127,7 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
   })
 
   describe('RequiredIntegerOrIntegerString', () => {
-    it('accepts empty value', () => {
+    it('rejects empty value', () => {
       const validator = new RequiredIntegerOrIntegerString(0, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
       expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])

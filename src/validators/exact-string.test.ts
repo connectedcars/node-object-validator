@@ -76,7 +76,7 @@ describe.each([false, true])('validateExactString (optimize: %s)', optimize => {
   })
 
   describe('RequiredExactString', () => {
-    it('requires empty value', () => {
+    it('rejects empty value', () => {
       const validator = new RequiredExactString('MyString', { optimize })
       expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
       expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])
@@ -84,7 +84,7 @@ describe.each([false, true])('validateExactString (optimize: %s)', optimize => {
   })
 
   describe('OptionalExactString', () => {
-    it('requires empty value', () => {
+    it('accepts empty value', () => {
       const validator = new OptionalExactString('MyString', { optimize })
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])

@@ -18,7 +18,7 @@ describe.each([false, true])('Unknown (optimize: %s)', optimize => {
     })
 
     describe('RequiredUnknown', () => {
-      it('requires empty value', () => {
+      it('rejects empty value', () => {
         const validator = new RequiredUnknown()
         expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
         expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])
@@ -26,7 +26,7 @@ describe.each([false, true])('Unknown (optimize: %s)', optimize => {
     })
 
     describe('OptionalString', () => {
-      it('requires empty value', () => {
+      it('accepts empty value', () => {
         const validator = new OptionalUnknown()
         expect(validator.validate(undefined)).toStrictEqual([])
         expect(validator.validate(undefined)).toStrictEqual([])

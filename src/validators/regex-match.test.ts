@@ -78,7 +78,7 @@ describe.each([false, true])('Regex (optimize: %s)', optimize => {
   })
 
   describe('OptionalRegex', () => {
-    it('accepts empty value', () => {
+    it('rejects empty value', () => {
       const validator = new RequiredRegexMatch(/^.*$/, { optimize })
       expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
       expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])

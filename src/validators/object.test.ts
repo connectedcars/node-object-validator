@@ -223,7 +223,7 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
       { optimize }
     )
 
-    it('accepts empty value', () => {
+    it('rejects empty value', () => {
       const validator = new RequiredObject({}, { optimize })
       expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
       expect(validator.validate(undefined as unknown)).toStrictEqual([new RequiredFail('Is required')])
