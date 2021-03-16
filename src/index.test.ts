@@ -1,4 +1,4 @@
-import { NotExactStringFail, NotStringFail, RequiredFail, UnionFail } from './errors'
+import { NotExactStringFail, RequiredFail, UnionFail } from './errors'
 import {
   ObjectValidator,
   OptionalObject,
