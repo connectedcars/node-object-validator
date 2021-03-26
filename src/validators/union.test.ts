@@ -4,7 +4,15 @@ import { RequiredFloat } from './float'
 import { RequiredObject } from './object'
 import { RequiredRegexMatch } from './regex-match'
 import { RequiredString } from './string'
-import { OptionalUnion, RequiredUnion, UnionValidator, validateUnion } from './union'
+import {
+  EnumValidator,
+  OptionalEnum,
+  OptionalUnion,
+  RequiredEnum,
+  RequiredUnion,
+  UnionValidator,
+  validateUnion
+} from './union'
 
 interface NumberMessage {
   type: 'number'
@@ -137,6 +145,35 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
 
     it('should validate null to give no failures', () => {
       const errors = messageValidator.validate(undefined)
+      expect(errors).toEqual([])
+    })
+  })
+
+  describe('Enum', () => {
+    const enumValidator = new EnumValidator<'stuff' | 'hello' | 'more'>(['stuff', 'hello', 'more'], { optimize })
+    it('should validate message of type string', () => {
+      const errors = enumValidator.validate('stuff')
+      expect(errors).toEqual([])
+    })
+  })
+
+  describe('RequiredEnum', () => {
+    const enumValidator = new RequiredEnum<'stuff' | 'hello' | 'more'>(['stuff', 'hello', 'more'], { optimize })
+    it('should validate message of type string', () => {
+      const errors = enumValidator.validate('hello')
+      expect(errors).toEqual([])
+    })
+  })
+
+  describe('OptionalUnion', () => {
+    const enumValidator = new OptionalEnum<'stuff' | 'hello' | 'more'>(['stuff', 'hello', 'more'], { optimize })
+    it('should validate null to give no failures', () => {
+      const errors = enumValidator.validate(null)
+      expect(errors).toEqual([])
+    })
+
+    it('should validate null to give no failures', () => {
+      const errors = enumValidator.validate(undefined)
       expect(errors).toEqual([])
     })
   })

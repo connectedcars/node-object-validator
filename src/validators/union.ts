@@ -1,5 +1,6 @@
 import { CodeGenResult, Validator, ValidatorBase, ValidatorOptions } from '../common'
 import { RequiredFail, UnionFail, ValidationErrorContext, ValidationFailure } from '../errors'
+import { ExactStringValidator } from './exact-string'
 
 export function isUnion<T>(schema: Validator[], value: unknown, context?: ValidationErrorContext): value is T {
   const errors = validateUnion(schema, value, context)
@@ -123,6 +124,27 @@ export class RequiredUnion<T> extends UnionValidator<T> {
 
 export class OptionalUnion<T> extends UnionValidator<T, undefined | null> {
   public constructor(schema: Validator[], options?: ValidatorOptions) {
+    super(schema, { ...options, required: false })
+  }
+}
+
+export class EnumValidator<T, O = never> extends UnionValidator<T, O> {
+  public constructor(schema: string[], options?: ValidatorOptions) {
+    super(
+      schema.map(e => new ExactStringValidator(e)),
+      options
+    )
+  }
+}
+
+export class RequiredEnum<T> extends EnumValidator<T> {
+  public constructor(schema: string[], options?: ValidatorOptions) {
+    super(schema, { ...options, required: true })
+  }
+}
+
+export class OptionalEnum<T> extends EnumValidator<T, undefined | null> {
+  public constructor(schema: string[], options?: ValidatorOptions) {
     super(schema, { ...options, required: false })
   }
 }
