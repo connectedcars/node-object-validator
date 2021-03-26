@@ -48,7 +48,8 @@ export class FloatValidator<O = never> extends ValidatorBase<number | O> {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext
+    context?: ValidationErrorContext,
+    earlyFail?: boolean
   ): CodeGenResult {
     const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
     const localValueRef = `value${id()}`
@@ -65,9 +66,13 @@ export class FloatValidator<O = never> extends ValidatorBase<number | O> {
       `    errors.push(new NotFloatFail(\`Must be a float (received "\${${localValueRef}}")\`${contextStr}))`,
       `  }`,
       ...(this.required ? [
-        `} else {`,
-        `  errors.push(new RequiredFail(\`Is required\`${contextStr}))`] : []),
-        '}'
+      `} else {`,
+      `  errors.push(new RequiredFail(\`Is required\`${contextStr}))`] : []),
+      '}',
+      ...(earlyFail ? [
+      `if (errors.length > 0) {`,
+      `  return errors`,
+      `}`] : []),
     ]
     return [
       {

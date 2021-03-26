@@ -44,7 +44,8 @@ export class DateTimeValidator<O = never> extends ValidatorBase<string | O> {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext
+    context?: ValidationErrorContext,
+    earlyFail?: boolean
   ): CodeGenResult {
     const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
     const localValueRef = `value${id()}`
@@ -65,9 +66,13 @@ export class DateTimeValidator<O = never> extends ValidatorBase<string | O> {
       `    errors.push(new NotStringFail(\`Must be a string (received "\${${localValueRef}}")\`${contextStr}))`,
       `  }`,
       ...(this.required ? [
-        `} else {`,
-        `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
-        '}'
+      `} else {`,
+      `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
+      '}',
+      ...(earlyFail ? [
+      `if (errors.length > 0) {`,
+      `  return errors`,
+      `}`] : []),
     ]
     return [
       {

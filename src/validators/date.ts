@@ -30,7 +30,8 @@ export class DateValidator<O = never> extends ValidatorBase<Date | O> {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext
+    context?: ValidationErrorContext,
+    earlyFail?: boolean
   ): CodeGenResult {
     const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
     const localValueRef = `value${id()}`
@@ -43,9 +44,13 @@ export class DateValidator<O = never> extends ValidatorBase<Date | O> {
       `    errors.push(new NotDateFail(\`Must be a Date object\`${contextStr}))`,
       `  }`,
       ...(this.required ? [
-        `} else {`,
-        `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
-        '}'
+      `} else {`,
+      `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
+      '}',
+      ...(earlyFail ? [
+      `if (errors.length > 0) {`,
+      `  return errors`,
+      `}`] : []),
     ]
     return [
       {

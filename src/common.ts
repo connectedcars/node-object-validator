@@ -23,11 +23,23 @@ export type ValidatorOptions = {
   optimize?: boolean
   required?: boolean
   nullCheck?: boolean
+  earlyFail?: boolean
+}
+
+export interface ValidateOptions {
+  earlyFail?: boolean
+  optimized?: boolean
 }
 
 export interface Validator {
-  validate(value: unknown, context?: ValidationErrorContext, optimized?: boolean): ValidationFailure[]
-  codeGen(valueRef: string, validatorRef: string, id: () => number, context?: ValidationErrorContext): CodeGenResult
+  validate(value: unknown, context?: ValidationErrorContext, options?: ValidateOptions): ValidationFailure[]
+  codeGen(
+    valueRef: string,
+    validatorRef: string,
+    id: () => number,
+    context?: ValidationErrorContext,
+    earlyFail?: boolean
+  ): CodeGenResult
 }
 
 export function isValidator(value: unknown): value is Validator {
@@ -41,13 +53,16 @@ export abstract class ValidatorBase<T> implements Validator {
   public schema?: unknown
   public required: boolean
   public nullCheck: boolean
+  public earlyFail: boolean
+
   protected codeGenId = 1
   protected optimizedValidate: ((value: unknown, context?: ValidationErrorContext) => ValidationFailure[]) | null
 
   public constructor(options?: ValidatorOptions) {
-    const mergedOptions = { required: true, nullCheck: true, ...options }
+    const mergedOptions = { required: true, nullCheck: true, earlyFail: false, ...options }
     this.required = mergedOptions.required
     this.nullCheck = mergedOptions.nullCheck
+    this.earlyFail = mergedOptions.earlyFail
     this.optimizedValidate = null
   }
 
@@ -69,14 +84,14 @@ export abstract class ValidatorBase<T> implements Validator {
     }
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext, optimized?: boolean): ValidationFailure[] {
-    if (optimized !== false && this.optimizedValidate !== null) {
+  public validate(value: unknown, context?: ValidationErrorContext, options?: ValidateOptions): ValidationFailure[] {
+    if (options?.optimized !== false && this.optimizedValidate !== null) {
       return this.optimizedValidate(value, context)
     }
     if (this.nullCheck && value == null) {
       return this.required ? [new RequiredFail(`Is required`, context)] : []
     }
-    return this.validateValue(value, context, false)
+    return this.validateValue(value, context, { earlyFail: this.earlyFail, optimized: false, ...options })
   }
 
   public codeGen(
@@ -85,7 +100,8 @@ export abstract class ValidatorBase<T> implements Validator {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext
+    context?: ValidationErrorContext,
+    earlyFail?: boolean
   ): CodeGenResult {
     const contextStr = context
       ? `, { key: (context && context.key ? \`\${context.key}['${context.key}']\` : \`${context.key}\`) }`
@@ -96,10 +112,14 @@ export abstract class ValidatorBase<T> implements Validator {
     const code: string[] = [
       `if (${valueRef} != null) {`,
       `  errors.push(...${validatorName}.validateValue(${valueRef}${contextStr}))`,
-    ...(this.required ? [
+      ...(this.required ? [
       `} else {`,
       `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
-      '}'
+      '}',
+      ...(this.earlyFail || earlyFail ? [
+      `if (errors.length > 0) {`,
+      `  return errors`,
+      `}`] : []),
     ]
     return [
       {
@@ -111,7 +131,15 @@ export abstract class ValidatorBase<T> implements Validator {
   }
 
   protected optimize(): void {
-    const [imports, declarations, code] = this.codeGen('value', 'schema')
+    const [imports, declarations, code] = this.codeGen(
+      'value',
+      'schema',
+      () => {
+        return this.codeGenId++
+      },
+      undefined,
+      this.earlyFail
+    )
     const functionBody = [
       ...Object.keys(imports).map(i => `const ${i} = imports['${i}']`),
       ...declarations,
@@ -138,6 +166,6 @@ export abstract class ValidatorBase<T> implements Validator {
   protected abstract validateValue(
     value: unknown,
     context?: ValidationErrorContext,
-    optimized?: boolean
+    options?: ValidateOptions
   ): ValidationFailure[]
 }

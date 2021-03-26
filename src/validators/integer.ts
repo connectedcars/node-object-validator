@@ -48,7 +48,8 @@ export class IntegerValidator<O = never> extends ValidatorBase<number | O> {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext
+    context?: ValidationErrorContext,
+    earlyFail?: boolean
   ): CodeGenResult {
     const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
     const localValueRef = `value${id()}`
@@ -65,9 +66,13 @@ export class IntegerValidator<O = never> extends ValidatorBase<number | O> {
       `    errors.push(new NotIntegerFail(\`Must be an integer (received "\${${localValueRef}}")\`${contextStr}))`,
       `  }`,
       ...(this.required ? [
-        `} else {`,
-        `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
-        '}'
+      `} else {`,
+      `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
+      '}',
+      ...(earlyFail ? [
+      `if (errors.length > 0) {`,
+      `  return errors`,
+      `}`] : []),
     ]
     return [
       {

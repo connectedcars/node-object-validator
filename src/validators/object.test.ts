@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { AssertEqual } from '../common'
-import { NotArrayFail, NotIntegerFail, RequiredFail } from '../errors'
+import { NotArrayFail, NotFloatFail, NotIntegerFail, NotObjectFail, RequiredFail } from '../errors'
 import { OptionalArray, RequiredArray } from './array'
 import { OptionalDate } from './date'
-import { RequiredFloat } from './float'
-import { OptionalInteger, RequiredInteger } from './integer'
+import { FloatValidator, RequiredFloat } from './float'
+import { IntegerValidator, OptionalInteger, RequiredInteger } from './integer'
 import { isObject, ObjectValidator, OptionalObject, RequiredObject, validateObject } from './object'
 import { RequiredRegexMatch } from './regex-match'
 
@@ -107,6 +107,23 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
       }
       const errors = objectValidator.validate(unknownValue)
       expect(errors).toEqual([])
+    })
+
+    it('should fail validation of wrong key types', () => {
+      const validator = new ObjectValidator({ int: new IntegerValidator(), float: new FloatValidator() }, { optimize })
+      expect(validator.validate({ int: '', float: '' })).toStrictEqual([
+        new NotIntegerFail('Must be an integer (received "")', { key: 'int' }),
+        new NotFloatFail('Must be a float (received "")', { key: 'float' })
+      ])
+    })
+
+    it('should fail validation early of wrong key types', () => {
+      const validator = new ObjectValidator(
+        { int: new IntegerValidator(), float: new FloatValidator() },
+        { optimize, earlyFail: true }
+      )
+      const errors = validator.validate({ int: '', float: '' })
+      expect(errors.length).toEqual(1)
     })
 
     it('should cast type guard correctly for isValid', () => {

@@ -1,4 +1,4 @@
-import { CodeGenResult, Validator, ValidatorBase, ValidatorOptions } from '../common'
+import { CodeGenResult, ValidateOptions, Validator, ValidatorBase, ValidatorOptions } from '../common'
 import { NotObjectFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
 
 export function isObject<T extends Record<string, unknown>>(
@@ -6,7 +6,7 @@ export function isObject<T extends Record<string, unknown>>(
   value: unknown,
   context?: ValidationErrorContext
 ): value is T {
-  const errors = validateObject(schema, value, context)
+  const errors = validateObject(schema, value, context, { earlyFail: true })
   if (errors.length === 0) {
     return true
   }
@@ -21,18 +21,20 @@ export function validateObject(
   schema: Record<string, Validator>,
   value: unknown,
   context?: ValidationErrorContext,
-  optimized?: boolean
+  options?: ValidateOptions
 ): ValidationFailure[] {
   const errors: ValidationFailure[] = []
   if (!isObjectType(value)) {
     errors.push(new NotObjectFail(`Must be an object (received "${value}")`, context))
     return errors
   }
-  // TODO: Fail early on empty object if the scheme has one required property
   for (const key of Object.keys(schema)) {
     const validator = schema[key]
     const keyName = context?.key ? `${context.key}['${key}']` : key
-    errors.push(...validator.validate(value[key], { key: keyName }, optimized))
+    errors.push(...validator.validate(value[key], { key: keyName }, { optimized: false, earlyFail: false, ...options }))
+    if (options?.earlyFail && errors.length > 0) {
+      return errors
+    }
   }
   return errors
 }
@@ -54,7 +56,8 @@ export class ObjectValidator<T extends Record<string, unknown>, O = never> exten
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext
+    context?: ValidationErrorContext,
+    earlyFail?: boolean
   ): CodeGenResult {
     const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
     const objValueRef = `objValue${id()}`
@@ -80,7 +83,8 @@ export class ObjectValidator<T extends Record<string, unknown>, O = never> exten
         id,
         {
           key: propName
-        }
+        },
+        earlyFail
       )
       imports = { ...imports, ...propImports }
       declarations.push(...propDeclarations)
@@ -94,14 +98,23 @@ export class ObjectValidator<T extends Record<string, unknown>, O = never> exten
       ...(this.required ? [
       `} else {`,
       `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
-      '}'
+      '}',
+      ...(earlyFail ? [
+      `if (errors.length > 0) {`,
+      `  return errors`,
+      `}`] : []),
+
     )
 
     return [imports, declarations, code]
   }
 
-  protected validateValue(value: unknown, context?: ValidationErrorContext, optimized?: boolean): ValidationFailure[] {
-    return validateObject(this.schema, value, context, optimized)
+  protected validateValue(
+    value: unknown,
+    context?: ValidationErrorContext,
+    options?: ValidateOptions
+  ): ValidationFailure[] {
+    return validateObject(this.schema, value, context, { earlyFail: this.earlyFail, ...options })
   }
 }
 

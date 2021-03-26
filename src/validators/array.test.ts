@@ -1,5 +1,5 @@
 import { AssertEqual } from '../common'
-import { RequiredFail } from '../errors'
+import { NotArrayFail, NotIntegerFail, RequiredFail } from '../errors'
 import { ArrayValidator, isArray, OptionalArray, RequiredArray, validateArray } from './array'
 import { RequiredInteger } from './integer'
 import { RequiredObject } from './object'
@@ -28,7 +28,7 @@ describe('Array', () => {
 
 describe.each([false, true])('Array (optimize: %s)', optimize => {
   describe('ArrayValidator', () => {
-    it('should validate and give correct result', () => {
+    it('should validate a valid interger array in both optimized and no optimized form', () => {
       const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10, { optimize })
       if (optimize) {
         expect(arrayValidator['optimizedValidate']).not.toBeNull()
@@ -37,6 +37,27 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
       }
       const errors = arrayValidator.validate([1, 2, 4, 5])
       expect(errors).toEqual([])
+    })
+
+    it('should fail validation of object', () => {
+      const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10, { optimize })
+      const errors = arrayValidator.validate({ hello: 'stuff' })
+      expect(errors).toEqual([new NotArrayFail('Must be an array (received "[object Object]")')])
+    })
+
+    it('should fail validation of array of objects', () => {
+      const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10, { optimize })
+      const errors = arrayValidator.validate([{ hello: 'stuff' }, { hello: 'more' }])
+      expect(errors).toEqual([
+        new NotIntegerFail('Must be an integer (received "[object Object]")', { key: '[0]' }),
+        new NotIntegerFail('Must be an integer (received "[object Object]")', { key: '[1]' })
+      ])
+    })
+
+    it('should fail early validation of array of objects', () => {
+      const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10, { optimize, earlyFail: true })
+      const errors = arrayValidator.validate([{ hello: 'stuff' }, { hello: 'more' }])
+      expect(errors).toEqual([new NotIntegerFail('Must be an integer (received "[object Object]")', { key: '[0]' })])
     })
   })
 

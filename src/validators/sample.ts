@@ -1,4 +1,4 @@
-import { isValidator, Validator, ValidatorBase, ValidatorOptions } from '../common'
+import { isValidator, ValidateOptions, Validator, ValidatorBase, ValidatorOptions } from '../common'
 import { ValidationErrorContext, ValidationFailure } from '../errors'
 import { ArrayValidator } from './array'
 import { BooleanValidator } from './boolean'
@@ -87,10 +87,10 @@ export function validateSample(
   sample: Sample,
   value: unknown,
   context?: ValidationErrorContext,
-  optimized?: boolean
+  options?: ValidateOptions
 ): ValidationFailure[] {
-  const validator = sampleToValidator(sample)
-  return validator.validate(value, context, optimized)
+  const validator = sampleToValidator(sample, options)
+  return validator.validate(value, context, options)
 }
 
 export class SampleValidator<T, O = never> extends ValidatorBase<T | O> {
@@ -103,8 +103,12 @@ export class SampleValidator<T, O = never> extends ValidatorBase<T | O> {
     this.validator = sampleToValidator(this.schema, options)
   }
 
-  protected validateValue(value: unknown, context?: ValidationErrorContext, optimized?: boolean): ValidationFailure[] {
-    return this.validator.validate(value, context, optimized)
+  protected validateValue(
+    value: unknown,
+    context?: ValidationErrorContext,
+    options?: ValidateOptions
+  ): ValidationFailure[] {
+    return this.validator.validate(value, context, { earlyFail: this.earlyFail, ...options })
   }
 }
 

@@ -1,4 +1,4 @@
-import { CodeGenResult, Validator, ValidatorBase, ValidatorOptions } from '../common'
+import { CodeGenResult, ValidateOptions, Validator, ValidatorBase, ValidatorOptions } from '../common'
 import { RequiredFail, UnionFail, ValidationErrorContext, ValidationFailure } from '../errors'
 import { ExactStringValidator } from './exact-string'
 
@@ -14,12 +14,16 @@ export function validateUnion(
   schema: Validator[],
   value: unknown,
   context?: ValidationErrorContext,
-  optimized?: boolean
+  options?: ValidateOptions
 ): ValidationFailure[] {
   const errors: ValidationFailure[] = []
   for (const [index, validator] of schema.entries()) {
     const propName = `${context?.key || ''}(${index})`
-    const currentErrors = validator.validate(value, { key: propName }, optimized)
+    const currentErrors = validator.validate(
+      value,
+      { key: propName },
+      { optimized: false, earlyFail: false, ...options }
+    )
     if (currentErrors.length === 0) {
       return []
     } else {
@@ -28,6 +32,9 @@ export function validateUnion(
           key: propName
         })
       )
+      if (options?.earlyFail) {
+        return errors
+      }
     }
   }
   return errors
@@ -50,7 +57,8 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext
+    context?: ValidationErrorContext,
+    earlyFail?: boolean
   ): CodeGenResult {
     const contextStr = context?.key ? `, { key: \`${context.key}\` }` : ', context'
     const unionValueRef = `unionValue${id()}`
@@ -105,14 +113,21 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
       `} else {`,
       `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
       '}',
-
+      ...(earlyFail ? [
+      `if (errors.length > 0) {`,
+      `  return errors`,
+      `}`] : []),
     )
 
     return [imports, declarations, code]
   }
 
-  protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
-    return validateUnion(this.schema, value, context)
+  protected validateValue(
+    value: unknown,
+    context?: ValidationErrorContext,
+    options?: ValidateOptions
+  ): ValidationFailure[] {
+    return validateUnion(this.schema, value, context, { earlyFail: this.earlyFail, ...options })
   }
 }
 

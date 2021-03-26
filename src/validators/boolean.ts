@@ -30,7 +30,8 @@ export class BooleanValidator<O = never> extends ValidatorBase<boolean | O> {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext
+    context?: ValidationErrorContext,
+    earlyFail?: boolean
   ): CodeGenResult {
     const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
     const localValueRef = `value${id()}`
@@ -43,9 +44,13 @@ export class BooleanValidator<O = never> extends ValidatorBase<boolean | O> {
       `    errors.push(new NotBooleanFail(\`Must be an boolean (received "\${${localValueRef}}")\`${contextStr}))`,
       `  }`,
       ...(this.required ? [
-        `} else {`,
-        `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
-        '}'
+      `} else {`,
+      `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
+      '}',
+      ...(earlyFail ? [
+      `if (errors.length > 0) {`,
+      `  return errors`,
+      `}`] : []),
     ]
     return [
       {

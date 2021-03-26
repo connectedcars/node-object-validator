@@ -41,7 +41,8 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext
+    context?: ValidationErrorContext,
+    earlyFail?: boolean
   ): CodeGenResult {
     const expectedStr = JSON.stringify(this.expected)
     const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
@@ -57,7 +58,11 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
       ...(this.required ? [
       `} else {`,
       `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
-      '}'
+      '}',
+      ...(earlyFail ? [
+      `if (errors.length > 0) {`,
+      `  return errors`,
+      `}`] : []),
     ]
     return [
       {
