@@ -1,4 +1,4 @@
-import { ValidatorBase, ValidatorOptions } from '../common'
+import { ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { ValidationErrorContext, ValidationFailure } from '../errors'
 
 export class UnknownValidator<O = never> extends ValidatorBase<O> {
@@ -7,6 +7,13 @@ export class UnknownValidator<O = never> extends ValidatorBase<O> {
     if (options?.optimize) {
       this.optimize()
     }
+  }
+
+  public toString(options?: ValidatorExportOptions): string {
+    if (options?.types) {
+      return 'unknown'
+    }
+    return `new ${this.constructor.name}(${this.optionsString})`
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -46,6 +46,12 @@ describe.each([false, true])('Null (optimize: %s)', optimize => {
       }
     })
 
+    it('should export types', () => {
+      const validator = new NullValidator({ optimize })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('null')
+    })
+
     it('requires value to be an Null', () => {
       const validator = new NullValidator({ optimize })
       expect(validator.validate(null)).toStrictEqual([])

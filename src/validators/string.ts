@@ -91,6 +91,9 @@ export class StringValidator<O = never> extends ValidatorBase<string | O> {
   }
 
   public toString(options?: ValidatorExportOptions): string {
+    if (options?.types) {
+      return 'string'
+    }
     const minLengthStr = this.minLength !== 0 || this.maxLength !== Number.MAX_SAFE_INTEGER ? `${this.minLength}` : ''
     const maxLengthStr = this.maxLength !== Number.MAX_SAFE_INTEGER ? `, ${this.maxLength}` : ''
     const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''

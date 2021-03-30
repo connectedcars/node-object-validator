@@ -46,6 +46,12 @@ describe.each([false, true])('Date (optimize: %s)', optimize => {
       }
     })
 
+    it('should export types', () => {
+      const validator = new DateValidator({ optimize })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('Date')
+    })
+
     it('requires value to be a Date object', () => {
       const validator = new DateValidator({ optimize })
       expect(validator.validate(new Date('2018-08-06T13:37:00Z'))).toStrictEqual([])

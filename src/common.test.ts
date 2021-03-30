@@ -1,4 +1,4 @@
-import { ValidatorBase, ValidatorOptions } from './common'
+import { ValidatorBase, ValidatorExportOptions, ValidatorOptions } from './common'
 import { RequiredFail, ValidationErrorContext, ValidationFailure } from './errors'
 
 class OneValidator extends ValidatorBase<number> {
@@ -8,6 +8,14 @@ class OneValidator extends ValidatorBase<number> {
       this.optimize()
     }
   }
+
+  public toString(options?: ValidatorExportOptions): string {
+    if (options?.types) {
+      return '1'
+    }
+    return `new ${this.constructor.name}(${this.optionsString})`
+  }
+
   protected validateValue(value: unknown, context?: ValidationErrorContext | undefined): ValidationFailure[] {
     if (value !== 1) {
       return [new ValidationFailure(`value is not 1`, context)]

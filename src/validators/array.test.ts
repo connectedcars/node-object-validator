@@ -49,6 +49,12 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
       }
     })
 
+    it('should export types', () => {
+      const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10, { optimize })
+      const code = arrayValidator.toString({ types: true })
+      expect(code).toEqual('Array<number>')
+    })
+
     it('should fail validation of object', () => {
       const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10, { optimize })
       const errors = arrayValidator.validate({ hello: 'stuff' })

@@ -46,6 +46,12 @@ describe.each([false, true])('Boolean (optimize: %s)', optimize => {
       }
     })
 
+    it('should export types', () => {
+      const validator = new BooleanValidator({ optimize })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('boolean')
+    })
+
     it('requires value to be an boolean', () => {
       const validator = new BooleanValidator({ optimize })
       expect(validator.validate(true)).toStrictEqual([])

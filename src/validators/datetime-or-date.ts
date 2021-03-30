@@ -1,7 +1,7 @@
 // XXX: This is a temporary solution until we support unions
 
 import { validateDate, validateDateTime } from '..'
-import { isValidType, ValidatorBase, ValidatorOptions } from '../common'
+import { isValidType, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotDatetimeOrDateFail, ValidationErrorContext, ValidationFailure } from '../errors'
 
 export function validateDateTimeOrDate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
@@ -26,6 +26,13 @@ export class DateTimeOrDateValidator<O = never> extends ValidatorBase<string | O
     if (options?.optimize) {
       this.optimize()
     }
+  }
+
+  public toString(options?: ValidatorExportOptions): string {
+    if (options?.types) {
+      return 'string | Date'
+    }
+    return `new ${this.constructor.name}(${this.optionsString})`
   }
 
   protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {

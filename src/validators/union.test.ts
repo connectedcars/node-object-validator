@@ -116,6 +116,24 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
       }
     })
 
+    it('should export types', () => {
+      const code = messageValidator.toString({ types: true })
+      expect(code).toEqual(
+        [
+          '{',
+          `  'type': 'number'`,
+          `  'value': number`,
+          '} | {',
+          `  'type': 'string'`,
+          `  'value': string`,
+          '} | {',
+          `  'type': 'error'`,
+          `  'error': string`,
+          '}'
+        ].join('\n')
+      )
+    })
+
     it('should validate message of type string', () => {
       const errors = messageValidator.validate({
         type: 'string',

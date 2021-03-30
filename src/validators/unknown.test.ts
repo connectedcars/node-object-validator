@@ -17,6 +17,22 @@ describe.each([false, true])('Unknown (optimize: %s)', optimize => {
       expect(validator.validate({})).toEqual([])
     })
 
+    it('should export validator code with options', () => {
+      const validator = new UnknownValidator({ optimize })
+      const code = validator.toString()
+      if (optimize) {
+        expect(code).toEqual('new UnknownValidator({ optimize: true })')
+      } else {
+        expect(code).toEqual('new UnknownValidator()')
+      }
+    })
+
+    it('should export types', () => {
+      const validator = new UnknownValidator({ optimize })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual(`unknown`)
+    })
+
     describe('RequiredUnknown', () => {
       it('rejects empty value', () => {
         const validator = new RequiredUnknown()

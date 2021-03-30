@@ -1,4 +1,4 @@
-import { isValidType, ValidatorBase, ValidatorOptions } from '../common'
+import { isValidType, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotIntegerStringFail, ValidationErrorContext, ValidationFailure, WrongLengthFail } from '../errors'
 import { validateInteger } from './integer'
 import { validateString } from './string'
@@ -40,6 +40,9 @@ export class IntegerStringValidator<O = never> extends ValidatorBase<string | O>
   }
 
   public toString(options?: ValidatorExportOptions): string {
+    if (options?.types) {
+      return 'string'
+    }
     const minStr = this.min !== Number.MIN_SAFE_INTEGER || this.max !== Number.MAX_SAFE_INTEGER ? `${this.min}` : ''
     const maxStr = this.max !== Number.MAX_SAFE_INTEGER ? `, ${this.max}` : ''
     const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''

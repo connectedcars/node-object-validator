@@ -86,6 +86,9 @@ export class IntegerValidator<O = never> extends ValidatorBase<number | O> {
   }
 
   public toString(options?: ValidatorExportOptions): string {
+    if (options?.types) {
+      return 'number'
+    }
     const minStr = this.min !== Number.MIN_SAFE_INTEGER || this.max !== Number.MAX_SAFE_INTEGER ? `${this.min}` : ''
     const maxStr = this.max !== Number.MAX_SAFE_INTEGER ? `, ${this.max}` : ''
     const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''

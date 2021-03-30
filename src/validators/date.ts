@@ -1,4 +1,4 @@
-import { CodeGenResult, ValidatorBase, ValidatorOptions } from '../common'
+import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotDateFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
 
 export function isDate(value: unknown, context?: ValidationErrorContext): value is Date {
@@ -60,6 +60,13 @@ export class DateValidator<O = never> extends ValidatorBase<Date | O> {
       declarations,
       code
     ]
+  }
+
+  public toString(options?: ValidatorExportOptions): string {
+    if (options?.types) {
+      return 'Date'
+    }
+    return `new ${this.constructor.name}(${this.optionsString})`
   }
 
   protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {

@@ -56,6 +56,12 @@ describe.each([false, true])('Regex (optimize: %s)', optimize => {
       }
     })
 
+    it('should export types', () => {
+      const validator = new RegexMatchValidator(/^.*$/i, { optimize })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual(`string`)
+    })
+
     it('requires value to be a string', () => {
       const validator = new RegexMatchValidator(/^.*$/, { optimize })
       expect(validator.validate('foo')).toStrictEqual([])

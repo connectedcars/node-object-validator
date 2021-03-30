@@ -62,6 +62,13 @@ export class BooleanValidator<O = never> extends ValidatorBase<boolean | O> {
     ]
   }
 
+  public toString(options?: ValidatorExportOptions): string {
+    if (options?.types) {
+      return 'boolean'
+    }
+    return `new ${this.constructor.name}(${this.optionsString})`
+  }
+
   protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
     return validateBoolean(value, context)
   }

@@ -97,6 +97,9 @@ export class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
   }
 
   public toString(options?: ValidatorExportOptions): string {
+    if (options?.types) {
+      return 'string'
+    }
     const regexStr = `/${this.regex.source}/${this.regex.flags}`
     const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
     return `new ${this.constructor.name}(${regexStr}${optionsStr})`

@@ -44,6 +44,12 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
       }
     })
 
+    it('should export types', () => {
+      const validator = new FloatValidator(1, 2, { optimize })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('number')
+    })
+
     it('requires value to be a float', () => {
       const validator = new FloatValidator(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(0.0001)).toStrictEqual([])

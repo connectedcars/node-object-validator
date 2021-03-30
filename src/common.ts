@@ -32,7 +32,6 @@ export interface ValidateOptions {
 }
 
 export interface ValidatorExportOptions {
-  nested?: boolean
   types?: boolean
 }
 
@@ -158,10 +157,6 @@ export abstract class ValidatorBase<T> implements Validator {
     ]
   }
 
-  public toString(options?: ValidatorExportOptions): string {
-    return `new ${this.constructor.name}(${this.optionsString})`
-  }
-
   protected optimize(): void {
     const [imports, declarations, code] = this.codeGen(
       'value',
@@ -194,6 +189,8 @@ export abstract class ValidatorBase<T> implements Validator {
       throw new Error(`Failed to compile optimized function(${e.message}):\n${functionBody}`)
     }
   }
+
+  public abstract toString(options?: ValidatorExportOptions): string
 
   protected abstract validateValue(
     value: unknown,

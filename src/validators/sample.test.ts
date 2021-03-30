@@ -156,5 +156,45 @@ describe.each([false, true])('Sample (optimize: %s)', optimize => {
         expect(code).toEqual([...expected, '})'].join('\n'))
       }
     })
+
+    it('should export types', () => {
+      const sample = {
+        type: 'gps_odometer_km',
+        recordedAt: '2018-08-06T13:37:00Z',
+        tripId: 1337,
+        position: {
+          latitude: 55.332131,
+          longitude: 12.54454,
+          accuracy: 18
+        },
+        positions: [
+          {
+            latitude: 55.332131,
+            longitude: 12.54454,
+            accuracy: 18
+          }
+        ]
+      }
+      const sampleValidator = new SampleValidator(sample, { optimize })
+      const code = sampleValidator.toString({ types: true })
+      const expected = [
+        '{',
+        `  'type': string`,
+        `  'recordedAt': string`,
+        `  'tripId': number`,
+        `  'position': {`,
+        `    'latitude': number`,
+        `    'longitude': number`,
+        `    'accuracy': number`,
+        '  }',
+        `  'positions': Array<{`,
+        `    'latitude': number`,
+        `    'longitude': number`,
+        `    'accuracy': number`,
+        '  }>',
+        '}'
+      ]
+      expect(code).toEqual(expected.join('\n'))
+    })
   })
 })

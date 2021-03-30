@@ -1,4 +1,10 @@
-import { CodeGenResult, generateOptionsString, ValidatorBase, ValidatorOptions } from '../common'
+import {
+  CodeGenResult,
+  generateOptionsString,
+  ValidatorBase,
+  ValidatorExportOptions,
+  ValidatorOptions
+} from '../common'
 import { NotNullFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
 
 export function isNull(value: unknown, context?: ValidationErrorContext): value is null {
@@ -69,6 +75,13 @@ export class NullValidator<O = never> extends ValidatorBase<null | O> {
       declarations,
       code
     ]
+  }
+
+  public toString(options?: ValidatorExportOptions): string {
+    if (options?.types) {
+      return 'null'
+    }
+    return `new ${this.constructor.name}(${this.optionsString})`
   }
 
   protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {

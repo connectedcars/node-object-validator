@@ -76,6 +76,9 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
 
   public toString(options?: ValidatorExportOptions): string {
     const expectedStr = `'${this.expected.replace(/'/g, "\\'")}'`
+    if (options?.types) {
+      return expectedStr
+    }
     const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
     return `new ${this.constructor.name}(${expectedStr}${optionsStr})`
   }

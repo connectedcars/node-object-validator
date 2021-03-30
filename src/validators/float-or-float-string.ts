@@ -1,7 +1,7 @@
 // XXX: This is a temporary solution until we support unions
 
 import { validateFloat, validateFloatString } from '..'
-import { isValidType, ValidatorBase, ValidatorOptions } from '../common'
+import { isValidType, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotFloatOrFloatStringFail, ValidationErrorContext, ValidationFailure } from '../errors'
 
 export function validateFloatOrFloatString(
@@ -55,6 +55,13 @@ export class FloatOrFloatStringValidator<O = never> extends ValidatorBase<string
     if (options?.optimize) {
       this.optimize()
     }
+  }
+
+  public toString(options?: ValidatorExportOptions): string {
+    if (options?.types) {
+      return 'number | string'
+    }
+    return `new ${this.constructor.name}(${this.optionsString})`
   }
 
   protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {

@@ -1,7 +1,7 @@
 // XXX: This is a temporary solution until we support unions
 
 import { validateInteger, validateIntegerString } from '..'
-import { isValidType, ValidatorBase, ValidatorOptions } from '../common'
+import { isValidType, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotIntegerOrIntegerStringFail, ValidationErrorContext, ValidationFailure } from '../errors'
 
 export function validateIntegerOrIntegerString(
@@ -57,6 +57,13 @@ export class IntegerOrIntegerStringValidator<O = never> extends ValidatorBase<st
     if (options?.optimize) {
       this.optimize()
     }
+  }
+
+  public toString(options?: ValidatorExportOptions): string {
+    if (options?.types) {
+      return 'number | string'
+    }
+    return `new ${this.constructor.name}(${this.optionsString})`
   }
 
   protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {

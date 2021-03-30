@@ -1,5 +1,5 @@
 import { validateFloat, validateString } from '..'
-import { isValidType, ValidatorBase, ValidatorOptions } from '../common'
+import { isValidType, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotFloatStringFail, ValidationErrorContext, ValidationFailure, WrongLengthFail } from '../errors'
 
 export function validateFloatString(
@@ -33,6 +33,16 @@ export class FloatStringValidator<O = never> extends ValidatorBase<number | O> {
     if (options?.optimize) {
       this.optimize()
     }
+  }
+
+  public toString(options?: ValidatorExportOptions): string {
+    if (options?.types) {
+      return 'string'
+    }
+    const minStr = this.min !== Number.MIN_SAFE_INTEGER || this.max !== Number.MAX_SAFE_INTEGER ? `${this.min}` : ''
+    const maxStr = this.max !== Number.MAX_SAFE_INTEGER ? `, ${this.max}` : ''
+    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+    return `new ${this.constructor.name}(${minStr}${maxStr}${optionsStr})`
   }
 
   protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {

@@ -130,6 +130,9 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
   }
 
   public toString(options?: ValidatorExportOptions): string {
+    if (options?.types) {
+      return `${this.schema.map(v => v.toString(options)).join(' | ')}`
+    }
     const schemaStr = `[\n${this.schema.map(v => `${v.toString(options).replace(/(^|\n)/g, '$1  ')}`).join(',\n')}\n]`
     const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
     return `new ${this.constructor.name}(${schemaStr}${optionsStr})`

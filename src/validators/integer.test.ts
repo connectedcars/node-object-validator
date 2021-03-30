@@ -46,6 +46,12 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
       }
     })
 
+    it('should export types', () => {
+      const validator = new IntegerValidator(1, 30, { optimize })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('number')
+    })
+
     it('requires value to be an integer', () => {
       const validator = new IntegerValidator(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(0)).toStrictEqual([])

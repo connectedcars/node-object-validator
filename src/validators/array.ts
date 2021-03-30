@@ -138,6 +138,9 @@ export class ArrayValidator<T extends Array<unknown>, O = never> extends Validat
   }
 
   public toString(options?: ValidatorExportOptions): string {
+    if (options?.types) {
+      return `Array<${this.schema.toString(options)}>`
+    }
     const schemaStr = this.schema.toString(options)
     const minLengthStr = this.minLength !== 0 || this.maxLength !== Number.MAX_SAFE_INTEGER ? `, ${this.minLength}` : ''
     const maxLengthStr = this.maxLength !== Number.MAX_SAFE_INTEGER ? `, ${this.maxLength}` : ''
