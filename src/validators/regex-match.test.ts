@@ -46,6 +46,16 @@ describe.each([false, true])('Regex (optimize: %s)', optimize => {
       expect(errors).toEqual([])
     })
 
+    it('should export validator code with options', () => {
+      const validator = new RegexMatchValidator(/^.*$/i, { optimize })
+      const code = validator.toString()
+      if (optimize) {
+        expect(code).toEqual('new RegexMatchValidator(/^.*$/i, { optimize: true })')
+      } else {
+        expect(code).toEqual('new RegexMatchValidator(/^.*$/i)')
+      }
+    })
+
     it('requires value to be a string', () => {
       const validator = new RegexMatchValidator(/^.*$/, { optimize })
       expect(validator.validate('foo')).toStrictEqual([])

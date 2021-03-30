@@ -1,4 +1,4 @@
-import { CodeGenResult, isValidType, ValidatorBase, ValidatorOptions } from '../common'
+import { CodeGenResult, isValidType, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import {
   NotRfc3339Fail,
   NotStringFail,

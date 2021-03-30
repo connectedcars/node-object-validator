@@ -109,6 +109,20 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
       expect(errors).toEqual([])
     })
 
+    it('should export validator code with options', () => {
+      const validator = new ObjectValidator({ int: new IntegerValidator(), float: new FloatValidator() }, { optimize })
+      const code = validator.toString()
+      if (optimize) {
+        expect(code).toEqual(
+          `new ObjectValidator({\n  'int': new IntegerValidator(),\n  'float': new FloatValidator()\n}, { optimize: true })`
+        )
+      } else {
+        expect(code).toEqual(
+          `new ObjectValidator({\n  'int': new IntegerValidator(),\n  'float': new FloatValidator()\n})`
+        )
+      }
+    })
+
     it('should fail validation of wrong key types', () => {
       const validator = new ObjectValidator({ int: new IntegerValidator(), float: new FloatValidator() }, { optimize })
       expect(validator.validate({ int: '', float: '' })).toStrictEqual([

@@ -1,4 +1,4 @@
-import { CodeGenResult, ValidatorBase, ValidatorOptions } from '../common'
+import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotBooleanFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
 
 export function isBoolean(value: unknown, context?: ValidationErrorContext): value is boolean {

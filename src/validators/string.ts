@@ -1,4 +1,4 @@
-import { CodeGenResult, ValidatorBase, ValidatorOptions } from '../common'
+import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotStringFail, RequiredFail, ValidationErrorContext, ValidationFailure, WrongLengthFail } from '../errors'
 
 export function isString(
@@ -88,6 +88,13 @@ export class StringValidator<O = never> extends ValidatorBase<string | O> {
       declarations,
       code
     ]
+  }
+
+  public toString(options?: ValidatorExportOptions): string {
+    const minLengthStr = this.minLength !== 0 || this.maxLength !== Number.MAX_SAFE_INTEGER ? `${this.minLength}` : ''
+    const maxLengthStr = this.maxLength !== Number.MAX_SAFE_INTEGER ? `, ${this.maxLength}` : ''
+    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+    return `new ${this.constructor.name}(${minLengthStr}${maxLengthStr}${optionsStr})`
   }
 
   protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {

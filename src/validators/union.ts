@@ -1,4 +1,11 @@
-import { CodeGenResult, ValidateOptions, Validator, ValidatorBase, ValidatorOptions } from '../common'
+import {
+  CodeGenResult,
+  ValidateOptions,
+  Validator,
+  ValidatorBase,
+  ValidatorExportOptions,
+  ValidatorOptions
+} from '../common'
 import { RequiredFail, UnionFail, ValidationErrorContext, ValidationFailure } from '../errors'
 import { ExactStringValidator } from './exact-string'
 
@@ -120,6 +127,12 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
     )
 
     return [imports, declarations, code]
+  }
+
+  public toString(options?: ValidatorExportOptions): string {
+    const schemaStr = `[\n${this.schema.map(v => `${v.toString(options).replace(/(^|\n)/g, '$1  ')}`).join(',\n')}\n]`
+    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+    return `new ${this.constructor.name}(${schemaStr}${optionsStr})`
   }
 
   protected validateValue(

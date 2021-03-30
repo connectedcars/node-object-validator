@@ -34,6 +34,16 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
       expect(errors).toEqual([])
     })
 
+    it('should export validator code with options', () => {
+      const validator = new FloatValidator(1, 2, { optimize })
+      const code = validator.toString()
+      if (optimize) {
+        expect(code).toEqual('new FloatValidator(1, 2, { optimize: true })')
+      } else {
+        expect(code).toEqual('new FloatValidator(1, 2)')
+      }
+    })
+
     it('requires value to be a float', () => {
       const validator = new FloatValidator(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(0.0001)).toStrictEqual([])

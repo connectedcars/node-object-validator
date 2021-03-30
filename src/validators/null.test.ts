@@ -36,6 +36,16 @@ describe.each([false, true])('Null (optimize: %s)', optimize => {
       expect(errors).toEqual([])
     })
 
+    it('should export validator code with options', () => {
+      const validator = new NullValidator({ optimize })
+      const code = validator.toString()
+      if (optimize) {
+        expect(code).toEqual('new NullValidator({ optimize: true })')
+      } else {
+        expect(code).toEqual('new NullValidator()')
+      }
+    })
+
     it('requires value to be an Null', () => {
       const validator = new NullValidator({ optimize })
       expect(validator.validate(null)).toStrictEqual([])

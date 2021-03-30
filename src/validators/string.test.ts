@@ -35,6 +35,16 @@ describe.each([false, true])('String (optimize: %s)', optimize => {
       expect(errors).toEqual([])
     })
 
+    it('should export validator code with options', () => {
+      const validator = new StringValidator(1, 30, { optimize })
+      const code = validator.toString()
+      if (optimize) {
+        expect(code).toEqual('new StringValidator(1, 30, { optimize: true })')
+      } else {
+        expect(code).toEqual('new StringValidator(1, 30)')
+      }
+    })
+
     it('requires value to be a string', () => {
       const validator = new StringValidator(0, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate('foo')).toStrictEqual([])

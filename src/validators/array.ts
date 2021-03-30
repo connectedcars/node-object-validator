@@ -1,4 +1,11 @@
-import { CodeGenResult, ValidateOptions, Validator, ValidatorBase, ValidatorOptions } from '../common'
+import {
+  CodeGenResult,
+  ValidateOptions,
+  Validator,
+  ValidatorBase,
+  ValidatorExportOptions,
+  ValidatorOptions
+} from '../common'
 import { NotArrayFail, RequiredFail, ValidationErrorContext, ValidationFailure, WrongLengthFail } from '../errors'
 
 export function isArray<T>(
@@ -128,6 +135,14 @@ export class ArrayValidator<T extends Array<unknown>, O = never> extends Validat
     ]
 
     return [imports, declarations, code]
+  }
+
+  public toString(options?: ValidatorExportOptions): string {
+    const schemaStr = this.schema.toString(options)
+    const minLengthStr = this.minLength !== 0 || this.maxLength !== Number.MAX_SAFE_INTEGER ? `, ${this.minLength}` : ''
+    const maxLengthStr = this.maxLength !== Number.MAX_SAFE_INTEGER ? `, ${this.maxLength}` : ''
+    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+    return `new ${this.constructor.name}(${schemaStr}${minLengthStr}${maxLengthStr}${optionsStr})`
   }
 
   protected validateValue(

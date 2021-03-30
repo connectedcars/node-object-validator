@@ -1,4 +1,4 @@
-import { CodeGenResult, ValidatorBase, ValidatorOptions } from '../common'
+import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotIntegerFail, OutOfRangeFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
 
 export function isInteger(
@@ -83,6 +83,13 @@ export class IntegerValidator<O = never> extends ValidatorBase<number | O> {
       declarations,
       code
     ]
+  }
+
+  public toString(options?: ValidatorExportOptions): string {
+    const minStr = this.min !== Number.MIN_SAFE_INTEGER || this.max !== Number.MAX_SAFE_INTEGER ? `${this.min}` : ''
+    const maxStr = this.max !== Number.MAX_SAFE_INTEGER ? `, ${this.max}` : ''
+    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+    return `new ${this.constructor.name}(${minStr}${maxStr}${optionsStr})`
   }
 
   protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {

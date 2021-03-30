@@ -39,6 +39,13 @@ export class IntegerStringValidator<O = never> extends ValidatorBase<string | O>
     }
   }
 
+  public toString(options?: ValidatorExportOptions): string {
+    const minStr = this.min !== Number.MIN_SAFE_INTEGER || this.max !== Number.MAX_SAFE_INTEGER ? `${this.min}` : ''
+    const maxStr = this.max !== Number.MAX_SAFE_INTEGER ? `, ${this.max}` : ''
+    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+    return `new ${this.constructor.name}(${minStr}${maxStr}${optionsStr})`
+  }
+
   protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
     return validateIntegerString(value, this.min, this.max, context)
   }

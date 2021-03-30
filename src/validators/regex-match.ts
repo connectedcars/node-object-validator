@@ -1,4 +1,4 @@
-import { CodeGenResult, isValidType, ValidatorBase, ValidatorOptions } from '../common'
+import { CodeGenResult, isValidType, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import {
   DoesNotMatchRegexFail,
   NotStringFail,
@@ -94,6 +94,12 @@ export class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
       declarations,
       code
     ]
+  }
+
+  public toString(options?: ValidatorExportOptions): string {
+    const regexStr = `/${this.regex.source}/${this.regex.flags}`
+    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+    return `new ${this.constructor.name}(${regexStr}${optionsStr})`
   }
 
   protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {

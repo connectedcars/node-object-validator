@@ -1,4 +1,4 @@
-import { CodeGenResult, ValidatorBase, ValidatorOptions } from '../common'
+import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotExactStringFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
 
 export function isExactString<T extends string>(
@@ -72,6 +72,12 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
       declarations,
       code
     ]
+  }
+
+  public toString(options?: ValidatorExportOptions): string {
+    const expectedStr = `'${this.expected.replace(/'/g, "\\'")}'`
+    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+    return `new ${this.constructor.name}(${expectedStr}${optionsStr})`
   }
 
   protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {

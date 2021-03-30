@@ -65,6 +65,57 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
       { optimize }
     )
 
+    it('should validate generate the optimized function', () => {
+      if (optimize) {
+        expect(messageValidator['optimizedValidate']).not.toBeNull()
+      } else {
+        expect(messageValidator['optimizedValidate']).toBeNull()
+      }
+    })
+
+    it('should export validator code with options', () => {
+      const code = messageValidator.toString()
+      if (optimize) {
+        expect(code).toEqual(
+          [
+            'new UnionValidator([',
+            '  new RequiredObject({',
+            `    'type': new RequiredExactString('number'),`,
+            `    'value': new RequiredFloat()`,
+            '  }),',
+            '  new RequiredObject({',
+            `    'type': new RequiredExactString('string'),`,
+            `    'value': new RequiredString()`,
+            '  }),',
+            '  new RequiredObject({',
+            `    'type': new RequiredExactString('error'),`,
+            `    'error': new RequiredString()`,
+            '  })',
+            '], { optimize: true })'
+          ].join('\n')
+        )
+      } else {
+        expect(code).toEqual(
+          [
+            'new UnionValidator([',
+            '  new RequiredObject({',
+            `    'type': new RequiredExactString('number'),`,
+            `    'value': new RequiredFloat()`,
+            '  }),',
+            '  new RequiredObject({',
+            `    'type': new RequiredExactString('string'),`,
+            `    'value': new RequiredString()`,
+            '  }),',
+            '  new RequiredObject({',
+            `    'type': new RequiredExactString('error'),`,
+            `    'error': new RequiredString()`,
+            '  })',
+            '])'
+          ].join('\n')
+        )
+      }
+    })
+
     it('should validate message of type string', () => {
       const errors = messageValidator.validate({
         type: 'string',

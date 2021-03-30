@@ -26,7 +26,7 @@ export class FloatStringValidator<O = never> extends ValidatorBase<number | O> {
   private min: number
   private max: number
 
-  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super(options)
     this.min = min
     this.max = max

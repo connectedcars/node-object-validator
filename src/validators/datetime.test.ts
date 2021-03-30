@@ -36,6 +36,16 @@ describe.each([false, true])('DateTime (optimize: %s)', optimize => {
       expect(errors).toEqual([])
     })
 
+    it('should export validator code with options', () => {
+      const validator = new DateTimeValidator({ optimize })
+      const code = validator.toString()
+      if (optimize) {
+        expect(code).toEqual('new DateTimeValidator({ optimize: true })')
+      } else {
+        expect(code).toEqual('new DateTimeValidator()')
+      }
+    })
+
     it('requires value to be an RFC 3339 timestamp', () => {
       const validator = new DateTimeValidator({ optimize })
       expect(validator.validate('2018-08-06T13:37:00Z')).toStrictEqual([])

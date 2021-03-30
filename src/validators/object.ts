@@ -1,4 +1,11 @@
-import { CodeGenResult, ValidateOptions, Validator, ValidatorBase, ValidatorOptions } from '../common'
+import {
+  CodeGenResult,
+  ValidateOptions,
+  Validator,
+  ValidatorBase,
+  ValidatorExportOptions,
+  ValidatorOptions
+} from '../common'
 import { NotObjectFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
 
 export function isObject<T extends Record<string, unknown>>(
@@ -107,6 +114,14 @@ export class ObjectValidator<T extends Record<string, unknown>, O = never> exten
     )
 
     return [imports, declarations, code]
+  }
+
+  public toString(options?: ValidatorExportOptions): string {
+    const schemaStr = `{\n${Object.keys(this.schema)
+      .map(k => `'${k}': ${this.schema[k].toString(options)}`.replace(/(^|\n)/g, '$1  '))
+      .join(',\n')}\n}`
+    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+    return `new ${this.constructor.name}(${schemaStr}${optionsStr})`
   }
 
   protected validateValue(

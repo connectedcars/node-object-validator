@@ -36,6 +36,16 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
       expect(errors).toEqual([])
     })
 
+    it('should export validator code with options', () => {
+      const validator = new IntegerValidator(1, 30, { optimize })
+      const code = validator.toString()
+      if (optimize) {
+        expect(code).toEqual('new IntegerValidator(1, 30, { optimize: true })')
+      } else {
+        expect(code).toEqual('new IntegerValidator(1, 30)')
+      }
+    })
+
     it('requires value to be an integer', () => {
       const validator = new IntegerValidator(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(0)).toStrictEqual([])

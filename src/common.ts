@@ -31,6 +31,11 @@ export interface ValidateOptions {
   optimized?: boolean
 }
 
+export interface ValidatorExportOptions {
+  nested?: boolean
+  types?: boolean
+}
+
 export interface Validator {
   validate(value: unknown, context?: ValidationErrorContext, options?: ValidateOptions): ValidationFailure[]
   codeGen(
@@ -40,6 +45,7 @@ export interface Validator {
     context?: ValidationErrorContext,
     earlyFail?: boolean
   ): CodeGenResult
+  toString(options?: ValidatorExportOptions): string
 }
 
 export function isValidator(value: unknown): value is Validator {
@@ -47,6 +53,23 @@ export function isValidator(value: unknown): value is Validator {
     return true
   }
   return false
+}
+
+export function generateOptionsString(options: ValidatorOptions, defaults: Required<ValidatorOptions>): string {
+  const selectedOptions: string[] = []
+  if (options.required !== undefined && options.required !== defaults.required) {
+    selectedOptions.push(`required: ${options.required}`)
+  }
+  if (options.nullCheck !== undefined && options.nullCheck !== defaults.nullCheck) {
+    selectedOptions.push(`nullCheck: ${options.nullCheck}`)
+  }
+  if (options.earlyFail !== undefined && options.earlyFail !== defaults.earlyFail) {
+    selectedOptions.push(`earlyFail: ${options.earlyFail}`)
+  }
+  if (options.optimize !== undefined && options.optimize !== defaults.optimize) {
+    selectedOptions.push(`optimize: ${options.optimize}`)
+  }
+  return selectedOptions.length > 0 ? `{ ${selectedOptions.join(', ')} }` : ''
 }
 
 export abstract class ValidatorBase<T> implements Validator {
@@ -57,9 +80,14 @@ export abstract class ValidatorBase<T> implements Validator {
 
   protected codeGenId = 1
   protected optimizedValidate: ((value: unknown, context?: ValidationErrorContext) => ValidationFailure[]) | null
+  protected optionsString: string
 
   public constructor(options?: ValidatorOptions) {
-    const mergedOptions = { required: true, nullCheck: true, earlyFail: false, ...options }
+    const defaults = { required: true, nullCheck: true, earlyFail: false, optimize: false }
+    const mergedOptions = { ...defaults, ...options }
+
+    this.optionsString = options ? generateOptionsString(options, defaults) : ''
+
     this.required = mergedOptions.required
     this.nullCheck = mergedOptions.nullCheck
     this.earlyFail = mergedOptions.earlyFail
@@ -128,6 +156,10 @@ export abstract class ValidatorBase<T> implements Validator {
       declarations,
       code
     ]
+  }
+
+  public toString(options?: ValidatorExportOptions): string {
+    return `new ${this.constructor.name}(${this.optionsString})`
   }
 
   protected optimize(): void {

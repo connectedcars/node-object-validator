@@ -36,6 +36,16 @@ describe.each([false, true])('Boolean (optimize: %s)', optimize => {
       expect(errors).toEqual([])
     })
 
+    it('should export validator code with options', () => {
+      const validator = new BooleanValidator({ optimize })
+      const code = validator.toString()
+      if (optimize) {
+        expect(code).toEqual('new BooleanValidator({ optimize: true })')
+      } else {
+        expect(code).toEqual('new BooleanValidator()')
+      }
+    })
+
     it('requires value to be an boolean', () => {
       const validator = new BooleanValidator({ optimize })
       expect(validator.validate(true)).toStrictEqual([])

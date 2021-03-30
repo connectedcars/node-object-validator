@@ -42,6 +42,16 @@ describe.each([false, true])('validateExactString (optimize: %s)', optimize => {
       expect(errors).toEqual([])
     })
 
+    it('should export validator code with options', () => {
+      const validator = new ExactStringValidator('MyString', { optimize })
+      const code = validator.toString()
+      if (optimize) {
+        expect(code).toEqual(`new ExactStringValidator('MyString', { optimize: true })`)
+      } else {
+        expect(code).toEqual(`new ExactStringValidator('MyString')`)
+      }
+    })
+
     it('requires value to be exact string', () => {
       const validator = new ExactStringValidator('MyString', { optimize })
       expect(validator.validate('MyString')).toStrictEqual([])
