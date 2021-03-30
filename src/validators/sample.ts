@@ -1,8 +1,16 @@
-import { isValidator, ValidateOptions, Validator, ValidatorBase, ValidatorOptions } from '../common'
+import {
+  isValidator,
+  ValidateOptions,
+  Validator,
+  ValidatorBase,
+  ValidatorExportOptions,
+  ValidatorOptions
+} from '../common'
 import { ValidationErrorContext, ValidationFailure } from '../errors'
 import { ArrayValidator } from './array'
 import { BooleanValidator } from './boolean'
 import { DateValidator } from './date'
+import { DateTimeValidator, isDateTime } from './datetime'
 import { FloatValidator } from './float'
 import { IntegerValidator } from './integer'
 import { NullValidator } from './null'
@@ -67,7 +75,11 @@ export function sampleToValidator(sample: Sample, options?: ValidatorOptions): V
       return new FloatValidator(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, options)
     }
     case 'string': {
-      return new StringValidator(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, options)
+      if (isDateTime(sample)) {
+        return new DateTimeValidator(options)
+      } else {
+        return new StringValidator(0, Number.MAX_SAFE_INTEGER, options)
+      }
     }
     case 'boolean': {
       return new BooleanValidator(options)
@@ -101,6 +113,10 @@ export class SampleValidator<T, O = never> extends ValidatorBase<T | O> {
     super(options)
     this.schema = sample
     this.validator = sampleToValidator(this.schema, options)
+  }
+
+  public toString(options?: ValidatorExportOptions): string {
+    return this.validator.toString(options)
   }
 
   protected validateValue(

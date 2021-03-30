@@ -4,7 +4,8 @@ import {
   NotFloatFail,
   NotIntegerFail,
   NotStringFail,
-  RequiredFail
+  RequiredFail,
+  WrongLengthFail
 } from '../errors'
 import { SampleValidator, validateSample } from './sample'
 
@@ -38,7 +39,9 @@ describe('Sample', () => {
 
     it('should validate iso date time sample', () => {
       expect(validateSample('2018-08-06T13:37:00.000Z', '2018-08-06T13:37:00.000Z')).toEqual([])
-      expect(validateSample('2018-08-06T13:37:00.000Z', '')).toEqual([])
+      expect(validateSample('2018-08-06T13:37:00.000Z', '')).toEqual([
+        new WrongLengthFail('Must contain between 20 and 30 characters (received "")')
+      ])
     })
 
     it('should validate float sample', () => {
@@ -109,6 +112,49 @@ describe.each([false, true])('Sample (optimize: %s)', optimize => {
       const sampleValidator = new SampleValidator(sample, { optimize })
       const errors = sampleValidator.validate(sample)
       expect(errors).toEqual([])
+    })
+
+    it('should export validator code with options', () => {
+      const sample = {
+        type: 'gps_odometer_km',
+        recordedAt: '2018-08-06T13:37:00Z',
+        tripId: 1337,
+        position: {
+          latitude: 55.332131,
+          longitude: 12.54454,
+          accuracy: 18
+        },
+        positions: [
+          {
+            latitude: 55.332131,
+            longitude: 12.54454,
+            accuracy: 18
+          }
+        ]
+      }
+      const sampleValidator = new SampleValidator(sample, { optimize })
+      const code = sampleValidator.toString()
+      const expected = [
+        'new ObjectValidator({',
+        `  'type': new StringValidator(),`,
+        `  'recordedAt': new DateTimeValidator(),`,
+        `  'tripId': new IntegerValidator(),`,
+        `  'position': new ObjectValidator({`,
+        `    'latitude': new FloatValidator(),`,
+        `    'longitude': new FloatValidator(),`,
+        `    'accuracy': new IntegerValidator()`,
+        '  }),',
+        `  'positions': new ArrayValidator(new ObjectValidator({`,
+        `    'latitude': new FloatValidator(),`,
+        `    'longitude': new FloatValidator(),`,
+        `    'accuracy': new IntegerValidator()`,
+        '  }))'
+      ]
+      if (optimize) {
+        expect(code).toEqual([...expected, '}, { optimize: true })'].join('\n'))
+      } else {
+        expect(code).toEqual([...expected, '})'].join('\n'))
+      }
     })
   })
 })
