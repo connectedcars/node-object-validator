@@ -92,7 +92,7 @@ export class ArrayValidator<T extends Array<unknown>, O = never> extends Validat
     let imports: { [key: string]: unknown } = {
       NotArrayFail: NotArrayFail,
       WrongLengthFail: WrongLengthFail,
-      RequiredError: RequiredFail
+      RequiredFail: RequiredFail
     }
     const declarations = [`const ${schemaRef} = ${validatorRef}.schema`]
 
@@ -126,7 +126,7 @@ export class ArrayValidator<T extends Array<unknown>, O = never> extends Validat
       `  }`,
       ...(this.required ? [
       `} else {`,
-      `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
+      `  errors.push(new RequiredFail(\`Is required\`${contextStr}))`] : []),
       '}',
       ...(earlyFail ? [
       `if (errors.length > 0) {`,

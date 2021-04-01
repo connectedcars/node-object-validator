@@ -67,7 +67,7 @@ export class DateTimeValidator<O = never> extends ValidatorBase<string | O> {
       `  }`,
       ...(this.required ? [
       `} else {`,
-      `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
+      `  errors.push(new RequiredFail(\`Is required\`${contextStr}))`] : []),
       '}',
       ...(earlyFail ? [
       `if (errors.length > 0) {`,
@@ -80,7 +80,7 @@ export class DateTimeValidator<O = never> extends ValidatorBase<string | O> {
         NotRfc3339Fail: NotRfc3339Fail,
         WrongLengthFail: WrongLengthFail,
         NotStringFail: NotStringFail,
-        RequiredError: RequiredFail
+        RequiredFail: RequiredFail
       },
       declarations,
       code

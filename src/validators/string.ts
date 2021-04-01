@@ -72,7 +72,7 @@ export class StringValidator<O = never> extends ValidatorBase<string | O> {
       `  }`,
       ...(this.required ? [
       `} else {`,
-      `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
+      `  errors.push(new RequiredFail(\`Is required\`${contextStr}))`] : []),
       '}',
       ...(earlyFail ? [
       `if (errors.length > 0) {`,
@@ -83,7 +83,7 @@ export class StringValidator<O = never> extends ValidatorBase<string | O> {
       {
         WrongLengthFail: WrongLengthFail,
         NotStringFail: NotStringFail,
-        RequiredError: RequiredFail
+        RequiredFail: RequiredFail
       },
       declarations,
       code

@@ -53,11 +53,11 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
       `const ${localValueRef} = ${valueRef}`,
       `if (${localValueRef} != null) {`,
       `  if (${localValueRef} !== ${expectedStr}) {`,
-      `    errors.push(new NotExactStringError(\`Must strictly equal ${expectedStr} (received "\${${localValueRef}}")\`${contextStr}))`,
+      `    errors.push(new NotExactStringFail(\`Must strictly equal ${expectedStr} (received "\${${localValueRef}}")\`${contextStr}))`,
       `  }`,
       ...(this.required ? [
       `} else {`,
-      `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
+      `  errors.push(new RequiredFail(\`Is required\`${contextStr}))`] : []),
       '}',
       ...(earlyFail ? [
       `if (errors.length > 0) {`,
@@ -66,8 +66,8 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
     ]
     return [
       {
-        NotExactStringError: NotExactStringFail,
-        RequiredError: RequiredFail
+        NotExactStringFail: NotExactStringFail,
+        RequiredFail: RequiredFail
       },
       declarations,
       code

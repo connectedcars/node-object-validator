@@ -59,7 +59,7 @@ export class NullValidator<O = never> extends ValidatorBase<null | O> {
       `  }`,
       ...(this.required ? [
       `} else {`,
-      `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
+      `  errors.push(new RequiredFail(\`Is required\`${contextStr}))`] : []),
       '}',
       ...(earlyFail ? [
       `if (errors.length > 0) {`,
@@ -70,7 +70,7 @@ export class NullValidator<O = never> extends ValidatorBase<null | O> {
     return [
       {
         NotNullFail: NotNullFail,
-        RequiredError: RequiredFail
+        RequiredFail: RequiredFail
       },
       declarations,
       code

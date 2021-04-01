@@ -67,7 +67,7 @@ export class IntegerValidator<O = never> extends ValidatorBase<number | O> {
       `  }`,
       ...(this.required ? [
       `} else {`,
-      `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
+      `  errors.push(new RequiredFail(\`Is required\`${contextStr}))`] : []),
       '}',
       ...(earlyFail ? [
       `if (errors.length > 0) {`,
@@ -78,7 +78,7 @@ export class IntegerValidator<O = never> extends ValidatorBase<number | O> {
       {
         OutOfRangeFail: OutOfRangeFail,
         NotIntegerFail: NotIntegerFail,
-        RequiredError: RequiredFail
+        RequiredFail: RequiredFail
       },
       declarations,
       code

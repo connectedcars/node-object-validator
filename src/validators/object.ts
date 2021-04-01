@@ -70,8 +70,8 @@ export class ObjectValidator<T extends Record<string, unknown>, O = never> exten
     const objValueRef = `objValue${id()}`
     const schemaRef = `scheme${id()}`
     let imports: { [key: string]: unknown } = {
-      NotObjectError: NotObjectFail,
-      RequiredError: RequiredFail
+      NotObjectFail: NotObjectFail,
+      RequiredFail: RequiredFail
     }
     const declarations = [`const ${schemaRef} = ${validatorRef}.schema`]
 
@@ -79,7 +79,7 @@ export class ObjectValidator<T extends Record<string, unknown>, O = never> exten
     const code = [
       `const ${objValueRef} = ${valueRef}`,
       `if (${objValueRef} != null) {`,
-      `  if (typeof ${objValueRef} === 'object' && !Array.isArray(${objValueRef})){`
+      `  if (typeof ${objValueRef} === 'object' && !Array.isArray(${objValueRef})) {`
     ]
     for (const key of Object.keys(this.schema)) {
       const validator = this.schema[key]
@@ -100,11 +100,11 @@ export class ObjectValidator<T extends Record<string, unknown>, O = never> exten
     // prettier-ignore
     code.push(
       `  } else {`,
-      `    errors.push(new NotObjectError(\`Must be an object (received "\${${valueRef}}")\`${contextStr}))`,
+      `    errors.push(new NotObjectFail(\`Must be an object (received "\${${valueRef}}")\`${contextStr}))`,
       `  }`,
       ...(this.required ? [
       `} else {`,
-      `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
+      `  errors.push(new RequiredFail(\`Is required\`${contextStr}))`] : []),
       '}',
       ...(earlyFail ? [
       `if (errors.length > 0) {`,

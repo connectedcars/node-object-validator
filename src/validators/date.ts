@@ -45,7 +45,7 @@ export class DateValidator<O = never> extends ValidatorBase<Date | O> {
       `  }`,
       ...(this.required ? [
       `} else {`,
-      `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
+      `  errors.push(new RequiredFail(\`Is required\`${contextStr}))`] : []),
       '}',
       ...(earlyFail ? [
       `if (errors.length > 0) {`,
@@ -55,7 +55,7 @@ export class DateValidator<O = never> extends ValidatorBase<Date | O> {
     return [
       {
         NotDateFail: NotDateFail,
-        RequiredError: RequiredFail
+        RequiredFail: RequiredFail
       },
       declarations,
       code
