@@ -158,8 +158,12 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
       expect(errors).toEqual([])
     })
 
-    it('should faile validation of error message', () => {
-      const errors = messageValidator.validate({
+    it('should fail validation will all error messages', () => {
+      const everyMessageValidator = new UnionValidator<Message>(
+        [numberMessageValidator, stringMessageValidator, errorMessageValidator],
+        { optimize, every: true }
+      )
+      const errors = everyMessageValidator.validate({
         type: 'error',
         value: 1.0
       })
@@ -183,6 +187,14 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
           { key: '(2)' }
         )
       ])
+    })
+
+    it('should fail validation with only one error message', () => {
+      const errors = messageValidator.validate({
+        type: 'error',
+        value: 1.0
+      })
+      expect(errors).toEqual([new RequiredFail(`Is required`, { key: 'error' })])
     })
   })
 

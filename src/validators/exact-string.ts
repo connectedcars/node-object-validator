@@ -25,7 +25,7 @@ export function validateExactString(
 }
 
 export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
-  private expected: string
+  public expected: string
 
   public constructor(expected: string, options?: ValidatorOptions) {
     super(options)

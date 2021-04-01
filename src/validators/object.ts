@@ -20,7 +20,7 @@ export function isObject<T extends Record<string, unknown>>(
   return false
 }
 
-function isObjectType(value: unknown): value is { [key: string]: unknown } {
+export function isPlainObject(value: unknown): value is { [key: string]: unknown } {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
@@ -31,7 +31,7 @@ export function validateObject(
   options?: ValidateOptions
 ): ValidationFailure[] {
   const errors: ValidationFailure[] = []
-  if (!isObjectType(value)) {
+  if (!isPlainObject(value)) {
     errors.push(new NotObjectFail(`Must be an object (received "${value}")`, context))
     return errors
   }
@@ -46,7 +46,7 @@ export function validateObject(
   return errors
 }
 
-export class ObjectValidator<T extends Record<string, unknown>, O = never> extends ValidatorBase<T | O> {
+export class ObjectValidator<T extends Record<string, unknown> = never, O = never> extends ValidatorBase<T | O> {
   public schema: Record<string, Validator>
 
   public constructor(schema: Record<string, Validator>, options?: ValidatorOptions) {
