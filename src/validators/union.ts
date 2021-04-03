@@ -1,3 +1,4 @@
+import { DateTimeValidator, DateValidator, IntegerValidator } from '..'
 import {
   CodeGenResult,
   ValidateOptions,
@@ -6,8 +7,20 @@ import {
   ValidatorExportOptions,
   ValidatorOptions
 } from '../common'
-import { NotObjectFail, RequiredFail, UnionFail, ValidationErrorContext, ValidationFailure } from '../errors'
+import {
+  NotDatetimeOrDateFail,
+  NotFloatOrFloatStringFail,
+  NotIntegerOrIntegerStringFail,
+  NotObjectFail,
+  RequiredFail,
+  UnionFail,
+  ValidationErrorContext,
+  ValidationFailure
+} from '../errors'
 import { ExactStringValidator } from './exact-string'
+import { FloatValidator } from './float'
+import { FloatStringValidator } from './float-string'
+import { IntegerStringValidator } from './integer-string'
 import { isPlainObject, ObjectValidator } from './object'
 
 export function isUnion<T>(schema: Validator[], value: unknown, context?: ValidationErrorContext): value is T {
@@ -290,5 +303,109 @@ export class RequiredEnum<T> extends EnumValidator<T> {
 export class OptionalEnum<T> extends EnumValidator<T, undefined | null> {
   public constructor(schema: string[], options?: ValidatorOptions) {
     super(schema, { ...options, required: false })
+  }
+}
+
+export class DateTimeOrDateValidator<O = never> extends UnionValidator<string | Date | O> {
+  public constructor(options?: ValidatorOptions) {
+    super([new DateTimeValidator(), new DateValidator()], options)
+  }
+
+  public validate(value: unknown, context?: ValidationErrorContext, options?: ValidateOptions): ValidationFailure[] {
+    const errors = super.validate(value, context, options)
+    if (errors.length === 2) {
+      return [
+        new NotDatetimeOrDateFail(
+          `Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp (received "${value}")`
+        )
+      ]
+    }
+    return errors
+  }
+}
+
+export class RequiredDateTimeOrDate extends DateTimeOrDateValidator {
+  public constructor(options?: ValidatorOptions) {
+    super({ ...options, required: true })
+  }
+}
+
+export class OptionalDateTimeOrDate extends DateTimeOrDateValidator<undefined | null> {
+  public constructor(options?: ValidatorOptions) {
+    super({ ...options, required: false })
+  }
+}
+
+export class FloatOrFloatStringValidator<O = never> extends UnionValidator<number | string | O> {
+  private errStr: string
+
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super([new FloatValidator(min, max), new FloatStringValidator(min, max)], options)
+    if (min === Number.MIN_SAFE_INTEGER && max !== Number.MAX_SAFE_INTEGER) {
+      this.errStr = `Must be a float or a string formatted float smaller than ${max}`
+    } else if (min !== Number.MIN_SAFE_INTEGER && max === Number.MAX_SAFE_INTEGER) {
+      this.errStr = `Must be a float or a string formatted float larger than ${min}`
+    } else if (min !== Number.MIN_SAFE_INTEGER && max !== Number.MAX_SAFE_INTEGER) {
+      this.errStr = `Must be a float or a string formatted float between ${min} and ${max}`
+    } else {
+      this.errStr = `Must be a float or a string formatted float`
+    }
+  }
+
+  public validate(value: unknown, context?: ValidationErrorContext, options?: ValidateOptions): ValidationFailure[] {
+    const errors = super.validate(value, context, options)
+    if (errors.length === 2) {
+      return [new NotFloatOrFloatStringFail(`${this.errStr} (received "${value}")`)]
+    }
+    return errors
+  }
+}
+
+export class RequiredFloatOrFloatString extends FloatOrFloatStringValidator {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, { ...options, required: true })
+  }
+}
+
+export class OptionalFloatOrFloatString extends FloatOrFloatStringValidator<undefined | null> {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, { ...options, required: false })
+  }
+}
+
+export class IntegerOrIntegerStringValidator<O = never> extends UnionValidator<number | string | O> {
+  private errStr: string
+
+  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super([new IntegerValidator(min, max), new IntegerStringValidator(min, max)], options)
+    if (min === Number.MIN_SAFE_INTEGER && max !== Number.MAX_SAFE_INTEGER) {
+      this.errStr = `Must be a integer or a string formatted integer smaller than ${max}`
+    } else if (min !== Number.MIN_SAFE_INTEGER && max === Number.MAX_SAFE_INTEGER) {
+      this.errStr = `Must be a integer or a string formatted integer larger than ${min}`
+    } else if (min !== Number.MIN_SAFE_INTEGER && max !== Number.MAX_SAFE_INTEGER) {
+      this.errStr = `Must be a integer or a string formatted integer between ${min} and ${max}`
+    } else {
+      this.errStr = `Must be a integer or a string formatted integer`
+    }
+  }
+
+  public validate(value: unknown, context?: ValidationErrorContext, options?: ValidateOptions): ValidationFailure[] {
+    const errors = super.validate(value, context, options)
+    if (errors.length === 2) {
+      return [new NotIntegerOrIntegerStringFail(`${this.errStr} (received "${value}")`)]
+    }
+    return errors
+  }
+}
+
+export class RequiredIntegerOrIntegerString extends IntegerOrIntegerStringValidator {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, { ...options, required: true })
+  }
+}
+
+export class OptionalIntegerOrIntegerString extends IntegerOrIntegerStringValidator<undefined | null> {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, { ...options, required: false })
   }
 }

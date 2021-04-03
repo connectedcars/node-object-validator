@@ -1,7 +1,13 @@
 import { NotExactStringFail, RequiredFail, UnionFail } from './errors'
 import {
+  DateTimeValidator,
+  ExactStringValidator,
   ObjectValidator,
+  OptionalArray,
+  OptionalInteger,
   OptionalObject,
+  OptionalString,
+  RegexMatchValidator,
   RequiredArray,
   RequiredDateTime,
   RequiredExactString,
@@ -11,16 +17,12 @@ import {
   RequiredIntegerOrIntegerString,
   RequiredObject,
   RequiredRegexMatch,
-  RequiredString
+  RequiredString,
+  RequiredUnion,
+  StringValidator,
+  UnionValidator,
+  UnknownValidator
 } from './index'
-import { OptionalArray } from './validators/array'
-import { DateTimeValidator } from './validators/datetime'
-import { ExactStringValidator } from './validators/exact-string'
-import { OptionalInteger } from './validators/integer'
-import { RegexMatchValidator } from './validators/regex-match'
-import { OptionalString, StringValidator } from './validators/string'
-import { RequiredUnion, UnionValidator } from './validators/union'
-import { UnknownValidator } from './validators/unknown'
 
 describe.each([false, true])('Shorthand validation of complex objects (optimize: %s)', optimize => {
   const validator = new ObjectValidator(
