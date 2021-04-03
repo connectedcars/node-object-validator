@@ -60,19 +60,19 @@ describe.each([false, true])('DateTime (optimize: %s)', optimize => {
       expect(validator.validate('2018-08-06T13:37:00+00:00')).toStrictEqual([])
       expect(validator.validate('2018-08-06T13:37:00.000+00:00')).toStrictEqual([])
       expect(validator.validate('')).toStrictEqual([
-        new WrongLengthFail('Must contain between 20 and 30 characters (received "")')
+        new WrongLengthFail('Must contain between 20 and 30 characters', '')
       ])
       expect(validator.validate('2018-08-06')).toStrictEqual([
-        new WrongLengthFail('Must contain between 20 and 30 characters (received "2018-08-06")')
+        new WrongLengthFail('Must contain between 20 and 30 characters', '2018-08-06')
       ])
       expect(validator.validate('2018-08-06T13:37:00')).toStrictEqual([
-        new WrongLengthFail('Must contain between 20 and 30 characters (received "2018-08-06T13:37:00")')
+        new WrongLengthFail('Must contain between 20 and 30 characters', '2018-08-06T13:37:00')
       ])
       expect(validator.validate('13:37:00')).toStrictEqual([
-        new WrongLengthFail('Must contain between 20 and 30 characters (received "13:37:00")')
+        new WrongLengthFail('Must contain between 20 and 30 characters', '13:37:00')
       ])
       expect(validator.validate('2018-08-ABT13:37:00Z')).toStrictEqual([
-        new NotRfc3339Fail('Must be formatted as an RFC 3339 timestamp (received "2018-08-ABT13:37:00Z")')
+        new NotRfc3339Fail('Must be formatted as an RFC 3339 timestamp', '2018-08-ABT13:37:00Z')
       ])
     })
 
@@ -87,8 +87,8 @@ describe.each([false, true])('DateTime (optimize: %s)', optimize => {
   describe('RequiredDateTime', () => {
     it('rejects empty value', () => {
       const validator = new RequiredDateTime({ optimize })
-      expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
-      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])
+      expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required', null)])
+      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
     })
   })
 

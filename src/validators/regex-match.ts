@@ -16,7 +16,7 @@ export function validateRegexMatch(value: unknown, regex: RegExp, context?: stri
     return stringError
   }
   if (!regex.test(value)) {
-    return [new DoesNotMatchRegexFail(`Did not match '${regex}' (received "${value}")`, context)]
+    return [new DoesNotMatchRegexFail(`Did not match '${regex}'`, value, context)]
   }
   return []
 }
@@ -54,14 +54,14 @@ export class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
       `if (${localValueRef} != null) {`,
       `  if (typeof ${localValueRef} === 'string') {`,
       `    if (!${localRegexRef}.test(${localValueRef})) {`,
-      `      errors.push(new DoesNotMatchRegexFail(\`Did not match '${this.regex}' (received "\${${localValueRef}}")\`${contextStr}))`,
+      `      errors.push(new DoesNotMatchRegexFail(\`Did not match '${this.regex}'\`, ${localValueRef}${contextStr}))`,
       `    }`,
       `  } else {`,
-      `    errors.push(new NotStringFail(\`Must be a string (received "\${${localValueRef}}")\`${contextStr}))`,
+      `    errors.push(new NotStringFail(\`Must be a string\`, ${localValueRef}${contextStr}))`,
       `  }`,
       ...(this.required ? [
       `} else {`,
-      `  errors.push(new RequiredFail(\`Is required\`${contextStr}))`] : []),
+      `  errors.push(new RequiredFail(\`Is required\`, ${localValueRef}${contextStr}))`] : []),
       '}',
       ...(earlyFail ? [
       `if (errors.length > 0) {`,

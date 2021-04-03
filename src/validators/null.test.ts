@@ -55,20 +55,20 @@ describe.each([false, true])('Null (optimize: %s)', optimize => {
     it('requires value to be an Null', () => {
       const validator = new NullValidator({ optimize })
       expect(validator.validate(null)).toStrictEqual([])
-      expect(validator.validate(false)).toStrictEqual([new NotNullFail('Must be an null (received "false")')])
-      expect(validator.validate(1)).toStrictEqual([new NotNullFail('Must be an null (received "1")')])
-      expect(validator.validate(123.9)).toStrictEqual([new NotNullFail('Must be an null (received "123.9")')])
-      expect(validator.validate('1')).toStrictEqual([new NotNullFail('Must be an null (received "1")')])
-      expect(validator.validate('')).toStrictEqual([new NotNullFail('Must be an null (received "")')])
-      expect(validator.validate({})).toStrictEqual([new NotNullFail('Must be an null (received "[object Object]")')])
-      expect(validator.validate([])).toStrictEqual([new NotNullFail('Must be an null (received "")')])
+      expect(validator.validate(false)).toStrictEqual([new NotNullFail('Must be an null', false)])
+      expect(validator.validate(1)).toStrictEqual([new NotNullFail('Must be an null', 1)])
+      expect(validator.validate(123.9)).toStrictEqual([new NotNullFail('Must be an null', 123.9)])
+      expect(validator.validate('1')).toStrictEqual([new NotNullFail('Must be an null', '1')])
+      expect(validator.validate('')).toStrictEqual([new NotNullFail('Must be an null', '')])
+      expect(validator.validate({})).toStrictEqual([new NotNullFail('Must be an null', {})])
+      expect(validator.validate([])).toStrictEqual([new NotNullFail('Must be an null', [])])
     })
   })
 
   describe('RequiredNull', () => {
     it('rejects empty value', () => {
       const validator = new RequiredNull({ optimize })
-      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])
+      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
     })
   })
 

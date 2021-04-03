@@ -20,40 +20,30 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
       expect(validator.validate('1')).toStrictEqual([])
       expect(validator.validate('123')).toStrictEqual([])
       expect(validator.validate('-123')).toStrictEqual([])
-      expect(validator.validate(0)).toStrictEqual([
-        new NotIntegerStringFail('Must be a string with an integer (received "0")')
-      ])
+      expect(validator.validate(0)).toStrictEqual([new NotIntegerStringFail('Must be a string with an integer', 0)])
       expect(validator.validate('9.9')).toStrictEqual([
-        new NotIntegerStringFail('Must be a string with an integer (received "9.9")')
+        new NotIntegerStringFail('Must be a string with an integer', '9.9')
       ])
-      expect(validator.validate('')).toStrictEqual([
-        new WrongLengthFail('Must be a string with an integer (received "")')
-      ])
-      expect(validator.validate('a')).toStrictEqual([
-        new NotIntegerStringFail('Must be a string with an integer (received "a")')
-      ])
-      expect(validator.validate({})).toStrictEqual([
-        new NotIntegerStringFail('Must be a string with an integer (received "[object Object]")')
-      ])
-      expect(validator.validate([])).toStrictEqual([
-        new NotIntegerStringFail('Must be a string with an integer (received "")')
-      ])
+      expect(validator.validate('')).toStrictEqual([new WrongLengthFail('Must be a string with an integer', '')])
+      expect(validator.validate('a')).toStrictEqual([new NotIntegerStringFail('Must be a string with an integer', 'a')])
+      expect(validator.validate({})).toStrictEqual([new NotIntegerStringFail('Must be a string with an integer', {})])
+      expect(validator.validate([])).toStrictEqual([new NotIntegerStringFail('Must be a string with an integer', [])])
       expect(validator.validate(true)).toStrictEqual([
-        new NotIntegerStringFail('Must be a string with an integer (received "true")')
+        new NotIntegerStringFail('Must be a string with an integer', true)
       ])
       expect(validator.validate(false)).toStrictEqual([
-        new NotIntegerStringFail('Must be a string with an integer (received "false")')
+        new NotIntegerStringFail('Must be a string with an integer', false)
       ])
     })
 
     it('requires min value', () => {
       const validator = new IntegerStringValidator(5, 500, { optimize })
-      expect(validator.validate('-1')).toStrictEqual([new OutOfRangeFail('Must be between 5 and 500 (received "-1")')])
-      expect(validator.validate('0')).toStrictEqual([new OutOfRangeFail('Must be between 5 and 500 (received "0")')])
-      expect(validator.validate('1')).toStrictEqual([new OutOfRangeFail('Must be between 5 and 500 (received "1")')])
-      expect(validator.validate('2')).toStrictEqual([new OutOfRangeFail('Must be between 5 and 500 (received "2")')])
-      expect(validator.validate('3')).toStrictEqual([new OutOfRangeFail('Must be between 5 and 500 (received "3")')])
-      expect(validator.validate('4')).toStrictEqual([new OutOfRangeFail('Must be between 5 and 500 (received "4")')])
+      expect(validator.validate('-1')).toStrictEqual([new OutOfRangeFail('Must be between 5 and 500', -1)])
+      expect(validator.validate('0')).toStrictEqual([new OutOfRangeFail('Must be between 5 and 500', 0)])
+      expect(validator.validate('1')).toStrictEqual([new OutOfRangeFail('Must be between 5 and 500', 1)])
+      expect(validator.validate('2')).toStrictEqual([new OutOfRangeFail('Must be between 5 and 500', 2)])
+      expect(validator.validate('3')).toStrictEqual([new OutOfRangeFail('Must be between 5 and 500', 3)])
+      expect(validator.validate('4')).toStrictEqual([new OutOfRangeFail('Must be between 5 and 500', 4)])
       expect(validator.validate('5')).toStrictEqual([])
       expect(validator.validate('6')).toStrictEqual([])
       expect(validator.validate('123')).toStrictEqual([])
@@ -68,16 +58,16 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
       expect(validator.validate('3')).toStrictEqual([])
       expect(validator.validate('4')).toStrictEqual([])
       expect(validator.validate('5')).toStrictEqual([])
-      expect(validator.validate('6')).toStrictEqual([new OutOfRangeFail('Must be between -500 and 5 (received "6")')])
-      expect(validator.validate('7')).toStrictEqual([new OutOfRangeFail('Must be between -500 and 5 (received "7")')])
+      expect(validator.validate('6')).toStrictEqual([new OutOfRangeFail('Must be between -500 and 5', 6)])
+      expect(validator.validate('7')).toStrictEqual([new OutOfRangeFail('Must be between -500 and 5', 7)])
     })
   })
 
   describe('RequiredIntegerString', () => {
     it('rejects empty value', () => {
       const validator = new RequiredIntegerString(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, { optimize })
-      expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
-      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])
+      expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required', null)])
+      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
     })
   })
 

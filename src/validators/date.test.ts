@@ -57,17 +57,19 @@ describe.each([false, true])('Date (optimize: %s)', optimize => {
       expect(validator.validate(new Date('2018-08-06T13:37:00Z'))).toStrictEqual([])
       expect(validator.validate(new Date('2018-08-06'))).toStrictEqual([])
       expect(validator.validate(new Date('13:37:00'))).toStrictEqual([])
-      expect(validator.validate(500)).toStrictEqual([new NotDateFail('Must be a Date object')])
-      expect(validator.validate('')).toStrictEqual([new NotDateFail('Must be a Date object')])
-      expect(validator.validate(true)).toStrictEqual([new NotDateFail('Must be a Date object')])
-      expect(validator.validate(false)).toStrictEqual([new NotDateFail('Must be a Date object')])
-      expect(validator.validate('2018-08-06T13:37:00Z')).toStrictEqual([new NotDateFail('Must be a Date object')])
+      expect(validator.validate(500)).toStrictEqual([new NotDateFail('Must be a Date object', 500)])
+      expect(validator.validate('')).toStrictEqual([new NotDateFail('Must be a Date object', '')])
+      expect(validator.validate(true)).toStrictEqual([new NotDateFail('Must be a Date object', true)])
+      expect(validator.validate(false)).toStrictEqual([new NotDateFail('Must be a Date object', false)])
+      expect(validator.validate('2018-08-06T13:37:00Z')).toStrictEqual([
+        new NotDateFail('Must be a Date object', '2018-08-06T13:37:00Z')
+      ])
     })
 
     it('requires value to show correct context on error', () => {
       const validator = new DateValidator({ optimize })
       expect(validator.validate('', 'myDate').map(e => e.toString())).toStrictEqual([
-        `NotDateFail: Field 'myDate' must be a Date object`
+        `NotDateFail: Field 'myDate' must be a Date object (received "")`
       ])
     })
   })
@@ -75,8 +77,8 @@ describe.each([false, true])('Date (optimize: %s)', optimize => {
   describe('OptionalStringValue', () => {
     it('rejects empty value', () => {
       const validator = new RequiredDate({ optimize })
-      expect(validator.validate(null)).toEqual([new RequiredFail('Is required')])
-      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])
+      expect(validator.validate(null)).toEqual([new RequiredFail('Is required', null)])
+      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
     })
   })
 

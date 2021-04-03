@@ -6,17 +6,17 @@ import { validateString } from './string'
 export function validateIntegerString(value: unknown, min: number, max: number, context?: string): ValidationFailure[] {
   const stringError = validateString(value, 0, Number.MAX_SAFE_INTEGER, context)
   if (!isValidType<string>(value, stringError)) {
-    return [new NotIntegerStringFail(`Must be a string with an integer (received "${value}")`)]
+    return [new NotIntegerStringFail(`Must be a string with an integer`, value, context)]
   }
   if (value.length === 0) {
-    return [new WrongLengthFail(`Must be a string with an integer (received "")`)]
+    return [new WrongLengthFail(`Must be a string with an integer`, value, context)]
   }
   const int = parseFloat(value)
   if (int % 1 !== 0) {
-    return [new NotIntegerStringFail(`Must be a string with an integer (received "${value}")`)]
+    return [new NotIntegerStringFail(`Must be a string with an integer`, value, context)]
   }
   if (isNaN(int)) {
-    return [new NotIntegerStringFail(`Must be a string with an integer (received "${value}")`)]
+    return [new NotIntegerStringFail(`Must be a string with an integer`, value, context)]
   }
   return validateInteger(int, min, max, context)
 }

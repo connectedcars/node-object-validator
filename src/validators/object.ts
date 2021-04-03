@@ -32,7 +32,7 @@ export function validateObject(
 ): ValidationFailure[] {
   const errors: ValidationFailure[] = []
   if (!isPlainObject(value)) {
-    errors.push(new NotObjectFail(`Must be an object (received "${value}")`, context))
+    errors.push(new NotObjectFail(`Must be an object`, value, context))
     return errors
   }
   for (const key of Object.keys(schema)) {
@@ -98,11 +98,11 @@ export class ObjectValidator<T extends Record<string, unknown> = never, O = neve
     // prettier-ignore
     code.push(
       `  } else {`,
-      `    errors.push(new NotObjectFail(\`Must be an object (received "\${${valueRef}}")\`${contextStr}))`,
+      `    errors.push(new NotObjectFail(\`Must be an object\`, ${objValueRef}${contextStr}))`,
       `  }`,
       ...(this.required ? [
       `} else {`,
-      `  errors.push(new RequiredFail(\`Is required\`${contextStr}))`] : []),
+      `  errors.push(new RequiredFail(\`Is required\`, ${objValueRef}${contextStr}))`] : []),
       '}',
       ...(earlyFail ? [
       `if (errors.length > 0) {`,

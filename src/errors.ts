@@ -30,101 +30,29 @@ export class ValidationsError extends Error {
   }
 }
 
-export class DoesNotMatchRegexFail extends ValidationFailure {
-  public constructor(message: string, context?: string) {
-    super(message, undefined, context)
-  }
-}
+export class DoesNotMatchRegexFail extends ValidationFailure {}
 export class NotArrayFail extends ValidationFailure {}
-export class NotDateFail extends ValidationFailure {
-  public constructor(message: string, context?: string) {
-    super(message, undefined, context)
-  }
-}
-export class NotDatetimeOrDateFail extends ValidationFailure {
-  public constructor(message: string, context?: string) {
-    super(message, undefined, context)
-  }
-}
-export class NotExactStringFail extends ValidationFailure {
-  public constructor(message: string, context?: string) {
-    super(message, undefined, context)
-  }
-}
-export class NotFloatFail extends ValidationFailure {
-  public constructor(message: string, context?: string) {
-    super(message, undefined, context)
-  }
-}
-export class NotFloatOrFloatStringFail extends ValidationFailure {
-  public constructor(message: string, context?: string) {
-    super(message, undefined, context)
-  }
-}
-export class NotFloatStringFail extends ValidationFailure {
-  public constructor(message: string, context?: string) {
-    super(message, undefined, context)
-  }
-}
-export class NotIntegerFail extends ValidationFailure {
-  public constructor(message: string, context?: string) {
-    super(message, undefined, context)
-  }
-}
-export class NotIntegerOrIntegerStringFail extends ValidationFailure {
-  public constructor(message: string, context?: string) {
-    super(message, undefined, context)
-  }
-}
-export class NotIntegerStringFail extends ValidationFailure {
-  public constructor(message: string, context?: string) {
-    super(message, undefined, context)
-  }
-}
-export class NotObjectFail extends ValidationFailure {
-  public constructor(message: string, context?: string) {
-    super(message, undefined, context)
-  }
-}
-export class NotRfc3339Fail extends ValidationFailure {
-  public constructor(message: string, context?: string) {
-    super(message, undefined, context)
-  }
-}
-export class NotStringFail extends ValidationFailure {
-  public constructor(message: string, context?: string) {
-    super(message, undefined, context)
-  }
-}
-export class OutOfRangeFail extends ValidationFailure {
-  public constructor(message: string, context?: string) {
-    super(message, undefined, context)
-  }
-}
-export class RequiredFail extends ValidationFailure {
-  public constructor(message: string, context?: string) {
-    super(message, undefined, context)
-  }
-}
-export class WrongLengthFail extends ValidationFailure {
-  public constructor(message: string, context?: string) {
-    super(message, undefined, context)
-  }
-}
+export class NotDateFail extends ValidationFailure {}
+export class NotDatetimeOrDateFail extends ValidationFailure {}
+export class NotExactStringFail extends ValidationFailure {}
+export class NotFloatFail extends ValidationFailure {}
+export class NotFloatOrFloatStringFail extends ValidationFailure {}
+export class NotFloatStringFail extends ValidationFailure {}
+export class NotIntegerFail extends ValidationFailure {}
+export class NotIntegerOrIntegerStringFail extends ValidationFailure {}
+export class NotIntegerStringFail extends ValidationFailure {}
+export class NotObjectFail extends ValidationFailure {}
+export class NotRfc3339Fail extends ValidationFailure {}
+export class NotStringFail extends ValidationFailure {}
+export class OutOfRangeFail extends ValidationFailure {}
+export class RequiredFail extends ValidationFailure {}
+export class WrongLengthFail extends ValidationFailure {}
 export class UnionFail extends ValidationFailure {
   public errors: ValidationFailure[]
-  public constructor(message: string, errors: ValidationFailure[], context?: string) {
-    super(message, undefined, context)
+  public constructor(message: string, errors: ValidationFailure[], value: unknown, context?: string) {
+    super(message, value, context)
     this.errors = errors
   }
 }
-export class NotBooleanFail extends ValidationFailure {
-  public constructor(message: string, context?: string) {
-    super(message, undefined, context)
-  }
-}
-export class NotNullFail extends ValidationFailure {
-  public constructor(message: string, context?: string) {
-    super(message, undefined, context)
-  }
-}
+export class NotBooleanFail extends ValidationFailure {}
+export class NotNullFail extends ValidationFailure {}

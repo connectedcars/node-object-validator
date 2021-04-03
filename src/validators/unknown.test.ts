@@ -36,8 +36,8 @@ describe.each([false, true])('Unknown (optimize: %s)', optimize => {
     describe('RequiredUnknown', () => {
       it('rejects empty value', () => {
         const validator = new RequiredUnknown()
-        expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
-        expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])
+        expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required', null)])
+        expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
       })
     })
 

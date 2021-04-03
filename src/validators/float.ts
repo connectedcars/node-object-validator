@@ -21,10 +21,10 @@ export function validateFloat(
   context?: string
 ): ValidationFailure[] {
   if (typeof value !== 'number' || isNaN(value) || !isFinite(value)) {
-    return [new NotFloatFail(`Must be a float (received "${value}")`, context)]
+    return [new NotFloatFail(`Must be a float`, value, context)]
   }
   if (value < min || value > max) {
-    return [new OutOfRangeFail(`Must be between ${min} and ${max} (received "${value}")`, context)]
+    return [new OutOfRangeFail(`Must be between ${min} and ${max}`, value, context)]
   }
   return []
 }
@@ -60,14 +60,14 @@ export class FloatValidator<O = never> extends ValidatorBase<number | O> {
       `if (${localValueRef} != null) {`,
       `  if (typeof ${localValueRef} === 'number' && !isNaN(${localValueRef} ) && isFinite(${localValueRef})) {`,
       `    if (${localValueRef} < ${this.min} || ${localValueRef} > ${this.max}) {`,
-      `      errors.push(new OutOfRangeFail(\`Must be between ${this.min} and ${this.max} (received "\${${localValueRef}}")\`${contextStr}))`,
+      `      errors.push(new OutOfRangeFail(\`Must be between ${this.min} and ${this.max}\`, ${localValueRef}${contextStr}))`,
       `    }`,
       `  } else {`,
-      `    errors.push(new NotFloatFail(\`Must be a float (received "\${${localValueRef}}")\`${contextStr}))`,
+      `    errors.push(new NotFloatFail(\`Must be a float\`, ${localValueRef}${contextStr}))`,
       `  }`,
       ...(this.required ? [
       `} else {`,
-      `  errors.push(new RequiredFail(\`Is required\`${contextStr}))`] : []),
+      `  errors.push(new RequiredFail(\`Is required\`, ${localValueRef}${contextStr}))`] : []),
       '}',
       ...(earlyFail ? [
       `if (errors.length > 0) {`,

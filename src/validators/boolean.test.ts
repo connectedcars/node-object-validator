@@ -56,22 +56,20 @@ describe.each([false, true])('Boolean (optimize: %s)', optimize => {
       const validator = new BooleanValidator({ optimize })
       expect(validator.validate(true)).toStrictEqual([])
       expect(validator.validate(false)).toStrictEqual([])
-      expect(validator.validate(1)).toStrictEqual([new NotBooleanFail('Must be an boolean (received "1")')])
-      expect(validator.validate(123.9)).toStrictEqual([new NotBooleanFail('Must be an boolean (received "123.9")')])
-      expect(validator.validate('1')).toStrictEqual([new NotBooleanFail('Must be an boolean (received "1")')])
-      expect(validator.validate('')).toStrictEqual([new NotBooleanFail('Must be an boolean (received "")')])
-      expect(validator.validate({})).toStrictEqual([
-        new NotBooleanFail('Must be an boolean (received "[object Object]")')
-      ])
-      expect(validator.validate([])).toStrictEqual([new NotBooleanFail('Must be an boolean (received "")')])
+      expect(validator.validate(1)).toStrictEqual([new NotBooleanFail('Must be an boolean', 1)])
+      expect(validator.validate(123.9)).toStrictEqual([new NotBooleanFail('Must be an boolean', 123.9)])
+      expect(validator.validate('1')).toStrictEqual([new NotBooleanFail('Must be an boolean', '1')])
+      expect(validator.validate('')).toStrictEqual([new NotBooleanFail('Must be an boolean', '')])
+      expect(validator.validate({})).toStrictEqual([new NotBooleanFail('Must be an boolean', {})])
+      expect(validator.validate([])).toStrictEqual([new NotBooleanFail('Must be an boolean', [])])
     })
   })
 
   describe('RequiredBoolean', () => {
     it('rejects empty value', () => {
       const validator = new RequiredBoolean({ optimize })
-      expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
-      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])
+      expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required', null)])
+      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
     })
   })
 

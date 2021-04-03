@@ -11,7 +11,7 @@ export function isExactString<T extends string>(value: unknown, expected: T, con
 
 export function validateExactString(value: unknown, expected: string, context?: string): ValidationFailure[] {
   if (value !== expected) {
-    return [new NotExactStringFail(`Must strictly equal "${expected}" (received "${value}")`, context)]
+    return [new NotExactStringFail(`Must strictly equal "${expected}"`, value, context)]
   }
   return []
 }
@@ -45,11 +45,11 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
       `const ${localValueRef} = ${valueRef}`,
       `if (${localValueRef} != null) {`,
       `  if (${localValueRef} !== ${expectedStr}) {`,
-      `    errors.push(new NotExactStringFail(\`Must strictly equal ${expectedStr} (received "\${${localValueRef}}")\`${contextStr}))`,
+      `    errors.push(new NotExactStringFail(\`Must strictly equal ${expectedStr}\`, ${localValueRef}${contextStr}))`,
       `  }`,
       ...(this.required ? [
       `} else {`,
-      `  errors.push(new RequiredFail(\`Is required\`${contextStr}))`] : []),
+      `  errors.push(new RequiredFail(\`Is required\`, ${localValueRef}${contextStr}))`] : []),
       '}',
       ...(earlyFail ? [
       `if (errors.length > 0) {`,

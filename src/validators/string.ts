@@ -21,15 +21,10 @@ export function validateString(
   context?: string
 ): ValidationFailure[] {
   if (typeof value !== 'string') {
-    return [new NotStringFail(`Must be a string (received "${value}")`, context)]
+    return [new NotStringFail(`Must be a string`, value, context)]
   }
   if ((minLength !== 0 && value.length < minLength) || value.length > maxLength) {
-    return [
-      new WrongLengthFail(
-        `Must contain between ${minLength} and ${maxLength} characters (received "${value}")`,
-        context
-      )
-    ]
+    return [new WrongLengthFail(`Must contain between ${minLength} and ${maxLength} characters`, value, context)]
   }
   return []
 }
@@ -65,14 +60,14 @@ export class StringValidator<O = never> extends ValidatorBase<string | O> {
       `if (${localValueRef} != null) {`,
       `  if (typeof ${localValueRef} === 'string') {`,
       `    if (${this.minLength ? `${localValueRef}.length < ${this.minLength} || ` : '' }${localValueRef}.length > ${this.maxLength}) {`,
-      `      errors.push(new WrongLengthFail(\`Must contain between ${this.minLength} and ${this.maxLength} characters (received "\${${localValueRef}}")\`${contextStr}))`,
+      `      errors.push(new WrongLengthFail(\`Must contain between ${this.minLength} and ${this.maxLength} characters\`, ${localValueRef}${contextStr}))`,
       `    }`,
       `  } else {`,
-      `    errors.push(new NotStringFail(\`Must be a string (received "\${${localValueRef}}")\`${contextStr}))`,
+      `    errors.push(new NotStringFail(\`Must be a string\`, ${localValueRef}${contextStr}))`,
       `  }`,
       ...(this.required ? [
       `} else {`,
-      `  errors.push(new RequiredFail(\`Is required\`${contextStr}))`] : []),
+      `  errors.push(new RequiredFail(\`Is required\`, ${localValueRef}${contextStr}))`] : []),
       '}',
       ...(earlyFail ? [
       `if (errors.length > 0) {`,

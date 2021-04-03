@@ -35,7 +35,11 @@ export function validateArray(
   }
   if ((minLength !== 0 && value.length < minLength) || value.length > maxLength) {
     return [
-      new WrongLengthFail(`Must contain between ${minLength} and ${maxLength} entries (found ${value.length})`, context)
+      new WrongLengthFail(
+        `Must contain between ${minLength} and ${maxLength} entries (found ${value.length})`,
+        value,
+        context
+      )
     ]
   }
   const errors = []
@@ -114,14 +118,14 @@ export class ArrayValidator<T extends Array<unknown>, O = never> extends Validat
       ...propCode.map(l => `        ${l}`),
       `      }`,
       `    } else {`,
-      `      errors.push(new WrongLengthFail(\`Must contain between ${this.minLength} and ${this.maxLength} entries (found \${${arrayValueRef}.length})\`${contextStr}))`,
+      `      errors.push(new WrongLengthFail(\`Must contain between ${this.minLength} and ${this.maxLength} entries (found \${${arrayValueRef}.length})\`, ${arrayValueRef}${contextStr}))`,
       `    }`,
       `  } else {`,
-      `    errors.push(new NotArrayFail(\`Must be an array\`, ${valueRef}${contextStr}))`,
+      `    errors.push(new NotArrayFail(\`Must be an array\`, ${arrayValueRef}${contextStr}))`,
       `  }`,
       ...(this.required ? [
       `} else {`,
-      `  errors.push(new RequiredFail(\`Is required\`${contextStr}))`] : []),
+      `  errors.push(new RequiredFail(\`Is required\`, ${arrayValueRef}${contextStr}))`] : []),
       '}',
       ...(earlyFail ? [
       `if (errors.length > 0) {`,

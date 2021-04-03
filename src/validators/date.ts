@@ -11,7 +11,7 @@ export function isDate(value: unknown, context?: string): value is Date {
 
 export function validateDate(value: unknown, context?: string): ValidationFailure[] {
   if (!(value instanceof Date)) {
-    return [new NotDateFail(`Must be a Date object`, context)]
+    return [new NotDateFail(`Must be a Date object`, value, context)]
   }
   return []
 }
@@ -41,11 +41,11 @@ export class DateValidator<O = never> extends ValidatorBase<Date | O> {
       `const ${localValueRef} = ${valueRef}`,
       `if (${localValueRef} != null) {`,
       `  if (!(${localValueRef} instanceof Date)) {`,
-      `    errors.push(new NotDateFail(\`Must be a Date object\`${contextStr}))`,
+      `    errors.push(new NotDateFail(\`Must be a Date object\`, ${localValueRef}${contextStr}))`,
       `  }`,
       ...(this.required ? [
       `} else {`,
-      `  errors.push(new RequiredFail(\`Is required\`${contextStr}))`] : []),
+      `  errors.push(new RequiredFail(\`Is required\`, ${localValueRef}${contextStr}))`] : []),
       '}',
       ...(earlyFail ? [
       `if (errors.length > 0) {`,

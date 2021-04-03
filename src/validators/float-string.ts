@@ -5,14 +5,14 @@ import { NotFloatStringFail, ValidationFailure, WrongLengthFail } from '../error
 export function validateFloatString(value: unknown, min: number, max: number, context?: string): ValidationFailure[] {
   const stringError = validateString(value, 0, Number.MAX_SAFE_INTEGER, context)
   if (!isValidType<string>(value, stringError)) {
-    return [new NotFloatStringFail(`Must be a string with a float (received "${value}")`)]
+    return [new NotFloatStringFail(`Must be a string with a float`, value, context)]
   }
   if (value.length === 0) {
-    return [new WrongLengthFail(`Must be a string with a float (received "")`)]
+    return [new WrongLengthFail(`Must be a string with a float`, value, context)]
   }
   const float = parseFloat(value)
   if (isNaN(float)) {
-    return [new NotFloatStringFail(`Must be a string with a float (received "${value}")`, context)]
+    return [new NotFloatStringFail(`Must be a string with a float`, value, context)]
   }
   return validateFloat(float, min, max, context)
 }

@@ -17,7 +17,7 @@ export function isNull(value: unknown, context?: string): value is null {
 
 export function validateNull(value: unknown, context?: string): ValidationFailure[] {
   if (value !== null) {
-    return [new NotNullFail(`Must be an null (received "${value}")`, context)]
+    return [new NotNullFail(`Must be an null`, value, context)]
   }
   return []
 }
@@ -55,11 +55,11 @@ export class NullValidator<O = never> extends ValidatorBase<null | O> {
       `const ${localValueRef} = ${valueRef}`,
       `if (${localValueRef} !== undefined) {`,
       `  if (${localValueRef} !== null) {`,
-      `    errors.push(new NotNullFail(\`Must be an null (received "\${${localValueRef}}")\`${contextStr}))`,
+      `    errors.push(new NotNullFail(\`Must be an null\`, ${localValueRef}${contextStr}))`,
       `  }`,
       ...(this.required ? [
       `} else {`,
-      `  errors.push(new RequiredFail(\`Is required\`${contextStr}))`] : []),
+      `  errors.push(new RequiredFail(\`Is required\`, ${localValueRef}${contextStr}))`] : []),
       '}',
       ...(earlyFail ? [
       `if (errors.length > 0) {`,
@@ -86,7 +86,7 @@ export class NullValidator<O = never> extends ValidatorBase<null | O> {
 
   protected validateValue(value: unknown, context?: string): ValidationFailure[] {
     if (value === undefined) {
-      return this.required ? [new RequiredFail(`Is required`, context)] : []
+      return this.required ? [new RequiredFail(`Is required`, value, context)] : []
     }
     return validateNull(value, context)
   }

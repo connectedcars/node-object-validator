@@ -18,7 +18,7 @@ export function validateDateTime(value: unknown, context?: string): ValidationFa
     return stringError
   }
   if (!dateTimePattern.test(value)) {
-    return [new NotRfc3339Fail(`Must be formatted as an RFC 3339 timestamp (received "${value}")`, context)]
+    return [new NotRfc3339Fail(`Must be formatted as an RFC 3339 timestamp`, value, context)]
   }
   return []
 }
@@ -50,17 +50,17 @@ export class DateTimeValidator<O = never> extends ValidatorBase<string | O> {
       `  if (typeof ${localValueRef} === 'string') {`,
       `    if (${localValueRef}.length >= 20 && ${localValueRef}.length <= 30) {`,
       `      if (!dateTimePattern.test(${localValueRef})) {`,
-      `        errors.push(new NotRfc3339Fail(\`Must be formatted as an RFC 3339 timestamp (received "\${${localValueRef}}")\`${contextStr}))`,
+      `        errors.push(new NotRfc3339Fail(\`Must be formatted as an RFC 3339 timestamp\`, ${localValueRef}${contextStr}))`,
       `      }`,
       `    } else {`,
-      `      errors.push(new WrongLengthFail(\`Must contain between 20 and 30 characters (received "\${${localValueRef}}")\`${contextStr}))`,
+      `      errors.push(new WrongLengthFail(\`Must contain between 20 and 30 characters\`, ${localValueRef}${contextStr}))`,
       `    }`,
       `  } else {`,
-      `    errors.push(new NotStringFail(\`Must be a string (received "\${${localValueRef}}")\`${contextStr}))`,
+      `    errors.push(new NotStringFail(\`Must be a string\`, ${localValueRef}${contextStr}))`,
       `  }`,
       ...(this.required ? [
       `} else {`,
-      `  errors.push(new RequiredFail(\`Is required\`${contextStr}))`] : []),
+      `  errors.push(new RequiredFail(\`Is required\`, ${localValueRef}${contextStr}))`] : []),
       '}',
       ...(earlyFail ? [
       `if (errors.length > 0) {`,

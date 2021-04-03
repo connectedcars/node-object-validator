@@ -55,29 +55,29 @@ describe.each([false, true])('String (optimize: %s)', optimize => {
       const validator = new StringValidator(0, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate('foo')).toStrictEqual([])
       expect(validator.validate('')).toStrictEqual([])
-      expect(validator.validate(1)).toStrictEqual([new NotStringFail('Must be a string (received "1")')])
-      expect(validator.validate({})).toStrictEqual([new NotStringFail('Must be a string (received "[object Object]")')])
-      expect(validator.validate([])).toStrictEqual([new NotStringFail('Must be a string (received "")')])
-      expect(validator.validate(true)).toStrictEqual([new NotStringFail('Must be a string (received "true")')])
-      expect(validator.validate(false)).toStrictEqual([new NotStringFail('Must be a string (received "false")')])
+      expect(validator.validate(1)).toStrictEqual([new NotStringFail('Must be a string', 1)])
+      expect(validator.validate({})).toStrictEqual([new NotStringFail('Must be a string', {})])
+      expect(validator.validate([])).toStrictEqual([new NotStringFail('Must be a string', [])])
+      expect(validator.validate(true)).toStrictEqual([new NotStringFail('Must be a string', true)])
+      expect(validator.validate(false)).toStrictEqual([new NotStringFail('Must be a string', false)])
     })
 
     it('requires min value length', () => {
       const validator = new StringValidator(5, 500, { optimize })
       expect(validator.validate('')).toStrictEqual([
-        new WrongLengthFail('Must contain between 5 and 500 characters (received "")')
+        new WrongLengthFail('Must contain between 5 and 500 characters', '')
       ])
       expect(validator.validate('a')).toStrictEqual([
-        new WrongLengthFail('Must contain between 5 and 500 characters (received "a")')
+        new WrongLengthFail('Must contain between 5 and 500 characters', 'a')
       ])
       expect(validator.validate('ab')).toStrictEqual([
-        new WrongLengthFail('Must contain between 5 and 500 characters (received "ab")')
+        new WrongLengthFail('Must contain between 5 and 500 characters', 'ab')
       ])
       expect(validator.validate('abc')).toStrictEqual([
-        new WrongLengthFail('Must contain between 5 and 500 characters (received "abc")')
+        new WrongLengthFail('Must contain between 5 and 500 characters', 'abc')
       ])
       expect(validator.validate('abcd')).toStrictEqual([
-        new WrongLengthFail('Must contain between 5 and 500 characters (received "abcd")')
+        new WrongLengthFail('Must contain between 5 and 500 characters', 'abcd')
       ])
       expect(validator.validate('abcde')).toStrictEqual([])
       expect(validator.validate('abcdef')).toStrictEqual([])
@@ -93,13 +93,13 @@ describe.each([false, true])('String (optimize: %s)', optimize => {
       expect(validator.validate('abcd')).toStrictEqual([])
       expect(validator.validate('abcde')).toStrictEqual([])
       expect(validator.validate('abcdef')).toStrictEqual([
-        new WrongLengthFail('Must contain between 0 and 5 characters (received "abcdef")')
+        new WrongLengthFail('Must contain between 0 and 5 characters', 'abcdef')
       ])
       expect(validator.validate('abcdefg')).toStrictEqual([
-        new WrongLengthFail('Must contain between 0 and 5 characters (received "abcdefg")')
+        new WrongLengthFail('Must contain between 0 and 5 characters', 'abcdefg')
       ])
       expect(validator.validate('this is a long string')).toStrictEqual([
-        new WrongLengthFail('Must contain between 0 and 5 characters (received "this is a long string")')
+        new WrongLengthFail('Must contain between 0 and 5 characters', 'this is a long string')
       ])
     })
   })
@@ -107,8 +107,8 @@ describe.each([false, true])('String (optimize: %s)', optimize => {
   describe('RequiredString', () => {
     it('rejects empty value', () => {
       const validator = new RequiredString()
-      expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
-      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])
+      expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required', null)])
+      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
     })
   })
 

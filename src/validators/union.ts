@@ -70,7 +70,7 @@ export function validateUnion(
     const unionKey = findUnionKey(schema)
     if (unionKey !== null) {
       if (!isPlainObject(value)) {
-        return [new NotObjectFail(`Must be an object (received "${value}")`, context)]
+        return [new NotObjectFail(`Must be an object`, value, context)]
       }
       for (const validator of schema) {
         const errors = validator.schema[unionKey].validate(value[unionKey])
@@ -78,7 +78,7 @@ export function validateUnion(
           return validator.validate(value, context, options)
         }
       }
-      return [new UnionFail(`Union key '${unionKey}' did not match (received "${value}")`, [], context)]
+      return [new UnionFail(`Union key '${unionKey}' did not match`, [], value, context)]
     }
   }
 
@@ -89,7 +89,12 @@ export function validateUnion(
       return []
     } else {
       errors.push(
-        new UnionFail(`Union entry failed validation with ${currentErrors.length} errors`, currentErrors, propName)
+        new UnionFail(
+          `Union entry failed validation with ${currentErrors.length} errors`,
+          currentErrors,
+          value,
+          propName
+        )
       )
       if (options?.earlyFail) {
         return errors
@@ -125,7 +130,7 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
     context?: string,
     earlyFail?: boolean
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context}\` }` : ', context'
+    const contextStr = context ? `\`${context}\`` : ', context'
     const unionValueRef = `unionValue${id()}`
     const schemaRef = `scheme${id()}`
     let imports: { [key: string]: unknown } = {
@@ -186,7 +191,7 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
           `    ${unionValueRef}Errors.push(...errors)`,
           ...(index === this.schema.length - 1 ? [
           `  } else {`,
-          `     ${unionValueRef}Errors.push(new UnionFail(\`Union key '${unionKey}' did not match (received "\${${valueRef}}")\`, []${contextStr}))`,
+          `     ${unionValueRef}Errors.push(new UnionFail(\`Union key '${unionKey}' did not match\`, [], ${unionValueRef}${contextStr}))`,
           `  }`
           ]: []),
         ]
@@ -204,7 +209,7 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
         entryCode.push(
           `  if (errors.length > 0) {`,
           `    ${unionValueRef}Errors.push(`,
-          `      new UnionFail(\`Union entry failed validation with \${errors.length} errors\`, errors, \`${propName}\`)`,
+          `      new UnionFail(\`Union entry failed validation with \${errors.length} errors\`, errors, ${unionValueRef}, \`${propName}\`)`,
           '    )',
           `  } else {`,
           `    ${unionValueRef}Errors = []`,
@@ -222,7 +227,7 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
         `  if (typeof ${unionValueRef} === 'object' && !Array.isArray(${unionValueRef})) {`,
         ...unionCode.map(l => `  ${l}`),
         `  } else {`,
-        `    ${unionValueRef}Errors.push(new NotObjectFail(\`Must be an object (received "\${${valueRef}}")\`${contextStr}))`,
+        `    ${unionValueRef}Errors.push(new NotObjectFail(\`Must be an object\`, ${unionValueRef}${contextStr}))`,
         `  }`
       ]
     }
@@ -233,7 +238,7 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
       `  ${unionValueRef}orgErrors.push(...${unionValueRef}Errors)`,
       ...(this.required ? [
       `} else {`,
-      `  errors.push(new RequiredFail(\`Is required\`${contextStr}))`] : []),
+      `  errors.push(new RequiredFail(\`Is required\`, ${unionValueRef}${contextStr}))`] : []),
       '}',
       ...(earlyFail ? [
       `if (errors.length > 0) {`,
@@ -301,7 +306,9 @@ export class DateTimeOrDateValidator<O = never> extends UnionValidator<string | 
     if (errors.length === 2) {
       return [
         new NotDatetimeOrDateFail(
-          `Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp (received "${value}")`
+          `Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp`,
+          value,
+          context
         )
       ]
     }
@@ -340,7 +347,7 @@ export class FloatOrFloatStringValidator<O = never> extends UnionValidator<numbe
   public validate(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
     const errors = super.validate(value, context, options)
     if (errors.length === 2) {
-      return [new NotFloatOrFloatStringFail(`${this.errStr} (received "${value}")`)]
+      return [new NotFloatOrFloatStringFail(`${this.errStr}`, value, context)]
     }
     return errors
   }
@@ -377,7 +384,7 @@ export class IntegerOrIntegerStringValidator<O = never> extends UnionValidator<n
   public validate(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
     const errors = super.validate(value, context, options)
     if (errors.length === 2) {
-      return [new NotIntegerOrIntegerStringFail(`${this.errStr} (received "${value}")`)]
+      return [new NotIntegerOrIntegerStringFail(`${this.errStr}`, value, context)]
     }
     return errors
   }

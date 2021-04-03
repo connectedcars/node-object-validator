@@ -35,8 +35,8 @@ describe.each([false, true])('Common (optimize: %s)', optimize => {
       }
       expect(validator.validate(1)).toStrictEqual([])
       expect(validator.validate(2)).toStrictEqual([new ValidationFailure(`value is not 1`, 2)])
-      expect(validator.validate(null)).toStrictEqual([new RequiredFail(`Is required`)])
-      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail(`Is required`)])
+      expect(validator.validate(null)).toStrictEqual([new RequiredFail(`Is required`, null)])
+      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail(`Is required`, undefined)])
     })
   })
 })

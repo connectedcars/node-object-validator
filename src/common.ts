@@ -116,7 +116,7 @@ export abstract class ValidatorBase<T> implements Validator {
       return this.optimizedValidate(value, context)
     }
     if (this.nullCheck && value == null) {
-      return this.required ? [new RequiredFail(`Is required`, context)] : []
+      return this.required ? [new RequiredFail(`Is required`, value, context)] : []
     }
     return this.validateValue(value, context, { earlyFail: this.earlyFail, optimized: false, ...options })
   }
@@ -139,7 +139,7 @@ export abstract class ValidatorBase<T> implements Validator {
       `  errors.push(...${validatorName}.validateValue(${valueRef}${contextStr}))`,
       ...(this.required ? [
       `} else {`,
-      `  errors.push(new RequiredFail(\`Is required\`${contextStr}))`] : []),
+      `  errors.push(new RequiredFail(\`Is required\`, ${valueRef}${contextStr}))`] : []),
       '}',
       ...(this.earlyFail || earlyFail ? [
       `if (errors.length > 0) {`,

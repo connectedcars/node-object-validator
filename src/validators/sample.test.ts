@@ -34,24 +34,24 @@ describe('Sample', () => {
 
     it('should validate Date sample', () => {
       expect(validateSample(new Date(), new Date())).toEqual([])
-      expect(validateSample(new Date(), '')).toEqual([new NotDateFail('Must be a Date object')])
+      expect(validateSample(new Date(), '')).toEqual([new NotDateFail('Must be a Date object', '')])
     })
 
     it('should validate iso date time sample', () => {
       expect(validateSample('2018-08-06T13:37:00.000Z', '2018-08-06T13:37:00.000Z')).toEqual([])
       expect(validateSample('2018-08-06T13:37:00.000Z', '')).toEqual([
-        new WrongLengthFail('Must contain between 20 and 30 characters (received "")')
+        new WrongLengthFail('Must contain between 20 and 30 characters', '')
       ])
     })
 
     it('should validate float sample', () => {
       expect(validateSample(1.1, 2.1)).toEqual([])
-      expect(validateSample(1.1, '')).toEqual([new NotFloatFail('Must be a float (received "")')])
+      expect(validateSample(1.1, '')).toEqual([new NotFloatFail('Must be a float', '')])
     })
 
     it('should validate integer sample', () => {
       expect(validateSample(1, 2)).toEqual([])
-      expect(validateSample(1, '')).toEqual([new NotIntegerFail('Must be an integer (received "")')])
+      expect(validateSample(1, '')).toEqual([new NotIntegerFail('Must be an integer', '')])
     })
 
     it('should validate object sample', () => {
@@ -59,19 +59,19 @@ describe('Sample', () => {
         type: 'message'
       }
       expect(validateSample(schema, { type: 'message' })).toEqual([])
-      expect(validateSample(schema, { value: 'message' })).toEqual([new RequiredFail('Is required', 'type')])
+      expect(validateSample(schema, { value: 'message' })).toEqual([new RequiredFail('Is required', undefined, 'type')])
     })
 
     it('should validate regex sample', () => {
       expect(validateSample(/^status$/, 'status')).toEqual([])
       expect(validateSample(/^status$/, 'something else')).toEqual([
-        new DoesNotMatchRegexFail(`Did not match '/^status$/' (received "something else")`)
+        new DoesNotMatchRegexFail(`Did not match '/^status$/'`, 'something else')
       ])
     })
 
     it('should validate string sample', () => {
       expect(validateSample('', '')).toEqual([])
-      expect(validateSample('', 2)).toEqual([new NotStringFail('Must be a string (received "2")')])
+      expect(validateSample('', 2)).toEqual([new NotStringFail('Must be a string', 2)])
     })
   })
 })

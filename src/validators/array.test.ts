@@ -66,23 +66,23 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
       const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10, { optimize })
       const errors = arrayValidator.validate([{ hello: 'stuff' }, { hello: 'more' }])
       expect(errors).toEqual([
-        new NotIntegerFail('Must be an integer (received "[object Object]")', '[0]'),
-        new NotIntegerFail('Must be an integer (received "[object Object]")', '[1]')
+        new NotIntegerFail('Must be an integer', { hello: 'stuff' }, '[0]'),
+        new NotIntegerFail('Must be an integer', { hello: 'more' }, '[1]')
       ])
     })
 
     it('should fail early validation of array of objects', () => {
       const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10, { optimize, earlyFail: true })
       const errors = arrayValidator.validate([{ hello: 'stuff' }, { hello: 'more' }])
-      expect(errors).toEqual([new NotIntegerFail('Must be an integer (received "[object Object]")', '[0]')])
+      expect(errors).toEqual([new NotIntegerFail('Must be an integer', { hello: 'stuff' }, '[0]')])
     })
   })
 
   describe('RequiredArray', () => {
     it('rejects empty value', () => {
       const validator = new RequiredArray(new RequiredObject({}), 0, Number.MAX_SAFE_INTEGER, { optimize })
-      expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
-      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])
+      expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required', null)])
+      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
     })
   })
 

@@ -216,7 +216,7 @@ describe.each([false, true])('Shorthand validation of complex objects (optimize:
       ]
     })
     expect(errors.map(e => e.toString())).toEqual([
-      `WrongLengthFail: Field 'positions' must contain between 2 and 10 entries (found 1)`
+      `WrongLengthFail: Field 'positions' must contain between 2 and 10 entries (found 1) (received "[object Object]")`
     ])
   })
 
@@ -417,23 +417,27 @@ describe.each([false, true])('Complex objects with unions using full syntax (opt
         [
           new UnionFail(
             `Union entry failed validation with 1 errors`,
-            [new NotExactStringFail('Must strictly equal "queued" (received "unknown")', `(0)['status'](0)`)],
+            [new NotExactStringFail('Must strictly equal "queued"', 'unknown', `(0)['status'](0)`)],
+            'unknown',
             "(0)['status'](0)"
           ),
           new UnionFail(
             `Union entry failed validation with 1 errors`,
-            [new NotExactStringFail('Must strictly equal "in_progress" (received "unknown")', `(0)['status'](1)`)],
+            [new NotExactStringFail('Must strictly equal "in_progress"', 'unknown', `(0)['status'](1)`)],
+            'unknown',
             "(0)['status'](1)"
           )
         ],
+        sample,
         '(0)'
       ),
       new UnionFail(
         `Union entry failed validation with 2 errors`,
         [
-          new NotExactStringFail('Must strictly equal "completed" (received "unknown")', `(1)['status']`),
-          new RequiredFail('Is required', `(1)['conclusion']`)
+          new NotExactStringFail('Must strictly equal "completed"', 'unknown', `(1)['status']`),
+          new RequiredFail('Is required', undefined, `(1)['conclusion']`)
         ],
+        sample,
         '(1)'
       )
     ])
