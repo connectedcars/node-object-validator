@@ -34,8 +34,8 @@ const schema = {
   )
 }
 
-const gpsOdometerKm = new ObjectValidator(schema, { optimize: false })
-const gpsOdometerKmOptimized = new ObjectValidator(schema, { optimize: true })
+const gpsOdometerKm = new ObjectValidator(schema, { optimize: false, earlyFail: true })
+const gpsOdometerKmOptimized = new ObjectValidator(schema, { optimize: true, earlyFail: true })
 
 const benchmarks: { [key: string]: unknown } = {
   success: {
