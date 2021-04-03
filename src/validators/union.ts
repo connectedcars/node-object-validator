@@ -22,11 +22,11 @@ function findUnionKey(schema: ObjectValidator[]): string | null {
   let unionKey: string | null = null
   for (const key of Object.keys(schema[0].schema)) {
     const firstValidator = schema[0].schema[key]
-    if (firstValidator instanceof ExactStringValidator) {
+    if (firstValidator instanceof ExactStringValidator && firstValidator.required === true) {
       const seenExpected: string[] = [firstValidator.expected]
       for (let i = 1; i < schema.length; i++) {
         const validator = schema[i].schema[key]
-        if (validator instanceof ExactStringValidator) {
+        if (validator instanceof ExactStringValidator && firstValidator.required === true) {
           if (seenExpected.includes(validator.expected)) {
             break
           }
