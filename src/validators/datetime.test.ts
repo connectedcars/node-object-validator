@@ -78,7 +78,7 @@ describe.each([false, true])('DateTime (optimize: %s)', optimize => {
 
     it('requires value to show correct context on error', () => {
       const validator = new DateTimeValidator({ optimize })
-      expect(validator.validate('', { key: 'myDate' }).map(e => e.toString())).toStrictEqual([
+      expect(validator.validate('', 'myDate').map(e => e.toString())).toStrictEqual([
         `WrongLengthFail: Field 'myDate' must contain between 20 and 30 characters (received "")`
       ])
     })

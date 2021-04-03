@@ -417,28 +417,24 @@ describe.each([false, true])('Complex objects with unions using full syntax (opt
         [
           new UnionFail(
             `Union entry failed validation with 1 errors`,
-            [new NotExactStringFail('Must strictly equal "queued" (received "unknown")', { key: `(0)['status'](0)` })],
-            { key: "(0)['status'](0)" }
+            [new NotExactStringFail('Must strictly equal "queued" (received "unknown")', `(0)['status'](0)`)],
+            "(0)['status'](0)"
           ),
           new UnionFail(
             `Union entry failed validation with 1 errors`,
-            [
-              new NotExactStringFail('Must strictly equal "in_progress" (received "unknown")', {
-                key: `(0)['status'](1)`
-              })
-            ],
-            { key: "(0)['status'](1)" }
+            [new NotExactStringFail('Must strictly equal "in_progress" (received "unknown")', `(0)['status'](1)`)],
+            "(0)['status'](1)"
           )
         ],
-        { key: '(0)' }
+        '(0)'
       ),
       new UnionFail(
         `Union entry failed validation with 2 errors`,
         [
-          new NotExactStringFail('Must strictly equal "completed" (received "unknown")', { key: `(1)['status']` }),
-          new RequiredFail('Is required', { key: `(1)['conclusion']` })
+          new NotExactStringFail('Must strictly equal "completed" (received "unknown")', `(1)['status']`),
+          new RequiredFail('Is required', `(1)['conclusion']`)
         ],
-        { key: '(1)' }
+        '(1)'
       )
     ])
   })

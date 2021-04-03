@@ -63,9 +63,7 @@ describe('Object', () => {
       }
     }
     expect(objectValidator.validate(unknownValue)).toEqual([
-      new NotIntegerFail(`Must be an integer (received "1")`, {
-        key: "requiredObject['optionalInt']"
-      })
+      new NotIntegerFail(`Must be an integer (received "1")`, "requiredObject['optionalInt']")
     ])
   })
 })
@@ -132,8 +130,8 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
     it('should fail validation of wrong key types', () => {
       const validator = new ObjectValidator({ int: new IntegerValidator(), float: new FloatValidator() }, { optimize })
       expect(validator.validate({ int: '', float: '' })).toStrictEqual([
-        new NotIntegerFail('Must be an integer (received "")', { key: 'int' }),
-        new NotFloatFail('Must be a float (received "")', { key: 'float' })
+        new NotIntegerFail('Must be an integer (received "")', 'int'),
+        new NotFloatFail('Must be a float (received "")', 'float')
       ])
     })
 
@@ -291,15 +289,9 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
         optionalArrayArray: [1]
       }
       expect(objectValidator.validate(unknownValue)).toEqual([
-        new NotIntegerFail(`Must be an integer (received "1")`, {
-          key: "requiredObject['optionalInt']"
-        }),
-        new NotIntegerFail(`Must be an integer (received "1")`, {
-          key: 'optionalArray[0]'
-        }),
-        new NotArrayFail(`Must be an array (received "1")`, {
-          key: 'optionalArrayArray[0]'
-        })
+        new NotIntegerFail(`Must be an integer (received "1")`, "requiredObject['optionalInt']"),
+        new NotIntegerFail(`Must be an integer (received "1")`, 'optionalArray[0]'),
+        new NotArrayFail(`Must be an array`, 1, 'optionalArrayArray[0]')
       ])
     })
 

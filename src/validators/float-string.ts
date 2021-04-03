@@ -1,13 +1,8 @@
 import { validateFloat, validateString } from '..'
 import { isValidType, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
-import { NotFloatStringFail, ValidationErrorContext, ValidationFailure, WrongLengthFail } from '../errors'
+import { NotFloatStringFail, ValidationFailure, WrongLengthFail } from '../errors'
 
-export function validateFloatString(
-  value: unknown,
-  min: number,
-  max: number,
-  context?: ValidationErrorContext
-): ValidationFailure[] {
+export function validateFloatString(value: unknown, min: number, max: number, context?: string): ValidationFailure[] {
   const stringError = validateString(value, 0, Number.MAX_SAFE_INTEGER, context)
   if (!isValidType<string>(value, stringError)) {
     return [new NotFloatStringFail(`Must be a string with a float (received "${value}")`)]
@@ -45,7 +40,7 @@ export class FloatStringValidator<O = never> extends ValidatorBase<number | O> {
     return `new ${this.constructor.name}(${minStr}${maxStr}${optionsStr})`
   }
 
-  protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
+  protected validateValue(value: unknown, context?: string): ValidationFailure[] {
     return validateFloatString(value, this.min, this.max, context)
   }
 }

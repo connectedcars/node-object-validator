@@ -66,7 +66,7 @@ describe.each([false, true])('Date (optimize: %s)', optimize => {
 
     it('requires value to show correct context on error', () => {
       const validator = new DateValidator({ optimize })
-      expect(validator.validate('', { key: 'myDate' }).map(e => e.toString())).toStrictEqual([
+      expect(validator.validate('', 'myDate').map(e => e.toString())).toStrictEqual([
         `NotDateFail: Field 'myDate' must be a Date object`
       ])
     })

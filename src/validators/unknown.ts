@@ -1,5 +1,5 @@
 import { ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
-import { ValidationErrorContext, ValidationFailure } from '../errors'
+import { ValidationFailure } from '../errors'
 
 export class UnknownValidator<O = never> extends ValidatorBase<O> {
   public constructor(options?: ValidatorOptions) {
@@ -17,7 +17,7 @@ export class UnknownValidator<O = never> extends ValidatorBase<O> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected validateValue(_value: unknown, _context?: ValidationErrorContext): ValidationFailure[] {
+  protected validateValue(_value: unknown, _context?: string): ValidationFailure[] {
     return []
   }
 }

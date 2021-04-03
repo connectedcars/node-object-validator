@@ -1,5 +1,5 @@
 import { ValidatorBase, ValidatorExportOptions, ValidatorOptions } from './common'
-import { RequiredFail, ValidationErrorContext, ValidationFailure } from './errors'
+import { RequiredFail, ValidationFailure } from './errors'
 
 class OneValidator extends ValidatorBase<number> {
   public constructor(options?: ValidatorOptions) {
@@ -16,9 +16,9 @@ class OneValidator extends ValidatorBase<number> {
     return `new ${this.constructor.name}(${this.optionsString})`
   }
 
-  protected validateValue(value: unknown, context?: ValidationErrorContext | undefined): ValidationFailure[] {
+  protected validateValue(value: unknown, context?: string | undefined): ValidationFailure[] {
     if (value !== 1) {
-      return [new ValidationFailure(`value is not 1`, context)]
+      return [new ValidationFailure(`value is not 1`, value, context)]
     }
     return []
   }
@@ -34,7 +34,7 @@ describe.each([false, true])('Common (optimize: %s)', optimize => {
         expect(validator['optimizedValidate']).toBeNull()
       }
       expect(validator.validate(1)).toStrictEqual([])
-      expect(validator.validate(2)).toStrictEqual([new ValidationFailure(`value is not 1`)])
+      expect(validator.validate(2)).toStrictEqual([new ValidationFailure(`value is not 1`, 2)])
       expect(validator.validate(null)).toStrictEqual([new RequiredFail(`Is required`)])
       expect(validator.validate(undefined)).toStrictEqual([new RequiredFail(`Is required`)])
     })

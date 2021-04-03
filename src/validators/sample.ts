@@ -6,7 +6,7 @@ import {
   ValidatorExportOptions,
   ValidatorOptions
 } from '../common'
-import { ValidationErrorContext, ValidationFailure } from '../errors'
+import { ValidationFailure } from '../errors'
 import { ArrayValidator } from './array'
 import { BooleanValidator } from './boolean'
 import { DateValidator } from './date'
@@ -87,7 +87,7 @@ export function sampleToValidator(sample: Sample, options?: ValidatorOptions): V
   }
 }
 
-export function isSample<T>(sample: Sample, value: unknown, context?: ValidationErrorContext): value is T {
+export function isSample<T>(sample: Sample, value: unknown, context?: string): value is T {
   const errors = validateSample(sample, value, context)
   if (errors.length === 0) {
     return true
@@ -98,7 +98,7 @@ export function isSample<T>(sample: Sample, value: unknown, context?: Validation
 export function validateSample(
   sample: Sample,
   value: unknown,
-  context?: ValidationErrorContext,
+  context?: string,
   options?: ValidateOptions
 ): ValidationFailure[] {
   const validator = sampleToValidator(sample, options)
@@ -119,11 +119,7 @@ export class SampleValidator<T, O = never> extends ValidatorBase<T | O> {
     return this.validator.toString(options)
   }
 
-  protected validateValue(
-    value: unknown,
-    context?: ValidationErrorContext,
-    options?: ValidateOptions
-  ): ValidationFailure[] {
+  protected validateValue(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
     return this.validator.validate(value, context, { earlyFail: this.earlyFail, ...options })
   }
 }

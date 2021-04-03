@@ -6,14 +6,14 @@ import {
   ValidatorExportOptions,
   ValidatorOptions
 } from '../common'
-import { NotArrayFail, RequiredFail, ValidationErrorContext, ValidationFailure, WrongLengthFail } from '../errors'
+import { NotArrayFail, RequiredFail, ValidationFailure, WrongLengthFail } from '../errors'
 
 export function isArray<T>(
   schema: Validator,
   value: unknown,
   minLength = 0,
   maxLength = Number.MAX_SAFE_INTEGER,
-  context?: ValidationErrorContext
+  context?: string
 ): value is T {
   const errors = validateArray(schema, value, minLength, maxLength, context, { earlyFail: true })
   if (errors.length === 0) {
@@ -27,11 +27,11 @@ export function validateArray(
   value: unknown,
   minLength = 0,
   maxLength = Number.MAX_SAFE_INTEGER,
-  context?: ValidationErrorContext,
+  context?: string,
   options?: ValidateOptions
 ): ValidationFailure[] {
   if (!Array.isArray(value)) {
-    return [new NotArrayFail(`Must be an array (received "${value}")`, context)]
+    return [new NotArrayFail(`Must be an array`, value, context)]
   }
   if ((minLength !== 0 && value.length < minLength) || value.length > maxLength) {
     return [
@@ -42,11 +42,7 @@ export function validateArray(
   const validator = schema
   for (const [i, item] of value.entries()) {
     errors.push(
-      ...validator.validate(
-        item,
-        { key: `${context?.key || ''}[${i}]` },
-        { optimized: false, earlyFail: false, ...options }
-      )
+      ...validator.validate(item, `${context || ''}[${i}]`, { optimized: false, earlyFail: false, ...options })
     )
     if (options?.earlyFail && errors.length > 0) {
       return errors
@@ -81,10 +77,11 @@ export class ArrayValidator<T extends Array<unknown>, O = never> extends Validat
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext,
+    context?: string,
     earlyFail?: boolean
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
+    const contextStr = context ? `, \`${context}\`` : ', context'
+
     const arrayValueRef = `arrayValue${id()}`
     const iRef = `i${id()}`
     const itemRef = `item${id()}`
@@ -101,9 +98,7 @@ export class ArrayValidator<T extends Array<unknown>, O = never> extends Validat
       itemRef,
       schemaRef,
       id,
-      {
-        key: `${context?.key || ''}[\${${iRef}}]`
-      },
+      `${context || ''}[\${${iRef}}]`,
       earlyFail
     )
     imports = { ...imports, ...propImports }
@@ -122,7 +117,7 @@ export class ArrayValidator<T extends Array<unknown>, O = never> extends Validat
       `      errors.push(new WrongLengthFail(\`Must contain between ${this.minLength} and ${this.maxLength} entries (found \${${arrayValueRef}.length})\`${contextStr}))`,
       `    }`,
       `  } else {`,
-      `    errors.push(new NotArrayFail(\`Must be an array (received "\${${valueRef}}")\`${contextStr}))`,
+      `    errors.push(new NotArrayFail(\`Must be an array\`, ${valueRef}${contextStr}))`,
       `  }`,
       ...(this.required ? [
       `} else {`,
@@ -148,11 +143,7 @@ export class ArrayValidator<T extends Array<unknown>, O = never> extends Validat
     return `new ${this.constructor.name}(${schemaStr}${minLengthStr}${maxLengthStr}${optionsStr})`
   }
 
-  protected validateValue(
-    value: unknown,
-    context?: ValidationErrorContext,
-    options?: ValidateOptions
-  ): ValidationFailure[] {
+  protected validateValue(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
     return validateArray(this.schema, value, this.minLength, this.maxLength, context, {
       earlyFail: this.earlyFail,
       ...options

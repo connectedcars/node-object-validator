@@ -1,15 +1,8 @@
 import { CodeGenResult, isValidType, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
-import {
-  NotRfc3339Fail,
-  NotStringFail,
-  RequiredFail,
-  ValidationErrorContext,
-  ValidationFailure,
-  WrongLengthFail
-} from '../errors'
+import { NotRfc3339Fail, NotStringFail, RequiredFail, ValidationFailure, WrongLengthFail } from '../errors'
 import { validateString } from './string'
 
-export function isDateTime(value: unknown, context?: ValidationErrorContext): value is string {
+export function isDateTime(value: unknown, context?: string): value is string {
   const errors = validateDateTime(value, context)
   if (errors.length === 0) {
     return true
@@ -19,7 +12,7 @@ export function isDateTime(value: unknown, context?: ValidationErrorContext): va
 
 const dateTimePattern = /^([0-9]+)-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])[Tt]([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.[0-9]+)?(([Zz])|([+|-]([01][0-9]|2[0-3]):[0-5][0-9]))$/
 
-export function validateDateTime(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
+export function validateDateTime(value: unknown, context?: string): ValidationFailure[] {
   const stringError = validateString(value, 20, 30, context)
   if (!isValidType<string>(value, stringError)) {
     return stringError
@@ -44,10 +37,10 @@ export class DateTimeValidator<O = never> extends ValidatorBase<string | O> {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext,
+    context?: string,
     earlyFail?: boolean
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
+    const contextStr = context ? `, \`${context}\`` : ', context'
     const localValueRef = `value${id()}`
     const declarations: string[] = []
     // prettier-ignore
@@ -94,7 +87,7 @@ export class DateTimeValidator<O = never> extends ValidatorBase<string | O> {
     return `new ${this.constructor.name}(${this.optionsString})`
   }
 
-  protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
+  protected validateValue(value: unknown, context?: string): ValidationFailure[] {
     return validateDateTime(value, context)
   }
 }

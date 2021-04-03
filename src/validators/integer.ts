@@ -1,11 +1,11 @@
 import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
-import { NotIntegerFail, OutOfRangeFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
+import { NotIntegerFail, OutOfRangeFail, RequiredFail, ValidationFailure } from '../errors'
 
 export function isInteger(
   value: unknown,
   min: number = Number.MIN_SAFE_INTEGER,
   max: number = Number.MAX_SAFE_INTEGER,
-  context?: ValidationErrorContext
+  context?: string
 ): value is number {
   const errors = validateInteger(value, min, max, context)
   if (errors.length === 0) {
@@ -18,7 +18,7 @@ export function validateInteger(
   value: unknown,
   min: number = Number.MIN_SAFE_INTEGER,
   max: number = Number.MAX_SAFE_INTEGER,
-  context?: ValidationErrorContext
+  context?: string
 ): ValidationFailure[] {
   if (typeof value !== 'number' || !Number.isInteger(value)) {
     return [new NotIntegerFail(`Must be an integer (received "${value}")`, context)]
@@ -48,10 +48,10 @@ export class IntegerValidator<O = never> extends ValidatorBase<number | O> {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext,
+    context?: string,
     earlyFail?: boolean
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
+    const contextStr = context ? `, \`${context}\`` : ', context'
     const localValueRef = `value${id()}`
     const declarations: string[] = []
     // prettier-ignore
@@ -95,7 +95,7 @@ export class IntegerValidator<O = never> extends ValidatorBase<number | O> {
     return `new ${this.constructor.name}(${minStr}${maxStr}${optionsStr})`
   }
 
-  protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
+  protected validateValue(value: unknown, context?: string): ValidationFailure[] {
     return validateInteger(value, this.min, this.max, context)
   }
 }

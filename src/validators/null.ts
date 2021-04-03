@@ -5,9 +5,9 @@ import {
   ValidatorExportOptions,
   ValidatorOptions
 } from '../common'
-import { NotNullFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
+import { NotNullFail, RequiredFail, ValidationFailure } from '../errors'
 
-export function isNull(value: unknown, context?: ValidationErrorContext): value is null {
+export function isNull(value: unknown, context?: string): value is null {
   const errors = validateNull(value, context)
   if (errors.length === 0) {
     return true
@@ -15,7 +15,7 @@ export function isNull(value: unknown, context?: ValidationErrorContext): value 
   return false
 }
 
-export function validateNull(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
+export function validateNull(value: unknown, context?: string): ValidationFailure[] {
   if (value !== null) {
     return [new NotNullFail(`Must be an null (received "${value}")`, context)]
   }
@@ -44,10 +44,10 @@ export class NullValidator<O = never> extends ValidatorBase<null | O> {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext,
+    context?: string,
     earlyFail?: boolean
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
+    const contextStr = context ? `, \`${context}\`` : ', context'
     const localValueRef = `value${id()}`
     const declarations: string[] = []
     // prettier-ignore
@@ -84,7 +84,7 @@ export class NullValidator<O = never> extends ValidatorBase<null | O> {
     return `new ${this.constructor.name}(${this.optionsString})`
   }
 
-  protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
+  protected validateValue(value: unknown, context?: string): ValidationFailure[] {
     if (value === undefined) {
       return this.required ? [new RequiredFail(`Is required`, context)] : []
     }

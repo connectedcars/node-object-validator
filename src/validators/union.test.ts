@@ -187,21 +187,21 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
       expect(errors).toEqual([
         new UnionFail(
           `Union entry failed validation with 1 errors`,
-          [new NotExactStringFail('Must strictly equal "number" (received "error")', { key: `(0)['type']` })],
-          { key: '(0)' }
+          [new NotExactStringFail('Must strictly equal "number" (received "error")', `(0)['type']`)],
+          '(0)'
         ),
         new UnionFail(
           `Union entry failed validation with 2 errors`,
           [
-            new NotExactStringFail('Must strictly equal "string" (received "error")', { key: `(1)['type']` }),
-            new NotStringFail('Must be a string (received "1")', { key: `(1)['value']` })
+            new NotExactStringFail('Must strictly equal "string" (received "error")', `(1)['type']`),
+            new NotStringFail('Must be a string (received "1")', `(1)['value']`)
           ],
-          { key: '(1)' }
+          '(1)'
         ),
         new UnionFail(
           `Union entry failed validation with 1 errors`,
-          [new RequiredFail('Is required', { key: `(2)['error']` })],
-          { key: '(2)' }
+          [new RequiredFail('Is required', `(2)['error']`)],
+          '(2)'
         )
       ])
     })
@@ -211,7 +211,7 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         type: 'error',
         value: 1.0
       })
-      expect(errors).toEqual([new RequiredFail(`Is required`, { key: 'error' })])
+      expect(errors).toEqual([new RequiredFail(`Is required`, 'error')])
     })
   })
 

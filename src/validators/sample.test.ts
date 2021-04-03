@@ -59,7 +59,7 @@ describe('Sample', () => {
         type: 'message'
       }
       expect(validateSample(schema, { type: 'message' })).toEqual([])
-      expect(validateSample(schema, { value: 'message' })).toEqual([new RequiredFail('Is required', { key: 'type' })])
+      expect(validateSample(schema, { value: 'message' })).toEqual([new RequiredFail('Is required', 'type')])
     })
 
     it('should validate regex sample', () => {

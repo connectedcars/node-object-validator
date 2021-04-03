@@ -6,12 +6,12 @@ import {
   ValidatorExportOptions,
   ValidatorOptions
 } from '../common'
-import { NotObjectFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
+import { NotObjectFail, RequiredFail, ValidationFailure } from '../errors'
 
 export function isObject<T extends Record<string, unknown>>(
   schema: Record<string, Validator>,
   value: unknown,
-  context?: ValidationErrorContext
+  context?: string
 ): value is T {
   const errors = validateObject(schema, value, context, { earlyFail: true })
   if (errors.length === 0) {
@@ -27,7 +27,7 @@ export function isPlainObject(value: unknown): value is { [key: string]: unknown
 export function validateObject(
   schema: Record<string, Validator>,
   value: unknown,
-  context?: ValidationErrorContext,
+  context?: string,
   options?: ValidateOptions
 ): ValidationFailure[] {
   const errors: ValidationFailure[] = []
@@ -37,8 +37,8 @@ export function validateObject(
   }
   for (const key of Object.keys(schema)) {
     const validator = schema[key]
-    const keyName = context?.key ? `${context.key}['${key}']` : key
-    errors.push(...validator.validate(value[key], { key: keyName }, { optimized: false, earlyFail: false, ...options }))
+    const keyName = context ? `${context}['${key}']` : key
+    errors.push(...validator.validate(value[key], keyName, { optimized: false, earlyFail: false, ...options }))
     if (options?.earlyFail && errors.length > 0) {
       return errors
     }
@@ -63,10 +63,10 @@ export class ObjectValidator<T extends Record<string, unknown> = never, O = neve
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext,
+    context?: string,
     earlyFail?: boolean
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
+    const contextStr = context ? `, \`${context}\`` : ', context'
     const objValueRef = `objValue${id()}`
     const schemaRef = `scheme${id()}`
     let imports: { [key: string]: unknown } = {
@@ -83,14 +83,12 @@ export class ObjectValidator<T extends Record<string, unknown> = never, O = neve
     ]
     for (const key of Object.keys(this.schema)) {
       const validator = this.schema[key]
-      const propName = context?.key ? `${context.key}['${key}']` : key
+      const propName = context ? `${context}['${key}']` : key
       const [propImports, propDeclarations, propCode] = validator.codeGen(
         `${objValueRef}['${key}']`,
         `${schemaRef}['${key}']`,
         id,
-        {
-          key: propName
-        },
+        propName,
         earlyFail
       )
       imports = { ...imports, ...propImports }
@@ -128,11 +126,7 @@ export class ObjectValidator<T extends Record<string, unknown> = never, O = neve
     return `new ${this.constructor.name}(${schemaStr}${optionsStr})`
   }
 
-  protected validateValue(
-    value: unknown,
-    context?: ValidationErrorContext,
-    options?: ValidateOptions
-  ): ValidationFailure[] {
+  protected validateValue(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
     return validateObject(this.schema, value, context, { earlyFail: this.earlyFail, ...options })
   }
 }

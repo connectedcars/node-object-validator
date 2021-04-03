@@ -1,7 +1,7 @@
 import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
-import { NotBooleanFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
+import { NotBooleanFail, RequiredFail, ValidationFailure } from '../errors'
 
-export function isBoolean(value: unknown, context?: ValidationErrorContext): value is boolean {
+export function isBoolean(value: unknown, context?: string): value is boolean {
   const errors = validateBoolean(value, context)
   if (errors.length === 0) {
     return true
@@ -9,7 +9,7 @@ export function isBoolean(value: unknown, context?: ValidationErrorContext): val
   return false
 }
 
-export function validateBoolean(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
+export function validateBoolean(value: unknown, context?: string): ValidationFailure[] {
   if (typeof value !== 'boolean') {
     return [new NotBooleanFail(`Must be an boolean (received "${value}")`, context)]
   }
@@ -30,10 +30,10 @@ export class BooleanValidator<O = never> extends ValidatorBase<boolean | O> {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext,
+    context?: string,
     earlyFail?: boolean
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
+    const contextStr = context ? `, \`${context}\`` : ', context'
     const localValueRef = `value${id()}`
     const declarations: string[] = []
     // prettier-ignore
@@ -69,7 +69,7 @@ export class BooleanValidator<O = never> extends ValidatorBase<boolean | O> {
     return `new ${this.constructor.name}(${this.optionsString})`
   }
 
-  protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
+  protected validateValue(value: unknown, context?: string): ValidationFailure[] {
     return validateBoolean(value, context)
   }
 }

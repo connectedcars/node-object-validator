@@ -1,11 +1,11 @@
 import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
-import { NotStringFail, RequiredFail, ValidationErrorContext, ValidationFailure, WrongLengthFail } from '../errors'
+import { NotStringFail, RequiredFail, ValidationFailure, WrongLengthFail } from '../errors'
 
 export function isString(
   value: unknown,
   minLength = 0,
   maxLength: number = Number.MAX_SAFE_INTEGER,
-  context?: ValidationErrorContext
+  context?: string
 ): value is string {
   const errors = validateString(value, minLength, maxLength, context)
   if (errors.length === 0) {
@@ -18,7 +18,7 @@ export function validateString(
   value: unknown,
   minLength = 0,
   maxLength: number = Number.MAX_SAFE_INTEGER,
-  context?: ValidationErrorContext
+  context?: string
 ): ValidationFailure[] {
   if (typeof value !== 'string') {
     return [new NotStringFail(`Must be a string (received "${value}")`, context)]
@@ -53,10 +53,10 @@ export class StringValidator<O = never> extends ValidatorBase<string | O> {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext,
+    context?: string,
     earlyFail?: boolean
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
+    const contextStr = context ? `, \`${context}\`` : ', context'
     const localValueRef = `value${id()}`
     const declarations: string[] = []
     // prettier-ignore
@@ -100,7 +100,7 @@ export class StringValidator<O = never> extends ValidatorBase<string | O> {
     return `new ${this.constructor.name}(${minLengthStr}${maxLengthStr}${optionsStr})`
   }
 
-  protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
+  protected validateValue(value: unknown, context?: string): ValidationFailure[] {
     return validateString(value, this.minLength, this.maxLength, context)
   }
 }

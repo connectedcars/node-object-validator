@@ -1,11 +1,7 @@
 import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
-import { NotExactStringFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
+import { NotExactStringFail, RequiredFail, ValidationFailure } from '../errors'
 
-export function isExactString<T extends string>(
-  value: unknown,
-  expected: T,
-  context?: ValidationErrorContext
-): value is T {
+export function isExactString<T extends string>(value: unknown, expected: T, context?: string): value is T {
   const errors = validateExactString(value, expected, context)
   if (errors.length === 0) {
     return true
@@ -13,11 +9,7 @@ export function isExactString<T extends string>(
   return false
 }
 
-export function validateExactString(
-  value: unknown,
-  expected: string,
-  context?: ValidationErrorContext
-): ValidationFailure[] {
+export function validateExactString(value: unknown, expected: string, context?: string): ValidationFailure[] {
   if (value !== expected) {
     return [new NotExactStringFail(`Must strictly equal "${expected}" (received "${value}")`, context)]
   }
@@ -41,11 +33,11 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext,
+    context?: string,
     earlyFail?: boolean
   ): CodeGenResult {
     const expectedStr = JSON.stringify(this.expected)
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
+    const contextStr = context ? `, \`${context}\`` : ', context'
     const localValueRef = `value${id()}`
     const declarations: string[] = []
     // prettier-ignore
@@ -83,7 +75,7 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
     return `new ${this.constructor.name}(${expectedStr}${optionsStr})`
   }
 
-  protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
+  protected validateValue(value: unknown, context?: string): ValidationFailure[] {
     return validateExactString(value, this.expected, context)
   }
 }

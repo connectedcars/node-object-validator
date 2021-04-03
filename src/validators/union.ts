@@ -14,7 +14,6 @@ import {
   NotObjectFail,
   RequiredFail,
   UnionFail,
-  ValidationErrorContext,
   ValidationFailure
 } from '../errors'
 import { ExactStringValidator } from './exact-string'
@@ -23,7 +22,7 @@ import { FloatStringValidator } from './float-string'
 import { IntegerStringValidator } from './integer-string'
 import { isPlainObject, ObjectValidator } from './object'
 
-export function isUnion<T>(schema: Validator[], value: unknown, context?: ValidationErrorContext): value is T {
+export function isUnion<T>(schema: Validator[], value: unknown, context?: string): value is T {
   const errors = validateUnion(schema, value, context)
   if (errors.length === 0) {
     return true
@@ -62,7 +61,7 @@ export interface ValidateUnionOptions extends ValidateOptions {
 export function validateUnion(
   schema: Validator[],
   value: unknown,
-  context?: ValidationErrorContext,
+  context?: string,
   options?: ValidateUnionOptions
 ): ValidationFailure[] {
   const errors: ValidationFailure[] = []
@@ -84,19 +83,13 @@ export function validateUnion(
   }
 
   for (const [index, validator] of schema.entries()) {
-    const propName = `${context?.key || ''}(${index})`
-    const currentErrors = validator.validate(
-      value,
-      { key: propName },
-      { optimized: false, earlyFail: false, ...options }
-    )
+    const propName = `${context || ''}(${index})`
+    const currentErrors = validator.validate(value, propName, { optimized: false, earlyFail: false, ...options })
     if (currentErrors.length === 0) {
       return []
     } else {
       errors.push(
-        new UnionFail(`Union entry failed validation with ${currentErrors.length} errors`, currentErrors, {
-          key: propName
-        })
+        new UnionFail(`Union entry failed validation with ${currentErrors.length} errors`, currentErrors, propName)
       )
       if (options?.earlyFail) {
         return errors
@@ -129,10 +122,10 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext,
+    context?: string,
     earlyFail?: boolean
   ): CodeGenResult {
-    const contextStr = context?.key ? `, { key: \`${context.key}\` }` : ', context'
+    const contextStr = context ? `, { key: \`${context}\` }` : ', context'
     const unionValueRef = `unionValue${id()}`
     const schemaRef = `scheme${id()}`
     let imports: { [key: string]: unknown } = {
@@ -169,16 +162,12 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
     }
 
     for (const [index, validator] of this.schema.entries()) {
-      const propName = context?.key ? `${context.key}('${index}')` : `(${index})`
+      const propName = context ? `${context}('${index}')` : `(${index})`
       const [propImports, propDeclarations, propCode] = validator.codeGen(
         unionValueRef,
         `${schemaRef}[${index}]`,
         id,
-        unionKey
-          ? context
-          : {
-              key: propName
-            }
+        unionKey ? context : propName
       )
       imports = { ...imports, ...propImports }
       declarations.push(...propDeclarations)
@@ -215,7 +204,7 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
         entryCode.push(
           `  if (errors.length > 0) {`,
           `    ${unionValueRef}Errors.push(`,
-          `      new UnionFail(\`Union entry failed validation with \${errors.length} errors\`, errors, { key: \`${propName}\` })`,
+          `      new UnionFail(\`Union entry failed validation with \${errors.length} errors\`, errors, \`${propName}\`)`,
           '    )',
           `  } else {`,
           `    ${unionValueRef}Errors = []`,
@@ -264,11 +253,7 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
     return `new ${this.constructor.name}(${schemaStr}${optionsStr})`
   }
 
-  protected validateValue(
-    value: unknown,
-    context?: ValidationErrorContext,
-    options?: ValidateOptions
-  ): ValidationFailure[] {
+  protected validateValue(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
     return validateUnion(this.schema, value, context, { earlyFail: this.earlyFail, every: this.every, ...options })
   }
 }
@@ -311,7 +296,7 @@ export class DateTimeOrDateValidator<O = never> extends UnionValidator<string | 
     super([new DateTimeValidator(), new DateValidator()], options)
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext, options?: ValidateOptions): ValidationFailure[] {
+  public validate(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
     const errors = super.validate(value, context, options)
     if (errors.length === 2) {
       return [
@@ -352,7 +337,7 @@ export class FloatOrFloatStringValidator<O = never> extends UnionValidator<numbe
     }
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext, options?: ValidateOptions): ValidationFailure[] {
+  public validate(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
     const errors = super.validate(value, context, options)
     if (errors.length === 2) {
       return [new NotFloatOrFloatStringFail(`${this.errStr} (received "${value}")`)]
@@ -389,7 +374,7 @@ export class IntegerOrIntegerStringValidator<O = never> extends UnionValidator<n
     }
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext, options?: ValidateOptions): ValidationFailure[] {
+  public validate(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
     const errors = super.validate(value, context, options)
     if (errors.length === 2) {
       return [new NotIntegerOrIntegerStringFail(`${this.errStr} (received "${value}")`)]

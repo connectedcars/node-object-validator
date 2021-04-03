@@ -87,7 +87,7 @@ describe.each([false, true])('Regex (optimize: %s)', optimize => {
 
     it('requires value to show correct context on error', () => {
       const validator = new RegexMatchValidator(/^abcde/, { optimize })
-      expect(validator.validate('', { key: 'myRegex' }).map(e => e.toString())).toStrictEqual([
+      expect(validator.validate('', 'myRegex').map(e => e.toString())).toStrictEqual([
         `DoesNotMatchRegexFail: Field 'myRegex' did not match '/^abcde/' (received "")`
       ])
     })

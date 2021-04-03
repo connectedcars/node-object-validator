@@ -1,7 +1,7 @@
 import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
-import { NotDateFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
+import { NotDateFail, RequiredFail, ValidationFailure } from '../errors'
 
-export function isDate(value: unknown, context?: ValidationErrorContext): value is Date {
+export function isDate(value: unknown, context?: string): value is Date {
   const errors = validateDate(value, context)
   if (errors.length === 0) {
     return true
@@ -9,7 +9,7 @@ export function isDate(value: unknown, context?: ValidationErrorContext): value 
   return false
 }
 
-export function validateDate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
+export function validateDate(value: unknown, context?: string): ValidationFailure[] {
   if (!(value instanceof Date)) {
     return [new NotDateFail(`Must be a Date object`, context)]
   }
@@ -30,10 +30,10 @@ export class DateValidator<O = never> extends ValidatorBase<Date | O> {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext,
+    context?: string,
     earlyFail?: boolean
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
+    const contextStr = context ? `, \`${context}\`` : ', context'
     const localValueRef = `value${id()}`
     const declarations: string[] = []
     // prettier-ignore
@@ -69,7 +69,7 @@ export class DateValidator<O = never> extends ValidatorBase<Date | O> {
     return `new ${this.constructor.name}(${this.optionsString})`
   }
 
-  protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
+  protected validateValue(value: unknown, context?: string): ValidationFailure[] {
     return validateDate(value, context)
   }
 }

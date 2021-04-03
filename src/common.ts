@@ -1,4 +1,4 @@
-import { RequiredFail, ValidationErrorContext, ValidationFailure, ValidationsError } from './errors'
+import { RequiredFail, ValidationFailure, ValidationsError } from './errors'
 
 // https://stackoverflow.com/questions/51651499/typescript-what-is-a-naked-type-parameter
 // https://2ality.com/2019/07/testing-static-types.html
@@ -36,12 +36,12 @@ export interface ValidatorExportOptions {
 }
 
 export interface Validator {
-  validate(value: unknown, context?: ValidationErrorContext, options?: ValidateOptions): ValidationFailure[]
+  validate(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[]
   codeGen(
     valueRef: string,
     validatorRef: string,
     id: () => number,
-    context?: ValidationErrorContext,
+    context?: string,
     earlyFail?: boolean
   ): CodeGenResult
   toString(options?: ValidatorExportOptions): string
@@ -78,7 +78,7 @@ export abstract class ValidatorBase<T> implements Validator {
   public earlyFail: boolean
 
   protected codeGenId = 1
-  protected optimizedValidate: ((value: unknown, context?: ValidationErrorContext) => ValidationFailure[]) | null
+  protected optimizedValidate: ((value: unknown, context?: string) => ValidationFailure[]) | null
   protected optionsString: string
 
   public constructor(options?: ValidatorOptions) {
@@ -111,7 +111,7 @@ export abstract class ValidatorBase<T> implements Validator {
     }
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext, options?: ValidateOptions): ValidationFailure[] {
+  public validate(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
     if (options?.optimized !== false && this.optimizedValidate !== null) {
       return this.optimizedValidate(value, context)
     }
@@ -127,12 +127,10 @@ export abstract class ValidatorBase<T> implements Validator {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext,
+    context?: string,
     earlyFail?: boolean
   ): CodeGenResult {
-    const contextStr = context
-      ? `, { key: (context && context.key ? \`\${context.key}['${context.key}']\` : \`${context.key}\`) }`
-      : ', context'
+    const contextStr = context ? `, { key: (context ? \`\${context}['${context}']\` : \`${context}\`) }` : ', context'
     const validatorName = `validator${id()}`
     const declarations = [`const ${validatorName} = ${validatorRef}`]
     // prettier-ignore
@@ -192,9 +190,5 @@ export abstract class ValidatorBase<T> implements Validator {
 
   public abstract toString(options?: ValidatorExportOptions): string
 
-  protected abstract validateValue(
-    value: unknown,
-    context?: ValidationErrorContext,
-    options?: ValidateOptions
-  ): ValidationFailure[]
+  protected abstract validateValue(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[]
 }

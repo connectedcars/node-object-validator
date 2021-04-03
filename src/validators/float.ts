@@ -1,11 +1,11 @@
 import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
-import { NotFloatFail, OutOfRangeFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
+import { NotFloatFail, OutOfRangeFail, RequiredFail, ValidationFailure } from '../errors'
 
 export function isFloat(
   value: unknown,
   min = Number.MIN_SAFE_INTEGER,
   max = Number.MAX_SAFE_INTEGER,
-  context?: ValidationErrorContext
+  context?: string
 ): value is number {
   const errors = validateFloat(value, min, max, context)
   if (errors.length === 0) {
@@ -18,7 +18,7 @@ export function validateFloat(
   value: unknown,
   min = Number.MIN_SAFE_INTEGER,
   max = Number.MAX_SAFE_INTEGER,
-  context?: ValidationErrorContext
+  context?: string
 ): ValidationFailure[] {
   if (typeof value !== 'number' || isNaN(value) || !isFinite(value)) {
     return [new NotFloatFail(`Must be a float (received "${value}")`, context)]
@@ -48,10 +48,10 @@ export class FloatValidator<O = never> extends ValidatorBase<number | O> {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext,
+    context?: string,
     earlyFail?: boolean
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
+    const contextStr = context ? `, \`${context}\`` : ', context'
     const localValueRef = `value${id()}`
     const declarations: string[] = []
     // prettier-ignore
@@ -95,7 +95,7 @@ export class FloatValidator<O = never> extends ValidatorBase<number | O> {
     return `new ${this.constructor.name}(${minStr}${maxStr}${optionsStr})`
   }
 
-  protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
+  protected validateValue(value: unknown, context?: string): ValidationFailure[] {
     return validateFloat(value, this.min, this.max, context)
   }
 }

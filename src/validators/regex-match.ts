@@ -1,19 +1,8 @@
 import { CodeGenResult, isValidType, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
-import {
-  DoesNotMatchRegexFail,
-  NotStringFail,
-  RequiredFail,
-  ValidationErrorContext,
-  ValidationFailure,
-  WrongLengthFail
-} from '../errors'
+import { DoesNotMatchRegexFail, NotStringFail, RequiredFail, ValidationFailure, WrongLengthFail } from '../errors'
 import { validateString } from './string'
 
-export function isRegexMatch<T extends string>(
-  value: unknown,
-  regex: RegExp,
-  context?: ValidationErrorContext
-): value is T {
+export function isRegexMatch<T extends string>(value: unknown, regex: RegExp, context?: string): value is T {
   const errors = validateRegexMatch(value, regex, context)
   if (errors.length === 0) {
     return true
@@ -21,11 +10,7 @@ export function isRegexMatch<T extends string>(
   return false
 }
 
-export function validateRegexMatch(
-  value: unknown,
-  regex: RegExp,
-  context?: ValidationErrorContext
-): ValidationFailure[] {
+export function validateRegexMatch(value: unknown, regex: RegExp, context?: string): ValidationFailure[] {
   const stringError = validateString(value, 0, Number.MAX_SAFE_INTEGER, context)
   if (!isValidType<string>(value, stringError)) {
     return stringError
@@ -53,10 +38,10 @@ export class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext,
+    context?: string,
     earlyFail?: boolean
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
+    const contextStr = context ? `, \`${context}\`` : ', context'
     const localRegexRef = `regex${id()}`
     const localValueRef = `value${id()}`
     // prettier-ignore
@@ -105,7 +90,7 @@ export class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
     return `new ${this.constructor.name}(${regexStr}${optionsStr})`
   }
 
-  protected validateValue(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
+  protected validateValue(value: unknown, context?: string): ValidationFailure[] {
     return validateRegexMatch(value, this.regex, context)
   }
 }
