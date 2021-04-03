@@ -1,6 +1,5 @@
 import { isValidType, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
-import { NotIntegerStringFail, ValidationFailure, WrongLengthFail } from '../errors'
-import { validateInteger } from './integer'
+import { NotIntegerStringFail, OutOfRangeFail, ValidationFailure, WrongLengthFail } from '../errors'
 import { validateString } from './string'
 
 export function validateIntegerString(value: unknown, min: number, max: number, context?: string): ValidationFailure[] {
@@ -12,13 +11,13 @@ export function validateIntegerString(value: unknown, min: number, max: number, 
     return [new WrongLengthFail(`Must be a string with an integer`, value, context)]
   }
   const int = parseFloat(value)
-  if (int % 1 !== 0) {
+  if (!Number.isInteger(int)) {
     return [new NotIntegerStringFail(`Must be a string with an integer`, value, context)]
   }
-  if (isNaN(int)) {
-    return [new NotIntegerStringFail(`Must be a string with an integer`, value, context)]
+  if (int < min || int > max) {
+    return [new OutOfRangeFail(`Must be between ${min} and ${max}`, value, context)]
   }
-  return validateInteger(int, min, max, context)
+  return []
 }
 
 export class IntegerStringValidator<O = never> extends ValidatorBase<string | O> {

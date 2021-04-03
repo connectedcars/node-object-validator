@@ -1,6 +1,6 @@
-import { validateFloat, validateString } from '..'
+import { validateString } from '..'
 import { isValidType, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
-import { NotFloatStringFail, ValidationFailure, WrongLengthFail } from '../errors'
+import { NotFloatStringFail, OutOfRangeFail, ValidationFailure, WrongLengthFail } from '../errors'
 
 export function validateFloatString(value: unknown, min: number, max: number, context?: string): ValidationFailure[] {
   const stringError = validateString(value, 0, Number.MAX_SAFE_INTEGER, context)
@@ -11,10 +11,13 @@ export function validateFloatString(value: unknown, min: number, max: number, co
     return [new WrongLengthFail(`Must be a string with a float`, value, context)]
   }
   const float = parseFloat(value)
-  if (isNaN(float)) {
+  if (typeof float !== 'number' || isNaN(float) || !isFinite(float)) {
     return [new NotFloatStringFail(`Must be a string with a float`, value, context)]
   }
-  return validateFloat(float, min, max, context)
+  if (float < min || float > max) {
+    return [new OutOfRangeFail(`Must be between ${min} and ${max}`, value, context)]
+  }
+  return []
 }
 
 export class FloatStringValidator<O = never> extends ValidatorBase<number | O> {
