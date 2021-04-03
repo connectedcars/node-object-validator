@@ -202,7 +202,7 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
         entryCode.push(
           `  if (errors.length > 0) {`,
           `    ${unionValueRef}Errors.push(`,
-          `      new UnionFail(\`Union entry failed validation with \${errors.length} errors\`, errors, { key: '${propName}' })`,
+          `      new UnionFail(\`Union entry failed validation with \${errors.length} errors\`, errors, { key: \`${propName}\` })`,
           '    )',
           `  } else {`,
           `    ${unionValueRef}Errors = []`,
