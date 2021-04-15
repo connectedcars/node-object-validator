@@ -23,12 +23,29 @@ describe('Array', () => {
         fail('did not validate but should')
       }
     })
+    it('should fail validation', () => {
+      const value = [1, 2, 3, 'string'] as unknown
+      expect(isArray<number[]>(new RequiredInteger(), value)).toEqual(false)
+    })
+  })
+
+  describe('ArrayValidator', () => {
+    it('should return an function body', () => {
+      const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10)
+      expect(arrayValidator.codeGen('value1', 'validator1')).toMatchSnapshot()
+    })
+
+    it('should export types', () => {
+      const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10)
+      const code = arrayValidator.toString({ types: true })
+      expect(code).toEqual('Array<number>')
+    })
   })
 })
 
 describe.each([false, true])('Array (optimize: %s)', optimize => {
   describe('ArrayValidator', () => {
-    it('should validate a valid interger array in both optimized and no optimized form', () => {
+    it('should validate a valid integer array in both optimized and no optimized form', () => {
       const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10, { optimize })
       if (optimize) {
         expect(arrayValidator['optimizedValidate']).not.toBeNull()
@@ -47,12 +64,6 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
       } else {
         expect(code).toEqual('new ArrayValidator(new RequiredInteger(), 0, 10)')
       }
-    })
-
-    it('should export types', () => {
-      const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10, { optimize })
-      const code = arrayValidator.toString({ types: true })
-      expect(code).toEqual('Array<number>')
     })
 
     it('should fail validation of object', () => {

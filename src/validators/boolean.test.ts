@@ -20,6 +20,23 @@ describe('Boolean', () => {
         fail('did not validate but should')
       }
     })
+
+    it('should fail validation', () => {
+      const value = 'string' as unknown
+      expect(isBoolean(value)).toEqual(false)
+    })
+  })
+  describe('BooleanValidator', () => {
+    it('should return an function body', () => {
+      const booleanValidator = new BooleanValidator()
+      expect(booleanValidator.codeGen('value1', 'validator1')).toMatchSnapshot()
+    })
+
+    it('should export types', () => {
+      const validator = new BooleanValidator()
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('boolean')
+    })
   })
 })
 
@@ -44,12 +61,6 @@ describe.each([false, true])('Boolean (optimize: %s)', optimize => {
       } else {
         expect(code).toEqual('new BooleanValidator()')
       }
-    })
-
-    it('should export types', () => {
-      const validator = new BooleanValidator({ optimize })
-      const code = validator.toString({ types: true })
-      expect(code).toEqual('boolean')
     })
 
     it('requires value to be an boolean', () => {
