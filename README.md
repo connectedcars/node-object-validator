@@ -18,22 +18,22 @@ npm install @connectedcars/object-validator
 
 The following validators are supported:
 
-* Array (Validate an array on type using other validators and min/max length)
-* Boolean
-* Date
-* DateTime (Validate an ISO 8601 date/time string)
-* ExactString
-* FloatString (Validate a float string on min and max size)
-* Float (Validate a float on min and max size)
-* IntegerString (Validate a integer string on min and max size)
-* Integer (Validate a integer on min and max size)
-* Null
-* Object  (Validate an object using other validators)
-* RegexMatch
-* Sample (Validate an input sample mixed with validators)
-* String (Validate a string on min and max length)
-* Union (Validate a union of validators)
-* Unknown
+* [Array](#arrayvalidatorvalidator-min-max-options): Validate that a value is an array of a specific type using other validators and min/max length of array
+* [Boolean](#booleanvalidator): Validate that a value is a boolean
+* [Date](#datevalidator): Validate that a value is a JavaScript Date object
+* [DateTime](#datetimevalidator): Validate that a value is an ISO 8601 date/time string
+* [ExactString](#exactstringvalidator-expected): Validate that a value is a string that matches an exact string
+* [FloatString](#floatstringvalidator-min-max): Validate that a value is float string within a min and max limit
+* [Float](#floatvalidator-min-max): Validate that a value is a float within a min and max limit
+* [IntegerString](#integerstringvalidator-min-max): Validate that a value is a integer string within a min and max limit
+* [Integer](#integervalidator-min-max): Validate that a value is a integer within a min and max limit
+* [Null](#nullvalidator): Validate that a value is null
+* [Object](#objectvalidator-schema): Validate that a value is an object using other validators
+* [RegexMatch](#regexmatchvalidator-regex): Validate that a value is a string that matches a regular expression
+* [Sample](#samplevalidator-sample): Validate that a value matches a sample
+* [String](#stringvalidator-min-max): Validate that a value is a string within a min and max limit
+* [Union](#unionvalidator-validator): Validate that a value validates at least on validator out of a number of validators
+* [Unknown](#unknownvalidator): Validate that a value is not undefined or or unset on a object
 
 Validation functions:
 
@@ -206,16 +206,160 @@ let knownValue = objectValidator.cast(unknownValue)
 
 Alias: RequiredArray, OptionalArray
 
-```
-let arrayValidator = new ArrayValidator(new IntegerValidator(0, 10), 0, 10)
+``` typescript
+let arrayValidator = new ArrayValidator(new IntegerValidator(0, 10), 0, 2)
+arrayValidator.validate([1, 10])
 ```
 
-## ArrayValidator(validator, min, max, options)
+## BooleanValidator
 
-Alias: RequiredArray, OptionalArray
+Alias: RequiredBoolean, OptionalBoolean
 
+``` typescript
+let booleanValidator = new BooleanValidator()
+booleanValidator.validate(true)
 ```
-let arrayValidator = new ArrayValidator(new IntegerValidator(0, 10), 0, 10)
+
+# DateValidator
+
+Alias: RequiredDate, OptionalDate
+
+``` typescript
+let dateValidator = new DateValidator()
+dateValidator.validate(new Date())
+```
+
+# DateTimeValidator
+
+Alias: RequiredDateTime, OptionalDateTime
+
+``` typescript
+let dateTimeValidator = new DateTimeValidator()
+dateTimeValidator.validate('2018-08-06T13:37:00Z')
+```
+
+# ExactStringValidator(expected)
+
+Alias: RequiredExactString, OptionalExactString
+
+``` typescript
+let exactStringValidator = new ExactStringValidator('mystring')
+exactStringValidator.validate('mystring')
+```
+
+# FloatStringValidator(min, max)
+
+Alias: RequiredFloatString, OptionalFloatString
+
+``` typescript
+let floatStringValidator = new FloatStringValidator()
+floatStringValidator.validate("1.0")
+```
+
+# FloatValidator(min, max)
+
+Alias: RequiredFloat, OptionalFloat
+
+``` typescript
+let floatValidator = new FloatValidator()
+floatValidator.validate(1.0)
+```
+
+# IntegerStringValidator(min, max)
+
+Alias: RequiredIntegerString, OptionalIntegerString
+
+``` typescript
+let integerStringValidator = new IntegerStringValidator()
+integerStringValidator.validate('10')
+```
+
+# IntegerValidator(min, max)
+
+Alias: RequiredInteger, OptionalInteger
+
+``` typescript
+let integerValidator = new IntegerValidator()
+integerValidator.validate(10)
+```
+
+# NullValidator(min, max)
+
+Alias: RequiredNull, OptionalNull
+
+``` typescript
+let nullValidator = new NullValidator()
+nullValidator.validate(null)
+```
+
+# ObjectValidator(schema)
+
+Alias: RequiredObject, OptionalObject
+
+``` typescript
+let objectValidator = new ObjectValidator({
+  int: new IntegerValidator(0, 10)
+})
+objectValidator.validate({
+  int: 10
+})
+```
+
+# RegexMatchValidator(regex)
+
+Alias: RequiredRegexMatch, OptionalRegexMatch
+
+``` typescript
+let regexMatchValidator = new RegexMatchValidator(/^hello$/)
+regexMatchValidator.validate('hello')
+```
+
+# SampleValidator(sample)
+
+Alias: RequiredSample, OptionalSample
+
+``` typescript
+let sampleValidator = new SampleValidator({
+  date: '2018-08-06T13:37:00Z'
+  key: new ExactStringValidator('value')
+})
+sampleValidator.validate({
+  date: '2018-08-06T13:37:00Z',
+  key: 'value'
+})
+```
+
+# StringValidator(min, max)
+
+Alias: RequiredString, OptionalString
+
+``` typescript
+let stringValidator = new StringValidator()
+stringValidator.validate('hello1234')
+```
+
+# UnionValidator([validator, ...])
+
+Alias: RequiredUnion, OptionalUnion
+
+``` typescript
+let unionValidator = new UnionValidator([
+  new IntegerValidator(),
+  new StringValidator()
+])
+unionValidator.validate('hello')
+unionValidator.validate(10)
+```
+
+# UnknownValidator([validator, ...])
+
+Alias: RequiredUnknown, OptionalUnknown
+
+``` typescript
+let unknownValidator = new UnknownValidator()
+unknownValidator.validate('hello')
+unknownValidator.validate(10)
+unknownValidator.validate(null)
 ```
 
 # Benchmark
