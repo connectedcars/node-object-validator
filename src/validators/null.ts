@@ -33,7 +33,7 @@ export class NullValidator<O = never> extends ValidatorBase<null | O> {
           optimize: false
         })
       : ''
-    if (options?.optimize) {
+    if (options?.optimize !== false) {
       this.optimize()
     }
   }

@@ -52,7 +52,7 @@ export class ObjectValidator<T extends Record<string, unknown> = never, O = neve
   public constructor(schema: Record<string, Validator>, options?: ValidatorOptions) {
     super(options)
     this.schema = schema
-    if (options?.optimize) {
+    if (options?.optimize !== false) {
       this.optimize()
     }
   }

@@ -27,7 +27,7 @@ export class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
   public constructor(regex: RegExp, options?: ValidatorOptions) {
     super(options)
     this.regex = regex
-    if (options?.optimize) {
+    if (options?.optimize !== false) {
       this.optimize()
     }
   }

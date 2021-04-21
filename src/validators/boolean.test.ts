@@ -28,12 +28,12 @@ describe('Boolean', () => {
   })
   describe('BooleanValidator', () => {
     it('should return an function body', () => {
-      const booleanValidator = new BooleanValidator()
+      const booleanValidator = new BooleanValidator({ optimize: false })
       expect(booleanValidator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
     it('should export types', () => {
-      const validator = new BooleanValidator()
+      const validator = new BooleanValidator({ optimize: false })
       const code = validator.toString({ types: true })
       expect(code).toEqual('boolean')
     })

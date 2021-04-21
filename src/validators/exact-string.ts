@@ -22,7 +22,7 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
   public constructor(expected: string, options?: ValidatorOptions) {
     super(options)
     this.expected = expected
-    if (options?.optimize) {
+    if (options?.optimize !== false) {
       this.optimize()
     }
   }

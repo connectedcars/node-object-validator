@@ -28,7 +28,7 @@ export class FloatStringValidator<O = never> extends ValidatorBase<number | O> {
     super(options)
     this.min = min
     this.max = max
-    if (options?.optimize) {
+    if (options?.optimize !== false) {
       this.optimize()
     }
   }

@@ -28,7 +28,7 @@ export class IntegerStringValidator<O = never> extends ValidatorBase<string | O>
     super(options)
     this.min = min
     this.max = max
-    if (options?.optimize) {
+    if (options?.optimize !== false) {
       this.optimize()
     }
   }

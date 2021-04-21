@@ -70,7 +70,7 @@ export class ArrayValidator<T extends Array<unknown>, O = never> extends Validat
     this.schema = schema
     this.minLength = minLength
     this.maxLength = maxLength
-    if (options?.optimize) {
+    if (options?.optimize !== false) {
       this.optimize()
     }
   }

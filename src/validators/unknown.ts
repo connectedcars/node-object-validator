@@ -4,7 +4,7 @@ import { ValidationFailure } from '../errors'
 export class UnknownValidator<O = never> extends ValidatorBase<O> {
   public constructor(options?: ValidatorOptions) {
     super(options)
-    if (options?.optimize) {
+    if (options?.optimize !== false) {
       this.optimize()
     }
   }

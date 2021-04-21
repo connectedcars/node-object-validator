@@ -4,7 +4,7 @@ import { RequiredFail, ValidationFailure } from './errors'
 class OneValidator extends ValidatorBase<number> {
   public constructor(options?: ValidatorOptions) {
     super(options)
-    if (options?.optimize) {
+    if (options?.optimize !== false) {
       this.optimize()
     }
   }

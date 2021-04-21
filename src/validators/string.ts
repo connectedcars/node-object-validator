@@ -37,7 +37,7 @@ export class StringValidator<O = never> extends ValidatorBase<string | O> {
     super(options)
     this.minLength = minLength
     this.maxLength = maxLength
-    if (options?.optimize) {
+    if (options?.optimize !== false) {
       this.optimize()
     }
   }

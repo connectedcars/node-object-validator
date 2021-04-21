@@ -116,7 +116,7 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
     super(options)
     this.schema = schema
     this.every = options?.every ? true : false
-    if (options?.optimize) {
+    if (options?.optimize !== false) {
       this.optimize()
     }
   }
@@ -130,7 +130,7 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
     context?: string,
     earlyFail?: boolean
   ): CodeGenResult {
-    const contextStr = context ? `\`${context}\`` : ', context'
+    const contextStr = context ? `,\`${context}\`` : ', context'
     const unionValueRef = `unionValue${id()}`
     const schemaRef = `scheme${id()}`
     let imports: { [key: string]: unknown } = {
@@ -167,7 +167,7 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
     }
 
     for (const [index, validator] of this.schema.entries()) {
-      const propName = context ? `${context}('${index}')` : `(${index})`
+      const propName = context ? `${context}(${index})` : `(${index})`
       const [propImports, propDeclarations, propCode] = validator.codeGen(
         unionValueRef,
         `${schemaRef}[${index}]`,

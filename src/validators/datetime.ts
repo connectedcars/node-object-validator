@@ -26,7 +26,7 @@ export function validateDateTime(value: unknown, context?: string): ValidationFa
 export class DateTimeValidator<O = never> extends ValidatorBase<string | O> {
   public constructor(options?: ValidatorOptions) {
     super(options)
-    if (options?.optimize) {
+    if (options?.optimize !== false) {
       this.optimize()
     }
   }

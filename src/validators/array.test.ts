@@ -31,12 +31,12 @@ describe('Array', () => {
 
   describe('ArrayValidator', () => {
     it('should return an function body', () => {
-      const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10)
+      const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10, { optimize: false })
       expect(arrayValidator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
     it('should export types', () => {
-      const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10)
+      const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10, { optimize: false })
       const code = arrayValidator.toString({ types: true })
       expect(code).toEqual('Array<number>')
     })

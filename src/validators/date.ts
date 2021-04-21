@@ -19,7 +19,7 @@ export function validateDate(value: unknown, context?: string): ValidationFailur
 export class DateValidator<O = never> extends ValidatorBase<Date | O> {
   public constructor(options?: ValidatorOptions) {
     super(options)
-    if (options?.optimize) {
+    if (options?.optimize !== false) {
       this.optimize()
     }
   }

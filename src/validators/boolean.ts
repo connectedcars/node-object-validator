@@ -19,7 +19,7 @@ export function validateBoolean(value: unknown, context?: string): ValidationFai
 export class BooleanValidator<O = never> extends ValidatorBase<boolean | O> {
   public constructor(options?: ValidatorOptions) {
     super(options)
-    if (options?.optimize) {
+    if (options?.optimize !== false) {
       this.optimize()
     }
   }
