@@ -1,6 +1,6 @@
 # Object-validator
 
-Validate input data based on a defined schema with detailed errors with the same performance as you had done custom optimized code to do the validation, removing any reason to not always do validation on input.
+Validate input data based on a defined schema with detailed errors at the same performance as if you had done custom optimized code to do the validation. It's also has zero dependencies removing any reason to not always do validation on input.
 
 ## Purpose
 
@@ -38,7 +38,7 @@ The following validators are supported:
 Validation functions:
 
 * .validate(value) : Returns list of errors found in the validation
-* .isType(value, listOfErrors) : Type guard for the type
+* .isType(value, listOfErrors) : Type guard for the type to avoid doing validation twice
 * .isValid(value) : Type guard for the type
 * .cast(value) : Returns type or throws ValidationError
 * .toString() : Return validator code or TypeScript interface for the validator
@@ -477,6 +477,13 @@ const sample = {
 }
 const sampleValidator = new SampleValidator(sample, { optimize })
 const errors = sampleValidator.validate(sample)
+```
+
+Converting to a normal validator structure:
+
+``` typescript
+console.log(`interface MyType ${sampleValidator.toString()}`)
+console.log(`let myTypeValidator = ${sampleValidator.toString()}`)
 ```
 
 ## StringValidator(min, max)
