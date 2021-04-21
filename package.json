@@ -7,7 +7,7 @@
   "scripts": {
     "test": "TZ=UTC jest",
     "cov": "TZ=UTC jest --coverage=true",
-    "benchmark": "node benchmark.js",
+    "benchmark": "npm run build:js && node build/dist/src/benchmark.js",
     "build": "build src",
     "build:js": "build src --skip-typings",
     "types": "tsc --noEmit",
