@@ -32,6 +32,7 @@ The following validators are supported:
 * [RegexMatch](#regexmatchvalidatorregex): Validate that a value is a string that matches a regular expression
 * [Sample](#samplevalidatorsample): Validate that a value matches a sample
 * [String](#stringvalidatormin-max): Validate that a value is a string within a min and max limit
+* [Undefined](#undefinedvalidator): Validate that a value is undefined
 * [Union](#unionvalidatorvalidator): Validate that a value validates at least on validator out of a number of validators
 * [Unknown](#unknownvalidator): Validate that a value is not undefined or or unset on a object
 
@@ -500,6 +501,23 @@ let errors = stringValidator.validate('hello1234')
 ``` typescript
 if (isString('hello1234')) {
   console.log('Is string')
+}
+```
+
+## UndefinedValidator
+
+Alias: RequiredUndefined, OptionalUndefined
+
+Function: isUndefined
+
+``` typescript
+let undefinedValidator = new UndefinedValidator()
+let errors = undefinedValidator.validate(undefined)
+```
+
+``` typescript
+if (isUndefined(undefined)) {
+  console.log('Is undefined')
 }
 ```
 
