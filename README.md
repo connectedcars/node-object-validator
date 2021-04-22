@@ -483,7 +483,7 @@ const errors = sampleValidator.validate(sample)
 Converting to a normal validator structure:
 
 ``` typescript
-console.log(`interface MyType ${sampleValidator.toString()}`)
+console.log(`interface MyType ${sampleValidator.toString({ types: true })}`)
 console.log(`let myTypeValidator = ${sampleValidator.toString()}`)
 ```
 
