@@ -330,11 +330,11 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
 
   describe('OptionalObject', () => {
     it('accepts empty value', () => {
-      const validator = new OptionalObject({}, { optimize })
+      const validator = new OptionalObject<{ key: string }>({}, { optimize })
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
       const knownValue = validator.cast(null)
-      const itShouldCastIntToNumber: AssertEqual<typeof knownValue, Record<string, unknown> | null | undefined> = true
+      const itShouldCastIntToNumber: AssertEqual<typeof knownValue, { key: string } | null | undefined> = true
     })
   })
 })

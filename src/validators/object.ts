@@ -1,4 +1,5 @@
 import {
+  BaseObject,
   CodeGenResult,
   ValidateOptions,
   Validator,
@@ -46,7 +47,8 @@ export function validateObject(
   return errors
 }
 
-export class ObjectValidator<T extends Record<string, unknown> = never, O = never> extends ValidatorBase<T | O> {
+// TODO: Look for other places we do this and make some tests
+export class ObjectValidator<T extends BaseObject = never, O = never> extends ValidatorBase<T | O> {
   public schema: Record<string, Validator>
 
   public constructor(schema: Record<string, Validator>, options?: ValidatorOptions) {
@@ -131,13 +133,13 @@ export class ObjectValidator<T extends Record<string, unknown> = never, O = neve
   }
 }
 
-export class RequiredObject<T extends Record<string, unknown>> extends ObjectValidator<T> {
+export class RequiredObject<T extends BaseObject> extends ObjectValidator<T> {
   public constructor(schema: Record<string, Validator>, options?: ValidatorOptions) {
     super(schema, { ...options, required: true })
   }
 }
 
-export class OptionalObject<T extends Record<string, unknown>> extends ObjectValidator<T, null | undefined> {
+export class OptionalObject<T extends BaseObject> extends ObjectValidator<T, null | undefined> {
   public constructor(schema: Record<string, Validator>, options?: ValidatorOptions) {
     super(schema, { ...options, required: false })
   }

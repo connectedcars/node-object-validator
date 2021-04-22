@@ -1,3 +1,4 @@
+import { AssertEqual } from './common'
 import { NotExactStringFail, RequiredFail, UnionFail } from './errors'
 import {
   DateTimeValidator,
@@ -23,6 +24,7 @@ import {
   UnionValidator,
   UnknownValidator
 } from './index'
+import { RequiredEnum } from './validators/union'
 
 describe.each([false, true])('Shorthand validation of complex objects (optimize: %s)', optimize => {
   const validator = new ObjectValidator(
@@ -342,17 +344,52 @@ describe.each([false, true])('Complex objects with unions using full syntax (opt
     )
   })
 
-  const checkConclusionValidator = new RequiredUnion([
-    new RequiredExactString('success'),
-    new RequiredExactString('failure'),
-    new RequiredExactString('neutral'),
-    new RequiredExactString('cancelled'),
-    new RequiredExactString('skipped'),
-    new RequiredExactString('timed_out'),
-    new RequiredExactString('action_required')
+  const checkConclusionValidator = new RequiredEnum([
+    'success',
+    'failure',
+    'neutral',
+    'cancelled',
+    'skipped',
+    'timed_out',
+    'action_required'
   ])
 
-  const checkRunStartedValidator = new ObjectValidator({
+  interface CheckRunStarted {
+    name: string
+    head_sha: string
+    details_url: string
+    external_id: string
+    status: 'queued' | 'in_progress'
+    started_at: string
+    output: {
+      title: string
+      summary: string
+      text: string
+      annotations: Array<{
+        path: string
+        start_line: number
+        end_line: number
+        start_column: number
+        end_column: number
+        annotation_level: 'notice' | 'warning' | 'failure'
+        message: string
+        title: string
+        raw_details: string
+      }>
+      images: Array<{
+        alt: string
+        image_url: string
+        caption: string
+        actions: {
+          label: string
+          description: string
+          identifier: string
+        }
+      }>
+    }
+  }
+
+  const checkRunStartedValidator = new ObjectValidator<CheckRunStarted>({
     name: new RequiredString(),
     head_sha: new RequiredString(),
     details_url: new OptionalString(),
@@ -362,7 +399,44 @@ describe.each([false, true])('Complex objects with unions using full syntax (opt
     output: checkRunOutputValidator
   })
 
-  const checkRunCompletedValidator = new ObjectValidator({
+  interface CheckRunCompleted {
+    name: string
+    head_sha: string
+    details_url: string
+    external_id: string
+    status: 'completed'
+    started_at: string
+    conclusion: 'success' | 'failure' | 'neutral' | 'cancelled' | 'skipped' | 'timed_out' | 'action_required'
+    completed_at: string
+    output: {
+      title: string
+      summary: string
+      text: string
+      annotations: Array<{
+        path: string
+        start_line: number
+        end_line: number
+        start_column: number
+        end_column: number
+        annotation_level: 'notice' | 'warning' | 'failure'
+        message: string
+        title: string
+        raw_details: string
+      }>
+      images: Array<{
+        alt: string
+        image_url: string
+        caption: string
+        actions: {
+          label: string
+          description: string
+          identifier: string
+        }
+      }>
+    }
+  }
+
+  const checkRunCompletedValidator = new ObjectValidator<CheckRunCompleted>({
     name: new RequiredString(),
     head_sha: new RequiredString(),
     details_url: new OptionalString(),
@@ -374,10 +448,12 @@ describe.each([false, true])('Complex objects with unions using full syntax (opt
     output: checkRunOutputValidator
   })
 
-  const checkRunValidator = new UnionValidator([checkRunStartedValidator, checkRunCompletedValidator])
+  type CheckRun = CheckRunStarted | CheckRunCompleted
+
+  const checkRunValidator = new UnionValidator<CheckRun>([checkRunStartedValidator, checkRunCompletedValidator])
 
   it('should validate completed checkrun', () => {
-    const sample = {
+    const sample: unknown = {
       name: 'audit',
       head_sha: 'c61a4ae014360e064eb2a9f76c8a6a55d05e5b88',
       conclusion: 'success',
@@ -391,6 +467,12 @@ describe.each([false, true])('Complex objects with unions using full syntax (opt
     }
     expect(checkRunCompletedValidator.validate(sample)).toEqual([])
     expect(checkRunValidator.validate(sample)).toEqual([])
+    if (checkRunValidator.isValid(sample)) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const itShouldCastToCheckRun: AssertEqual<typeof sample, CheckRun> = true
+    } else {
+      fail('did not validate but should')
+    }
   })
 
   it('should validate completed checkrun', () => {

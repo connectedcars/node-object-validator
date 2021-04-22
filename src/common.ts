@@ -5,6 +5,10 @@ import { RequiredFail, ValidationFailure, ValidationsError } from './errors'
 // Wrapping the types in an tuple force a specific type instead of allow any in the union
 export type AssertEqual<T, Expected> = [T, Expected] extends [Expected, T] ? true : never
 
+// https://github.com/microsoft/TypeScript/issues/41746
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type BaseObject = Record<string, any>
+
 // TODO: Give better name
 export function isValidType<T>(value: unknown, errors: ValidationFailure[]): value is T {
   return errors.length === 0
