@@ -57,9 +57,9 @@ describe.each([false, true])('Boolean (optimize: %s)', optimize => {
       const validator = new BooleanValidator({ optimize })
       const code = validator.toString()
       if (optimize) {
-        expect(code).toEqual('new BooleanValidator({ optimize: true })')
-      } else {
         expect(code).toEqual('new BooleanValidator()')
+      } else {
+        expect(code).toEqual('new BooleanValidator({ optimize: false })')
       }
     })
 

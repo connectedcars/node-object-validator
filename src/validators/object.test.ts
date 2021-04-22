@@ -112,11 +112,11 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
       const code = validator.toString()
       if (optimize) {
         expect(code).toEqual(
-          `new ObjectValidator({\n  'int': new IntegerValidator(),\n  'float': new FloatValidator()\n}, { optimize: true })`
+          `new ObjectValidator({\n  'int': new IntegerValidator(),\n  'float': new FloatValidator()\n})`
         )
       } else {
         expect(code).toEqual(
-          `new ObjectValidator({\n  'int': new IntegerValidator(),\n  'float': new FloatValidator()\n})`
+          `new ObjectValidator({\n  'int': new IntegerValidator(),\n  'float': new FloatValidator()\n}, { optimize: false })`
         )
       }
     })

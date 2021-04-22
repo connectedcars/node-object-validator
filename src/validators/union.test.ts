@@ -108,7 +108,7 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
             `    'type': new RequiredExactString('error'),`,
             `    'error': new RequiredString()`,
             '  })',
-            '], { optimize: true })'
+            '])'
           ].join('\n')
         )
       } else {
@@ -127,7 +127,7 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
             `    'type': new RequiredExactString('error'),`,
             `    'error': new RequiredString()`,
             '  })',
-            '])'
+            '], { optimize: false })'
           ].join('\n')
         )
       }

@@ -46,9 +46,9 @@ describe.each([false, true])('validateExactString (optimize: %s)', optimize => {
       const validator = new ExactStringValidator('MyString', { optimize })
       const code = validator.toString()
       if (optimize) {
-        expect(code).toEqual(`new ExactStringValidator('MyString', { optimize: true })`)
-      } else {
         expect(code).toEqual(`new ExactStringValidator('MyString')`)
+      } else {
+        expect(code).toEqual(`new ExactStringValidator('MyString', { optimize: false })`)
       }
     })
 

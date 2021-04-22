@@ -60,9 +60,9 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
       const arrayValidator = new ArrayValidator(new RequiredInteger(), 0, 10, { optimize })
       const code = arrayValidator.toString()
       if (optimize) {
-        expect(code).toEqual('new ArrayValidator(new RequiredInteger(), 0, 10, { optimize: true })')
-      } else {
         expect(code).toEqual('new ArrayValidator(new RequiredInteger(), 0, 10)')
+      } else {
+        expect(code).toEqual('new ArrayValidator(new RequiredInteger(), 0, 10, { optimize: false })')
       }
     })
 

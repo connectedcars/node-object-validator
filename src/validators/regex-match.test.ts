@@ -50,9 +50,9 @@ describe.each([false, true])('Regex (optimize: %s)', optimize => {
       const validator = new RegexMatchValidator(/^.*$/i, { optimize })
       const code = validator.toString()
       if (optimize) {
-        expect(code).toEqual('new RegexMatchValidator(/^.*$/i, { optimize: true })')
-      } else {
         expect(code).toEqual('new RegexMatchValidator(/^.*$/i)')
+      } else {
+        expect(code).toEqual('new RegexMatchValidator(/^.*$/i, { optimize: false })')
       }
     })
 

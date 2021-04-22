@@ -39,9 +39,9 @@ describe.each([false, true])('String (optimize: %s)', optimize => {
       const validator = new StringValidator(1, 30, { optimize })
       const code = validator.toString()
       if (optimize) {
-        expect(code).toEqual('new StringValidator(1, 30, { optimize: true })')
-      } else {
         expect(code).toEqual('new StringValidator(1, 30)')
+      } else {
+        expect(code).toEqual('new StringValidator(1, 30, { optimize: false })')
       }
     })
 

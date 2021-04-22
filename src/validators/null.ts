@@ -30,7 +30,7 @@ export class NullValidator<O = never> extends ValidatorBase<null | O> {
           required: true,
           nullCheck: false,
           earlyFail: false,
-          optimize: false
+          optimize: true
         })
       : ''
     if (options?.optimize !== false) {

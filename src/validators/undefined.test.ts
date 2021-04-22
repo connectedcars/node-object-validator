@@ -40,9 +40,9 @@ describe.each([false, true])('Undefined (optimize: %s)', optimize => {
       const validator = new UndefinedValidator({ optimize })
       const code = validator.toString()
       if (optimize) {
-        expect(code).toEqual('new UndefinedValidator({ optimize: true })')
-      } else {
         expect(code).toEqual('new UndefinedValidator()')
+      } else {
+        expect(code).toEqual('new UndefinedValidator({ optimize: false })')
       }
     })
 

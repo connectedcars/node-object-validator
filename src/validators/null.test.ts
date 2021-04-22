@@ -40,9 +40,9 @@ describe.each([false, true])('Null (optimize: %s)', optimize => {
       const validator = new NullValidator({ optimize })
       const code = validator.toString()
       if (optimize) {
-        expect(code).toEqual('new NullValidator({ optimize: true })')
-      } else {
         expect(code).toEqual('new NullValidator()')
+      } else {
+        expect(code).toEqual('new NullValidator({ optimize: false })')
       }
     })
 

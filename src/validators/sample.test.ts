@@ -151,9 +151,9 @@ describe.each([false, true])('Sample (optimize: %s)', optimize => {
         '  }))'
       ]
       if (optimize) {
-        expect(code).toEqual([...expected, '}, { optimize: true })'].join('\n'))
-      } else {
         expect(code).toEqual([...expected, '})'].join('\n'))
+      } else {
+        expect(code).toEqual([...expected, '}, { optimize: false })'].join('\n'))
       }
     })
 

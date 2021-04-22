@@ -38,9 +38,9 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
       const validator = new FloatValidator(1, 2, { optimize })
       const code = validator.toString()
       if (optimize) {
-        expect(code).toEqual('new FloatValidator(1, 2, { optimize: true })')
-      } else {
         expect(code).toEqual('new FloatValidator(1, 2)')
+      } else {
+        expect(code).toEqual('new FloatValidator(1, 2, { optimize: false })')
       }
     })
 

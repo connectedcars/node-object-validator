@@ -40,9 +40,9 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
       const validator = new IntegerValidator(1, 30, { optimize })
       const code = validator.toString()
       if (optimize) {
-        expect(code).toEqual('new IntegerValidator(1, 30, { optimize: true })')
-      } else {
         expect(code).toEqual('new IntegerValidator(1, 30)')
+      } else {
+        expect(code).toEqual('new IntegerValidator(1, 30, { optimize: false })')
       }
     })
 

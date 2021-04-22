@@ -40,9 +40,9 @@ describe.each([false, true])('DateTime (optimize: %s)', optimize => {
       const validator = new DateTimeValidator({ optimize })
       const code = validator.toString()
       if (optimize) {
-        expect(code).toEqual('new DateTimeValidator({ optimize: true })')
-      } else {
         expect(code).toEqual('new DateTimeValidator()')
+      } else {
+        expect(code).toEqual('new DateTimeValidator({ optimize: false })')
       }
     })
 

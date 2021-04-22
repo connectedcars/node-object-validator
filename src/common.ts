@@ -86,7 +86,7 @@ export abstract class ValidatorBase<T> implements Validator {
   protected optionsString: string
 
   public constructor(options?: ValidatorOptions) {
-    const defaults = { required: true, nullCheck: true, earlyFail: false, optimize: false }
+    const defaults = { required: true, nullCheck: true, earlyFail: false, optimize: true }
     const mergedOptions = { ...defaults, ...options }
 
     this.optionsString = options ? generateOptionsString(options, defaults) : ''

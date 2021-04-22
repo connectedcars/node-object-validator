@@ -30,7 +30,7 @@ export class UndefinedValidator<O = never> extends ValidatorBase<undefined | O> 
           required: true,
           nullCheck: false,
           earlyFail: false,
-          optimize: false
+          optimize: true
         })
       : ''
     if (options?.optimize !== false) {
