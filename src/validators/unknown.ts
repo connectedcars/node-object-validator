@@ -1,12 +1,62 @@
-import { ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
-import { ValidationFailure } from '../errors'
+import {
+  CodeGenResult,
+  generateOptionsString,
+  ValidatorBase,
+  ValidatorExportOptions,
+  ValidatorOptions
+} from '../common'
+import { RequiredFail, ValidationFailure } from '../errors'
 
+// TODO: Remove null
 export class UnknownValidator<O = never> extends ValidatorBase<O> {
   public constructor(options?: ValidatorOptions) {
-    super(options)
+    super({ ...options, nullCheck: false })
+    this.optionsString = options
+      ? generateOptionsString(options, {
+          required: true,
+          nullCheck: false,
+          earlyFail: false,
+          optimize: true
+        })
+      : ''
     if (options?.optimize !== false) {
       this.optimize()
     }
+  }
+
+  public codeGen(
+    valueRef: string,
+    validatorRef: string,
+    id = () => {
+      return this.codeGenId++
+    },
+    context?: string,
+    earlyFail?: boolean
+  ): CodeGenResult {
+    const contextStr = context ? `, \`${context}\`` : ', context'
+    const localValueRef = `value${id()}`
+    const declarations: string[] = []
+    // prettier-ignore
+    const code: string[] = [
+      `const ${localValueRef} = ${valueRef}`,
+      ...(this.required ? [
+      `if (${localValueRef} === undefined) {`,
+      `  errors.push(new RequiredFail(\`Is required\`, ${localValueRef}${contextStr}))`,
+      '}'
+      ] : []),
+      ...(earlyFail ? [
+      `if (errors.length > 0) {`,
+      `  return errors`,
+      `}`] : []),
+
+    ]
+    return [
+      {
+        RequiredFail: RequiredFail
+      },
+      declarations,
+      code
+    ]
   }
 
   public toString(options?: ValidatorExportOptions): string {
@@ -16,8 +66,10 @@ export class UnknownValidator<O = never> extends ValidatorBase<O> {
     return `new ${this.constructor.name}(${this.optionsString})`
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected validateValue(_value: unknown, _context?: string): ValidationFailure[] {
+  protected validateValue(value: unknown, context?: string): ValidationFailure[] {
+    if (value === undefined) {
+      return this.required ? [new RequiredFail(`Is required`, value, context)] : []
+    }
     return []
   }
 }

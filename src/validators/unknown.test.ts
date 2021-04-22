@@ -10,6 +10,7 @@ describe.each([false, true])('Unknown (optimize: %s)', optimize => {
       } else {
         expect(validator['optimizedValidate']).toBeNull()
       }
+      expect(validator.validate(null)).toEqual([])
       expect(validator.validate('Anything')).toEqual([])
       expect(validator.validate(1)).toEqual([])
       expect(validator.validate(true)).toEqual([])
@@ -21,9 +22,9 @@ describe.each([false, true])('Unknown (optimize: %s)', optimize => {
       const validator = new UnknownValidator({ optimize })
       const code = validator.toString()
       if (optimize) {
-        expect(code).toEqual('new UnknownValidator({ optimize: true })')
-      } else {
         expect(code).toEqual('new UnknownValidator()')
+      } else {
+        expect(code).toEqual('new UnknownValidator({ optimize: false })')
       }
     })
 
@@ -36,7 +37,6 @@ describe.each([false, true])('Unknown (optimize: %s)', optimize => {
     describe('RequiredUnknown', () => {
       it('rejects empty value', () => {
         const validator = new RequiredUnknown()
-        expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required', null)])
         expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
       })
     })
