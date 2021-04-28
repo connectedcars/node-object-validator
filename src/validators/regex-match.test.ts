@@ -1,42 +1,48 @@
 import { AssertEqual } from '../common'
 import { DoesNotMatchRegexFail, NotStringFail, RequiredFail } from '../errors'
-import {
-  isRegexMatch,
-  OptionalRegexMatch,
-  RegexMatchValidator,
-  RequiredRegexMatch,
-  validateRegexMatch
-} from './regex-match'
+import { isRegexMatch, OptionalRegexMatch, RequiredRegexMatch, validateRegexMatch } from './regex-match'
 
 describe.each([false, true])('Regex (optimize: %s)', () => {
-  describe('validateRegex', () => {
+  describe('validateRegexMatch', () => {
     it('requires value to be a string', () => {
       expect(validateRegexMatch('foo', /^.*$/)).toStrictEqual([])
     })
   })
-  describe('validateRegex', () => {
+
+  describe('isRegexMatch', () => {
     it('requires value to be a string', () => {
       const value = 'foo' as unknown
       if (isRegexMatch<'foo' | 'bar'>(value, /^(foo|bar)$/)) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const itShouldCastNumberArray: AssertEqual<typeof value, 'foo' | 'bar'> = true
+        expect(true as AssertEqual<typeof value, 'foo' | 'bar'>).toEqual(true)
       } else {
         fail('did not validate but should')
       }
+    })
+
+    it('should fail validation', () => {
+      const value = 'string' as unknown
+      expect(isRegexMatch(value, /hello/)).toEqual(false)
+    })
+  })
+
+  describe('RequiredRegexMatch', () => {
+    it('should return an function body', () => {
+      const validator = new RequiredRegexMatch(/hello/, { optimize: false })
+      expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
+    })
+
+    it('should export types', () => {
+      const validator = new RequiredRegexMatch(/hello/, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('string')
     })
   })
 })
 
 describe.each([false, true])('Regex (optimize: %s)', optimize => {
-  describe('validateRegex', () => {
-    it('requires value to be a string', () => {
-      expect(validateRegexMatch('foo', /^.*$/)).toStrictEqual([])
-    })
-  })
-
   describe('RegexValidator', () => {
     it('should generate validation code and give same result', () => {
-      const validator = new RegexMatchValidator(/^.*$/, { optimize })
+      const validator = new RequiredRegexMatch(/^.*$/, { optimize })
       if (optimize) {
         expect(validator['optimizedValidate']).not.toBeNull()
       } else {
@@ -47,34 +53,40 @@ describe.each([false, true])('Regex (optimize: %s)', optimize => {
     })
 
     it('should export validator code with options', () => {
-      const validator = new RegexMatchValidator(/^.*$/i, { optimize })
+      const validator = new RequiredRegexMatch(/^.*$/i, { optimize })
       const code = validator.toString()
       if (optimize) {
-        expect(code).toEqual('new RegexMatchValidator(/^.*$/i)')
+        expect(code).toEqual('new RequiredRegexMatch(/^.*$/i)')
       } else {
-        expect(code).toEqual('new RegexMatchValidator(/^.*$/i, { optimize: false })')
+        expect(code).toEqual('new RequiredRegexMatch(/^.*$/i, { optimize: false })')
       }
     })
 
-    it('should export types', () => {
-      const validator = new RegexMatchValidator(/^.*$/i, { optimize })
-      const code = validator.toString({ types: true })
-      expect(code).toEqual(`string`)
-    })
-
-    it('requires value to be a string', () => {
-      const validator = new RegexMatchValidator(/^.*$/, { optimize })
+    it('accepts valid values', () => {
+      const validator = new RequiredRegexMatch(/^.*$/, { optimize })
       expect(validator.validate('foo')).toStrictEqual([])
       expect(validator.validate('')).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, string>).toEqual(true)
+    })
+
+    it('rejects invalid values', () => {
+      const validator = new RequiredRegexMatch(/^.*$/, { optimize })
       expect(validator.validate(1)).toStrictEqual([new NotStringFail('Must be a string', 1)])
       expect(validator.validate({})).toStrictEqual([new NotStringFail('Must be a string', {})])
       expect(validator.validate([])).toStrictEqual([new NotStringFail('Must be a string', [])])
       expect(validator.validate(true)).toStrictEqual([new NotStringFail('Must be a string', true)])
       expect(validator.validate(false)).toStrictEqual([new NotStringFail('Must be a string', false)])
+      expect(validator.validate(null)).toStrictEqual([new NotStringFail('Must be a string', null)])
+      expect(true as AssertEqual<typeof validator.tsType, string>).toEqual(true)
+    })
+
+    it('rejects undefined', () => {
+      const validator = new RequiredRegexMatch(/^.*$/, { optimize })
+      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
     })
 
     it('requires match', () => {
-      const validator = new RegexMatchValidator(/^abcde/, { optimize })
+      const validator = new RequiredRegexMatch(/^abcde/, { optimize })
       expect(validator.validate('')).toStrictEqual([new DoesNotMatchRegexFail(`Did not match '/^abcde/'`, '')])
       expect(validator.validate('abcd')).toStrictEqual([new DoesNotMatchRegexFail(`Did not match '/^abcde/'`, 'abcd')])
       expect(validator.validate('abcde')).toStrictEqual([])
@@ -82,26 +94,18 @@ describe.each([false, true])('Regex (optimize: %s)', optimize => {
     })
 
     it('requires value to show correct context on error', () => {
-      const validator = new RegexMatchValidator(/^abcde/, { optimize })
+      const validator = new RequiredRegexMatch(/^abcde/, { optimize })
       expect(validator.validate('', 'myRegex').map(e => e.toString())).toStrictEqual([
         `DoesNotMatchRegexFail: Field 'myRegex' did not match '/^abcde/' (received "")`
       ])
     })
   })
 
-  describe('OptionalRegex', () => {
-    it('rejects empty value', () => {
-      const validator = new RequiredRegexMatch(/^.*$/, { optimize })
-      expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required', null)])
-      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
-    })
-  })
-
-  describe('OptionalRegex', () => {
+  describe('OptionalRegexMatch', () => {
     it('accepts empty value', () => {
       const validator = new OptionalRegexMatch(/^.*$/, { optimize })
-      expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, string | undefined>).toEqual(true)
     })
   })
 })

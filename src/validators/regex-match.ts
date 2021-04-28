@@ -2,7 +2,7 @@ import { CodeGenResult, isValidType, ValidatorBase, ValidatorExportOptions, Vali
 import { DoesNotMatchRegexFail, NotStringFail, RequiredFail, ValidationFailure, WrongLengthFail } from '../errors'
 import { validateString } from './string'
 
-export function isRegexMatch<T extends string>(value: unknown, regex: RegExp, context?: string): value is T {
+export function isRegexMatch<T extends string = string>(value: unknown, regex: RegExp, context?: string): value is T {
   const errors = validateRegexMatch(value, regex, context)
   if (errors.length === 0) {
     return true
@@ -21,14 +21,14 @@ export function validateRegexMatch(value: unknown, regex: RegExp, context?: stri
   return []
 }
 
-export class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
+export abstract class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
   private regex: RegExp
 
   public constructor(regex: RegExp, options?: ValidatorOptions) {
     super(options)
     this.regex = regex
     if (options?.optimize !== false) {
-      this.optimize()
+      this.optimize(regex)
     }
   }
 
@@ -51,7 +51,7 @@ export class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
     // prettier-ignore
     const code: string[] = [
       `const ${localValueRef} = ${valueRef}`,
-      `if (${localValueRef} != null) {`,
+      ...this.nullCheckWrap([
       `  if (typeof ${localValueRef} === 'string') {`,
       `    if (!${localRegexRef}.test(${localValueRef})) {`,
       `      errors.push(new DoesNotMatchRegexFail(\`Did not match '${this.regex}'\`, ${localValueRef}${contextStr}))`,
@@ -59,10 +59,7 @@ export class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
       `  } else {`,
       `    errors.push(new NotStringFail(\`Must be a string\`, ${localValueRef}${contextStr}))`,
       `  }`,
-      ...(this.required ? [
-      `} else {`,
-      `  errors.push(new RequiredFail(\`Is required\`, ${localValueRef}${contextStr}))`] : []),
-      '}',
+      ], localValueRef, contextStr),
       ...(earlyFail ? [
       `if (errors.length > 0) {`,
       `  return errors`,
@@ -101,7 +98,7 @@ export class RequiredRegexMatch extends RegexMatchValidator<string> {
   }
 }
 
-export class OptionalRegexMatch extends RegexMatchValidator<undefined | null> {
+export class OptionalRegexMatch extends RegexMatchValidator<undefined> {
   public constructor(regex: RegExp, options?: ValidatorOptions) {
     super(regex, { ...options, required: false })
   }

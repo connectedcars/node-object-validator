@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`IntegerString RequiredIntegerString should return an function body 1`] = `
+Array [
+  Object {
+    "RequiredFail": [Function],
+  },
+  Array [
+    "const validator1 = validator1",
+  ],
+  Array [
+    "if (value1 !== undefined) {",
+    "  errors.push(...validator1.validateValue(value1, context))",
+    "} else {",
+    "  errors.push(new RequiredFail(\`Is required\`, value1, context))",
+    "}",
+  ],
+]
+`;

@@ -1,24 +1,23 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { AssertEqual } from '../common'
 import { NotArrayFail, NotFloatFail, NotIntegerFail, NotObjectFail, RequiredFail } from '../errors'
 import { OptionalArray, RequiredArray } from './array'
 import { OptionalDate } from './date'
-import { FloatValidator, RequiredFloat } from './float'
-import { IntegerValidator, OptionalInteger, RequiredInteger } from './integer'
-import { isObject, ObjectValidator, OptionalObject, RequiredObject, validateObject } from './object'
+import { RequiredFloat } from './float'
+import { OptionalInteger, RequiredInteger } from './integer'
+import { isObject, OptionalObject, RequiredObject, validateObject } from './object'
 import { RequiredRegexMatch } from './regex-match'
 
 describe('Object', () => {
   describe('validateObject', () => {
     it('should validate simple object', () => {
-      const value = { int: 1 } as unknown
-      const errors = validateObject(
-        {
-          int: new RequiredInteger(1, 2)
-        },
-        value
-      )
-      expect(errors).toEqual([])
+      expect(
+        validateObject(
+          {
+            int: new RequiredInteger(1, 2)
+          },
+          { int: 1 }
+        )
+      ).toEqual([])
     })
   })
 
@@ -26,26 +25,34 @@ describe('Object', () => {
     it('should cast to simple object', () => {
       const value = { int: 1 } as unknown
       if (
-        isObject<{ int: number }>(
+        isObject(
           {
             int: new RequiredInteger(1, 2)
           },
           value
         )
       ) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const itShouldCastNumberArray: AssertEqual<typeof value, { int: number }> = true
+        expect(true as AssertEqual<typeof value, { int: number }>).toEqual(true)
       } else {
         fail('did not validate but should')
       }
     })
   })
 
+  it('should fail validation', () => {
+    const value = 'string' as unknown
+    expect(
+      isObject(
+        {
+          int: new RequiredInteger(1, 2)
+        },
+        value
+      )
+    ).toEqual(false)
+  })
+
   it('should handle nested optimize', () => {
-    // Un optimized top validator should not include nested optimized validators
-    const objectValidator = new RequiredObject<{
-      requiredObject: { optionalInt?: number }
-    }>(
+    const objectValidator = new RequiredObject(
       {
         requiredObject: new RequiredObject(
           {
@@ -54,7 +61,7 @@ describe('Object', () => {
           { optimize: true }
         )
       },
-      { optimize: true }
+      { optimize: false }
     )
 
     const unknownValue: unknown = {
@@ -66,12 +73,36 @@ describe('Object', () => {
       new NotIntegerFail(`Must be an integer`, '1', "requiredObject['optionalInt']")
     ])
   })
+
+  describe('RequiredInteger', () => {
+    it('should return an function body', () => {
+      const validator = new RequiredObject(
+        {
+          int: new RequiredInteger(1, 2)
+        },
+        { optimize: false }
+      )
+      expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
+    })
+
+    it('should export types', () => {
+      const validator = new RequiredObject(
+        {
+          int: new RequiredInteger(1, 2),
+          float: new RequiredFloat(1, 2)
+        },
+        { optimize: false }
+      )
+      const code = validator.toString({ types: true })
+      expect(code).toEqual(`{\n  'int': number\n  'float': number\n}`)
+    })
+  })
 })
 
 describe.each([false, true])('Object (optimize: %s)', optimize => {
   describe('ObjectValidator', () => {
-    it('should validation and give expected result', () => {
-      const objectValidator = new ObjectValidator(
+    it('should generate validation code and give same result', () => {
+      const objectValidator = new RequiredObject(
         {
           int: new RequiredInteger(1, 2),
           optionalInt: new OptionalInteger(1, 2),
@@ -108,27 +139,84 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
     })
 
     it('should export validator code with options', () => {
-      const validator = new ObjectValidator({ int: new IntegerValidator(), float: new FloatValidator() }, { optimize })
+      const validator = new RequiredObject({ int: new RequiredInteger(), float: new RequiredFloat() }, { optimize })
       const code = validator.toString()
       if (optimize) {
         expect(code).toEqual(
-          `new ObjectValidator({\n  'int': new IntegerValidator(),\n  'float': new FloatValidator()\n})`
+          `new RequiredObject({\n  'int': new RequiredInteger(),\n  'float': new RequiredFloat()\n})`
         )
       } else {
         expect(code).toEqual(
-          `new ObjectValidator({\n  'int': new IntegerValidator(),\n  'float': new FloatValidator()\n}, { optimize: false })`
+          `new RequiredObject({\n  'int': new RequiredInteger(),\n  'float': new RequiredFloat()\n}, { optimize: false })`
         )
       }
     })
 
-    it('should export types', () => {
-      const validator = new ObjectValidator({ int: new IntegerValidator(), float: new FloatValidator() }, { optimize })
-      const code = validator.toString({ types: true })
-      expect(code).toEqual(`{\n  'int': number\n  'float': number\n}`)
+    it('accepts valid values', () => {
+      const validator = new RequiredObject(
+        {
+          int: new RequiredInteger(1, 2),
+          optionalInt: new OptionalInteger(1, 2),
+          requiredObject: new RequiredObject({
+            int: new RequiredInteger(1, 2),
+            optionalInt: new OptionalInteger(1, 2)
+          }),
+          optionalArray: new OptionalArray(new RequiredInteger(1, 2)),
+          optionalArrayArray: new OptionalArray(new RequiredArray(new RequiredInteger(1, 2)))
+        },
+        { optimize }
+      )
+      const unknownValue: unknown = {
+        int: 1,
+        optionalInt: 1,
+        requiredObject: {
+          int: 1
+        },
+        optionalArray: [1],
+        optionalArrayArray: [[1]]
+      }
+      expect(validator.validate(unknownValue)).toEqual([])
+    })
+
+    it('rejects invalid values', () => {
+      const validator = new RequiredObject(
+        {
+          int: new RequiredInteger(1, 2),
+          optionalInt: new OptionalInteger(1, 2),
+          requiredObject: new RequiredObject({
+            int: new RequiredInteger(1, 2),
+            optionalInt: new OptionalInteger(1, 2)
+          }),
+          optionalArray: new OptionalArray(new RequiredInteger(1, 2)),
+          optionalArrayArray: new OptionalArray(new RequiredArray(new RequiredInteger(1, 2)))
+        },
+        { optimize }
+      )
+      const unknownValue: unknown = {
+        int: 1,
+        optionalInt: 1,
+        requiredObject: {
+          int: 1,
+          optionalInt: '1'
+        },
+        optionalArray: ['1'],
+        optionalArrayArray: [1]
+      }
+      expect(validator.validate(unknownValue)).toEqual([
+        new NotIntegerFail(`Must be an integer`, '1', "requiredObject['optionalInt']"),
+        new NotIntegerFail(`Must be an integer`, '1', 'optionalArray[0]'),
+        new NotArrayFail(`Must be an array`, 1, 'optionalArrayArray[0]')
+      ])
+      expect(validator.validate(null)).toStrictEqual([new NotObjectFail('Must be an object', null)])
+    })
+
+    it('rejects undefined', () => {
+      const validator = new RequiredObject({}, { optimize })
+      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
     })
 
     it('should fail validation of wrong key types', () => {
-      const validator = new ObjectValidator({ int: new IntegerValidator(), float: new FloatValidator() }, { optimize })
+      const validator = new RequiredObject({ int: new RequiredInteger(), float: new RequiredFloat() }, { optimize })
       expect(validator.validate({ int: '', float: '' })).toStrictEqual([
         new NotIntegerFail('Must be an integer', '', 'int'),
         new NotFloatFail('Must be a float', '', 'float')
@@ -136,23 +224,61 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
     })
 
     it('should fail validation early of wrong key types', () => {
-      const validator = new ObjectValidator(
-        { int: new IntegerValidator(), float: new FloatValidator() },
+      const validator = new RequiredObject(
+        { int: new RequiredInteger(), float: new RequiredFloat() },
         { optimize, earlyFail: true }
       )
       const errors = validator.validate({ int: '', float: '' })
       expect(errors.length).toEqual(1)
     })
 
+    it('should cast type guard correctly for isType', () => {
+      const validator = new RequiredObject(
+        {
+          int: new RequiredInteger(1, 2),
+          optionalInt: new OptionalInteger(1, 2),
+          requiredObject: new RequiredObject({
+            int: new RequiredInteger(1, 2),
+            optionalInt: new OptionalInteger(1, 2)
+          }),
+          optionalArray: new OptionalArray(new RequiredInteger(1, 2)),
+          optionalArrayArray: new OptionalArray(new RequiredArray(new RequiredInteger(1, 2)))
+        },
+        { optimize }
+      )
+      const unknownValue: unknown = {
+        int: 1,
+        optionalInt: 1,
+        requiredObject: {
+          int: 1
+        },
+        optionalArray: [1],
+        optionalArrayArray: [[1]]
+      }
+      const errors = validator.validate(unknownValue)
+      if (validator.isType(unknownValue, errors)) {
+        expect(
+          true as AssertEqual<
+            typeof unknownValue,
+            {
+              int: number
+              requiredObject: {
+                int: number
+                optionalInt?: number | undefined
+              }
+              optionalInt?: number | undefined
+              optionalArray?: number[] | undefined
+              optionalArrayArray?: number[][] | undefined
+            }
+          >
+        ).toEqual(true)
+      } else {
+        expect('did not validate but should').toBe('')
+      }
+    })
+
     it('should cast type guard correctly for isValid', () => {
-      const objectValidator = new ObjectValidator<{
-        int: number
-        float: number
-        optionalInt?: number
-        requiredObject: { int: number; optionalInt?: number }
-        optionalArray?: number[]
-        optionalArrayArray?: number[][]
-      }>(
+      const objectValidator = new RequiredObject(
         {
           int: new RequiredInteger(1, 2),
           float: new RequiredFloat(1, 2),
@@ -178,15 +304,29 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
         optionalArrayArray: [[1]]
       }
       if (objectValidator.isValid(unknownValue)) {
-        const itShouldCastIntToNumber: AssertEqual<typeof unknownValue.int, number> = true
-        const itShouldCastFloatToNumber: AssertEqual<typeof unknownValue.float, number> = true
+        expect(
+          true as AssertEqual<
+            typeof unknownValue,
+            {
+              int: number
+              float: number
+              requiredObject: {
+                int: number
+                optionalInt?: number | undefined
+              }
+              optionalInt?: number | undefined
+              optionalArray?: number[] | undefined
+              optionalArrayArray?: number[][] | undefined
+            }
+          >
+        ).toEqual(true)
       } else {
         fail('did not validate but should')
       }
     })
 
     it('should cast to known type', () => {
-      const objectValidator = new ObjectValidator<{ int: number }>(
+      const objectValidator = new RequiredObject(
         {
           int: new RequiredInteger(1, 2)
         },
@@ -198,12 +338,19 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
       }
       expect(() => {
         const knownValue = objectValidator.cast(unknownValue)
-        const itShouldCastIntToNumber: AssertEqual<typeof knownValue.int, number> = true
+        expect(
+          true as AssertEqual<
+            typeof knownValue,
+            {
+              int: number
+            }
+          >
+        ).toEqual(true)
       }).not.toThrow()
     })
 
     it('should fail to cast', () => {
-      const objectValidator = new ObjectValidator<{ int: number }>(
+      const objectValidator = new RequiredObject(
         {
           int: new RequiredInteger(1, 2)
         },
@@ -215,12 +362,19 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
       }
       expect(() => {
         const knownValue = objectValidator.cast(unknownValue)
-        const itShouldCastIntToNumber: AssertEqual<typeof knownValue.int, number> = true
+        expect(
+          true as AssertEqual<
+            typeof knownValue,
+            {
+              int: number
+            }
+          >
+        ).toEqual(true)
       }).toThrow()
     })
 
-    it('should reject non object values', () => {
-      const validator = new ObjectValidator({}, { optimize })
+    it('requires value to show correct context on error', () => {
+      const validator = new RequiredObject({}, { optimize })
       expect(validator.validate([]).map(e => e.toString())).toStrictEqual([
         'NotObjectFail: Must be an object (received "")'
       ])
@@ -236,105 +390,12 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
     })
   })
 
-  describe('RequiredObject', () => {
-    const objectValidator = new RequiredObject<{
-      int: number
-      float: number
-      optionalInt?: number
-      requiredObject: { int: number; optionalInt?: number }
-      optionalArray?: number[]
-      optionalArrayArray?: number[][]
-    }>(
-      {
-        int: new RequiredInteger(1, 2),
-        optionalInt: new OptionalInteger(1, 2),
-        requiredObject: new RequiredObject({
-          int: new RequiredInteger(1, 2),
-          optionalInt: new OptionalInteger(1, 2)
-        }),
-        optionalArray: new OptionalArray(new RequiredInteger(1, 2)),
-        optionalArrayArray: new OptionalArray(new RequiredArray(new RequiredInteger(1, 2)))
-      },
-      { optimize }
-    )
-
-    it('rejects empty value', () => {
-      const validator = new RequiredObject({}, { optimize })
-      expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required', null)])
-      expect(validator.validate(undefined as unknown)).toStrictEqual([new RequiredFail('Is required', undefined)])
-    })
-
-    it('validates correct value', () => {
-      const unknownValue: unknown = {
-        int: 1,
-        optionalInt: 1,
-        requiredObject: {
-          int: 1
-        },
-        optionalArray: [1],
-        optionalArrayArray: [[1]]
-      }
-      expect(objectValidator.validate(unknownValue)).toEqual([])
-    })
-
-    it('rejects wrong types', () => {
-      const unknownValue: unknown = {
-        int: 1,
-        optionalInt: 1,
-        requiredObject: {
-          int: 1,
-          optionalInt: '1'
-        },
-        optionalArray: ['1'],
-        optionalArrayArray: [1]
-      }
-      expect(objectValidator.validate(unknownValue)).toEqual([
-        new NotIntegerFail(`Must be an integer`, '1', "requiredObject['optionalInt']"),
-        new NotIntegerFail(`Must be an integer`, '1', 'optionalArray[0]'),
-        new NotArrayFail(`Must be an array`, 1, 'optionalArrayArray[0]')
-      ])
-    })
-
-    it('should cast type guard correctly for isType', () => {
-      const unknownValue: unknown = {
-        int: 1,
-        optionalInt: 1,
-        requiredObject: {
-          int: 1
-        },
-        optionalArray: [1],
-        optionalArrayArray: [[1]]
-      }
-      const errors = objectValidator.validate(unknownValue)
-      if (objectValidator.isType(unknownValue, errors)) {
-        const itShouldCastIntToNumber: AssertEqual<typeof unknownValue.int, number> = true
-      } else {
-        expect('did not validate but should').toBe('')
-      }
-    })
-
-    it('should cast type guard correctly for cast', () => {
-      const unknownValue: unknown = {
-        int: 1,
-        optionalInt: 1,
-        requiredObject: {
-          int: 1
-        },
-        optionalArray: [1],
-        optionalArrayArray: [[1]]
-      }
-      const knownValue = objectValidator.cast(unknownValue)
-      const itShouldCastIntToNumber: AssertEqual<typeof knownValue.int, number> = true
-    })
-  })
-
   describe('OptionalObject', () => {
     it('accepts empty value', () => {
-      const validator = new OptionalObject<{ key: string }>({}, { optimize })
-      expect(validator.validate(null)).toStrictEqual([])
+      const validator = new OptionalObject({}, { optimize })
       expect(validator.validate(undefined)).toStrictEqual([])
-      const knownValue = validator.cast(null)
-      const itShouldCastIntToNumber: AssertEqual<typeof knownValue, { key: string } | null | undefined> = true
+      const knownValue = validator.cast(undefined)
+      expect(true as AssertEqual<typeof knownValue, Record<string, any> | undefined>).toEqual(true)
     })
   })
 })

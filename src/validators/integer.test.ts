@@ -1,12 +1,11 @@
 import { AssertEqual } from '../common'
 import { NotIntegerFail, OutOfRangeFail, RequiredFail } from '../errors'
-import { IntegerValidator, isInteger, OptionalInteger, RequiredInteger, validateInteger } from './integer'
+import { isInteger, OptionalInteger, RequiredInteger, validateInteger } from './integer'
 
 describe('Integer', () => {
   describe('validateInteger', () => {
     it('requires value to be an integer', () => {
-      const value = 0 as unknown
-      expect(validateInteger(value, -1, 1)).toStrictEqual([])
+      expect(validateInteger(0, -1, 1)).toStrictEqual([])
     })
   })
 
@@ -14,11 +13,27 @@ describe('Integer', () => {
     it('should cast value to number', () => {
       const value = 0 as unknown
       if (isInteger(value)) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const itShouldCastNumberArray: AssertEqual<typeof value, number> = true
+        expect(true as AssertEqual<typeof value, number>).toEqual(true)
       } else {
         fail('did not validate but should')
       }
+    })
+    it('should fail validation', () => {
+      const value = 'string' as unknown
+      expect(isInteger(value)).toEqual(false)
+    })
+  })
+
+  describe('RequiredInteger', () => {
+    it('should return an function body', () => {
+      const validator = new RequiredInteger(0, 10, { optimize: false })
+      expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
+    })
+
+    it('should export types', () => {
+      const validator = new RequiredInteger(0, 10, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('number')
     })
   })
 })
@@ -26,7 +41,7 @@ describe('Integer', () => {
 describe.each([false, true])('Integer (optimize: %s)', optimize => {
   describe('IntegerValidator', () => {
     it('should generate validation code and give same result', () => {
-      const validator = new IntegerValidator(1, 30, { optimize })
+      const validator = new RequiredInteger(1, 30, { optimize })
       if (optimize) {
         expect(validator['optimizedValidate']).not.toBeNull()
       } else {
@@ -37,26 +52,25 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
     })
 
     it('should export validator code with options', () => {
-      const validator = new IntegerValidator(1, 30, { optimize })
+      const validator = new RequiredInteger(1, 30, { optimize })
       const code = validator.toString()
       if (optimize) {
-        expect(code).toEqual('new IntegerValidator(1, 30)')
+        expect(code).toEqual('new RequiredInteger(1, 30)')
       } else {
-        expect(code).toEqual('new IntegerValidator(1, 30, { optimize: false })')
+        expect(code).toEqual('new RequiredInteger(1, 30, { optimize: false })')
       }
     })
 
-    it('should export types', () => {
-      const validator = new IntegerValidator(1, 30, { optimize })
-      const code = validator.toString({ types: true })
-      expect(code).toEqual('number')
-    })
-
-    it('requires value to be an integer', () => {
-      const validator = new IntegerValidator(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, { optimize })
+    it('accepts valid values', () => {
+      const validator = new RequiredInteger(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(0)).toStrictEqual([])
       expect(validator.validate(1)).toStrictEqual([])
       expect(validator.validate(123)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, number>).toEqual(true)
+    })
+
+    it('rejects invalid values', () => {
+      const validator = new RequiredInteger(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(123.9)).toStrictEqual([new NotIntegerFail('Must be an integer', 123.9)])
       expect(validator.validate('1')).toStrictEqual([new NotIntegerFail('Must be an integer', '1')])
       expect(validator.validate('')).toStrictEqual([new NotIntegerFail('Must be an integer', '')])
@@ -64,10 +78,27 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
       expect(validator.validate([])).toStrictEqual([new NotIntegerFail('Must be an integer', [])])
       expect(validator.validate(true)).toStrictEqual([new NotIntegerFail('Must be an integer', true)])
       expect(validator.validate(false)).toStrictEqual([new NotIntegerFail('Must be an integer', false)])
+      expect(validator.validate(null)).toStrictEqual([new NotIntegerFail('Must be an integer', null)])
+      expect(true as AssertEqual<typeof validator.tsType, number>).toEqual(true)
+    })
+
+    it('rejects undefined', () => {
+      const validator = new RequiredInteger(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, { optimize })
+      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
+    })
+
+    it('should cast type guard correctly for isValid', () => {
+      const validator = new RequiredInteger()
+      const value: unknown = 10
+      if (validator.isValid(value)) {
+        expect(true as AssertEqual<typeof value, number>).toEqual(true)
+      } else {
+        fail('did not validate but should')
+      }
     })
 
     it('requires min value', () => {
-      const validator = new IntegerValidator(5, 500, { optimize })
+      const validator = new RequiredInteger(5, 500, { optimize })
       expect(validator.validate(-1)).toStrictEqual([new OutOfRangeFail('Must be between 5 and 500', -1)])
       expect(validator.validate(0)).toStrictEqual([new OutOfRangeFail('Must be between 5 and 500', 0)])
       expect(validator.validate(1)).toStrictEqual([new OutOfRangeFail('Must be between 5 and 500', 1)])
@@ -80,7 +111,7 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
     })
 
     it('requires max value', () => {
-      const validator = new IntegerValidator(-500, 5, { optimize })
+      const validator = new RequiredInteger(-500, 5, { optimize })
       expect(validator.validate(-1)).toStrictEqual([])
       expect(validator.validate(0)).toStrictEqual([])
       expect(validator.validate(1)).toStrictEqual([])
@@ -91,21 +122,20 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
       expect(validator.validate(6)).toStrictEqual([new OutOfRangeFail('Must be between -500 and 5', 6)])
       expect(validator.validate(7)).toStrictEqual([new OutOfRangeFail('Must be between -500 and 5', 7)])
     })
-  })
 
-  describe('RequiredInteger', () => {
-    it('rejects empty value', () => {
-      const validator = new RequiredInteger(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, { optimize })
-      expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required', null)])
-      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
+    it('requires value to show correct context on error', () => {
+      const validator = new RequiredInteger(0, 10, { optimize })
+      expect(validator.validate('', 'int').map(e => e.toString())).toStrictEqual([
+        `NotIntegerFail: Field 'int' must be an integer (received "")`
+      ])
     })
   })
 
   describe('OptionalInteger', () => {
     it('accepts empty value', () => {
       const validator = new OptionalInteger(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, { optimize })
-      expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, number | undefined>).toEqual(true)
     })
   })
 })

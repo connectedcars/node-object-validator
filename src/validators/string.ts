@@ -29,7 +29,7 @@ export function validateString(
   return []
 }
 
-export class StringValidator<O = never> extends ValidatorBase<string | O> {
+export abstract class StringValidator<O = never> extends ValidatorBase<string | O> {
   private minLength: number
   private maxLength: number
 
@@ -57,7 +57,7 @@ export class StringValidator<O = never> extends ValidatorBase<string | O> {
     // prettier-ignore
     const code: string[] = [
       `const ${localValueRef} = ${valueRef}`,
-      `if (${localValueRef} != null) {`,
+      ...this.nullCheckWrap([
       `  if (typeof ${localValueRef} === 'string') {`,
       `    if (${this.minLength ? `${localValueRef}.length < ${this.minLength} || ` : '' }${localValueRef}.length > ${this.maxLength}) {`,
       `      errors.push(new WrongLengthFail(\`Must contain between ${this.minLength} and ${this.maxLength} characters\`, ${localValueRef}${contextStr}))`,
@@ -65,10 +65,7 @@ export class StringValidator<O = never> extends ValidatorBase<string | O> {
       `  } else {`,
       `    errors.push(new NotStringFail(\`Must be a string\`, ${localValueRef}${contextStr}))`,
       `  }`,
-      ...(this.required ? [
-      `} else {`,
-      `  errors.push(new RequiredFail(\`Is required\`, ${localValueRef}${contextStr}))`] : []),
-      '}',
+      ], localValueRef, contextStr),
       ...(earlyFail ? [
       `if (errors.length > 0) {`,
       `  return errors`,
@@ -106,7 +103,7 @@ export class RequiredString extends StringValidator {
   }
 }
 
-export class OptionalString extends StringValidator<undefined | null> {
+export class OptionalString extends StringValidator<undefined> {
   public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super(minLength, maxLength, { ...options, required: false })
   }

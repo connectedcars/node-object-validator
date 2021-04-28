@@ -3,7 +3,10 @@ import { RequiredFail, ValidationFailure, ValidationsError } from './errors'
 // https://stackoverflow.com/questions/51651499/typescript-what-is-a-naked-type-parameter
 // https://2ality.com/2019/07/testing-static-types.html
 // Wrapping the types in an tuple force a specific type instead of allow any in the union
-export type AssertEqual<T, Expected> = [T, Expected] extends [Expected, T] ? true : never
+export class AssertEqualError extends Error {}
+export type AssertEqual<T, Expected> = [T, Expected] extends [Expected, T] ? true : AssertEqualError
+
+export type ReturnEqual<T, C> = [T, C] extends [C, T] ? C : never
 
 // https://github.com/microsoft/TypeScript/issues/41746
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -26,7 +29,7 @@ export type ValidatorOptions = {
    */
   optimize?: boolean
   required?: boolean
-  nullCheck?: boolean
+  nullable?: boolean
   earlyFail?: boolean
 }
 
@@ -39,19 +42,7 @@ export interface ValidatorExportOptions {
   types?: boolean
 }
 
-export interface Validator {
-  validate(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[]
-  codeGen(
-    valueRef: string,
-    validatorRef: string,
-    id: () => number,
-    context?: string,
-    earlyFail?: boolean
-  ): CodeGenResult
-  toString(options?: ValidatorExportOptions): string
-}
-
-export function isValidator(value: unknown): value is Validator {
+export function isValidator(value: unknown): value is ValidatorBase {
   if (value instanceof ValidatorBase) {
     return true
   }
@@ -63,8 +54,8 @@ export function generateOptionsString(options: ValidatorOptions, defaults: Requi
   if (options.required !== undefined && options.required !== defaults.required) {
     selectedOptions.push(`required: ${options.required}`)
   }
-  if (options.nullCheck !== undefined && options.nullCheck !== defaults.nullCheck) {
-    selectedOptions.push(`nullCheck: ${options.nullCheck}`)
+  if (options.nullable !== undefined && options.nullable !== defaults.nullable) {
+    selectedOptions.push(`nullable: ${options.nullable}`)
   }
   if (options.earlyFail !== undefined && options.earlyFail !== defaults.earlyFail) {
     selectedOptions.push(`earlyFail: ${options.earlyFail}`)
@@ -75,10 +66,10 @@ export function generateOptionsString(options: ValidatorOptions, defaults: Requi
   return selectedOptions.length > 0 ? `{ ${selectedOptions.join(', ')} }` : ''
 }
 
-export abstract class ValidatorBase<T> implements Validator {
-  public schema?: unknown
+export abstract class ValidatorBase<T = unknown> {
+  public tsType!: T
   public required: boolean
-  public nullCheck: boolean
+  public nullable: boolean
   public earlyFail: boolean
 
   protected codeGenId = 1
@@ -86,29 +77,29 @@ export abstract class ValidatorBase<T> implements Validator {
   protected optionsString: string
 
   public constructor(options?: ValidatorOptions) {
-    const defaults = { required: true, nullCheck: true, earlyFail: false, optimize: true }
+    const defaults = { required: true, nullable: false, earlyFail: false, optimize: true }
     const mergedOptions = { ...defaults, ...options }
 
     this.optionsString = options ? generateOptionsString(options, defaults) : ''
 
     this.required = mergedOptions.required
-    this.nullCheck = mergedOptions.nullCheck
     this.earlyFail = mergedOptions.earlyFail
+    this.nullable = mergedOptions.nullable
     this.optimizedValidate = null
   }
 
-  public isValid(obj: unknown): obj is T {
+  public isValid<C extends T>(obj: unknown): obj is ReturnEqual<T, C> {
     const errors = this.validate(obj)
     return errors.length === 0
   }
 
-  public isType(obj: unknown, errors: ValidationFailure[]): obj is T {
+  public isType<C extends T>(obj: unknown, errors: ValidationFailure[]): obj is ReturnEqual<T, C> {
     return errors.length === 0
   }
 
-  public cast(obj: unknown): T {
+  public cast<C extends T>(obj: unknown): ReturnEqual<T, C> {
     const errors = this.validate(obj)
-    if (this.isType(obj, errors)) {
+    if (this.isType<C>(obj, errors)) {
       return obj
     } else {
       throw new ValidationsError('One of more validations failed', errors)
@@ -119,7 +110,10 @@ export abstract class ValidatorBase<T> implements Validator {
     if (options?.optimized !== false && this.optimizedValidate !== null) {
       return this.optimizedValidate(value, context)
     }
-    if (this.nullCheck && value == null) {
+    if (this.nullable && value === null) {
+      return []
+    }
+    if (value === undefined) {
       return this.required ? [new RequiredFail(`Is required`, value, context)] : []
     }
     return this.validateValue(value, context, { earlyFail: this.earlyFail, optimized: false, ...options })
@@ -139,12 +133,9 @@ export abstract class ValidatorBase<T> implements Validator {
     const declarations = [`const ${validatorName} = ${validatorRef}`]
     // prettier-ignore
     const code: string[] = [
-      `if (${valueRef} != null) {`,
-      `  errors.push(...${validatorName}.validateValue(${valueRef}${contextStr}))`,
-      ...(this.required ? [
-      `} else {`,
-      `  errors.push(new RequiredFail(\`Is required\`, ${valueRef}${contextStr}))`] : []),
-      '}',
+      ...this.nullCheckWrap([
+        `  errors.push(...${validatorName}.validateValue(${valueRef}${contextStr}))`,
+      ],valueRef, contextStr),
       ...(this.earlyFail || earlyFail ? [
       `if (errors.length > 0) {`,
       `  return errors`,
@@ -159,7 +150,39 @@ export abstract class ValidatorBase<T> implements Validator {
     ]
   }
 
-  protected optimize(): void {
+  protected nullCheckWrap(code: string[], valueRef: string, contextStr: string): string[] {
+    const result: string[] = []
+    if (this.required) {
+      if (this.nullable) {
+        result.push(`if (${valueRef} !== undefined) {`)
+        result.push(`  if (${valueRef} !== null) {`)
+        result.push(...code)
+        result.push(`  }`)
+        result.push(`} else {`)
+        result.push(`  errors.push(new RequiredFail(\`Is required\`, ${valueRef}${contextStr}))`)
+        result.push(`}`)
+      } else {
+        result.push(`if (${valueRef} !== undefined) {`)
+        result.push(...code)
+        result.push(`} else {`)
+        result.push(`  errors.push(new RequiredFail(\`Is required\`, ${valueRef}${contextStr}))`)
+        result.push(`}`)
+      }
+    } else {
+      if (this.nullable) {
+        result.push(`if (${valueRef} != null) {`)
+        result.push(...code)
+        result.push(`}`)
+      } else {
+        result.push(`if (${valueRef} !== undefined) {`)
+        result.push(...code)
+        result.push(`}`)
+      }
+    }
+    return result
+  }
+
+  protected optimize(schema?: unknown): void {
     const [imports, declarations, code] = this.codeGen(
       'value',
       'schema',
@@ -183,7 +206,7 @@ export abstract class ValidatorBase<T> implements Validator {
     try {
       const functionGenerator = new Function('imports', 'schema', functionBody)
       const validateFunction = functionGenerator(imports, {
-        schema: this.schema,
+        schema,
         validateValue: this.validateValue.bind(this)
       })
       this.optimizedValidate = validateFunction

@@ -16,7 +16,7 @@ export function validateDate(value: unknown, context?: string): ValidationFailur
   return []
 }
 
-export class DateValidator<O = never> extends ValidatorBase<Date | O> {
+export abstract class DateValidator<O = never> extends ValidatorBase<Date | O> {
   public constructor(options?: ValidatorOptions) {
     super(options)
     if (options?.optimize !== false) {
@@ -39,14 +39,11 @@ export class DateValidator<O = never> extends ValidatorBase<Date | O> {
     // prettier-ignore
     const code: string[] = [
       `const ${localValueRef} = ${valueRef}`,
-      `if (${localValueRef} != null) {`,
+     ...this.nullCheckWrap([
       `  if (!(${localValueRef} instanceof Date)) {`,
       `    errors.push(new NotDateFail(\`Must be a Date object\`, ${localValueRef}${contextStr}))`,
       `  }`,
-      ...(this.required ? [
-      `} else {`,
-      `  errors.push(new RequiredFail(\`Is required\`, ${localValueRef}${contextStr}))`] : []),
-      '}',
+      ], localValueRef, contextStr),
       ...(earlyFail ? [
       `if (errors.length > 0) {`,
       `  return errors`,
@@ -80,7 +77,7 @@ export class RequiredDate extends DateValidator {
   }
 }
 
-export class OptionalDate extends DateValidator<null | undefined> {
+export class OptionalDate extends DateValidator<undefined> {
   public constructor(options?: ValidatorOptions) {
     super({ ...options, required: false })
   }

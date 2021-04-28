@@ -1,20 +1,13 @@
-import {
-  CodeGenResult,
-  ValidateOptions,
-  Validator,
-  ValidatorBase,
-  ValidatorExportOptions,
-  ValidatorOptions
-} from '../common'
+import { CodeGenResult, ValidateOptions, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotArrayFail, RequiredFail, ValidationFailure, WrongLengthFail } from '../errors'
 
-export function isArray<T>(
-  schema: Validator,
+export function isArray<T extends ValidatorBase>(
+  schema: T,
   value: unknown,
   minLength = 0,
   maxLength = Number.MAX_SAFE_INTEGER,
   context?: string
-): value is T {
+): value is Array<T['tsType']> {
   const errors = validateArray(schema, value, minLength, maxLength, context, { earlyFail: true })
   if (errors.length === 0) {
     return true
@@ -23,7 +16,7 @@ export function isArray<T>(
 }
 
 export function validateArray(
-  schema: Validator,
+  schema: ValidatorBase,
   value: unknown,
   minLength = 0,
   maxLength = Number.MAX_SAFE_INTEGER,
@@ -55,23 +48,20 @@ export function validateArray(
   return errors
 }
 
-export class ArrayValidator<T extends Array<unknown>, O = never> extends ValidatorBase<T | O> {
-  public schema: Validator
+export abstract class ArrayValidator<T extends ValidatorBase = never, O = never> extends ValidatorBase<
+  Array<T['tsType']> | O
+> {
+  public schema: T
   private minLength: number
   private maxLength: number
 
-  public constructor(
-    schema: Validator,
-    minLength = 0,
-    maxLength = Number.MAX_SAFE_INTEGER,
-    options?: ValidatorOptions
-  ) {
+  public constructor(schema: T, minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super(options)
     this.schema = schema
     this.minLength = minLength
     this.maxLength = maxLength
     if (options?.optimize !== false) {
-      this.optimize()
+      this.optimize(schema)
     }
   }
 
@@ -111,9 +101,9 @@ export class ArrayValidator<T extends Array<unknown>, O = never> extends Validat
     // prettier-ignore
     const code = [
       `const ${arrayValueRef} = ${valueRef}`,
-      `if (${arrayValueRef} != null) {`,
+      ...this.nullCheckWrap([
       `  if (Array.isArray(${arrayValueRef})){`,
-      `    if (${this.minLength ? `${arrayValueRef}.length >= ${this.minLength} && ` : '' }${arrayValueRef}.length < ${this.maxLength}) {`,
+      `    if (${this.minLength ? `${arrayValueRef}.length >= ${this.minLength} && ` : '' }${arrayValueRef}.length <= ${this.maxLength}) {`,
       `      for (const [${iRef}, ${itemRef}] of ${arrayValueRef}.entries()) {`,
       ...propCode.map(l => `        ${l}`),
       `      }`,
@@ -123,10 +113,7 @@ export class ArrayValidator<T extends Array<unknown>, O = never> extends Validat
       `  } else {`,
       `    errors.push(new NotArrayFail(\`Must be an array\`, ${arrayValueRef}${contextStr}))`,
       `  }`,
-      ...(this.required ? [
-      `} else {`,
-      `  errors.push(new RequiredFail(\`Is required\`, ${arrayValueRef}${contextStr}))`] : []),
-      '}',
+      ], arrayValueRef, contextStr),
       ...(earlyFail ? [
       `if (errors.length > 0) {`,
       `  return errors`,
@@ -155,24 +142,14 @@ export class ArrayValidator<T extends Array<unknown>, O = never> extends Validat
   }
 }
 
-export class RequiredArray<T extends Array<unknown>> extends ArrayValidator<T> {
-  public constructor(
-    schema: Validator,
-    minLength = 0,
-    maxLength = Number.MAX_SAFE_INTEGER,
-    options?: ValidatorOptions
-  ) {
+export class RequiredArray<T extends ValidatorBase> extends ArrayValidator<T> {
+  public constructor(schema: T, minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super(schema, minLength, maxLength, { ...options, required: true })
   }
 }
 
-export class OptionalArray<T extends Array<unknown>> extends ArrayValidator<T, null | undefined> {
-  public constructor(
-    schema: Validator,
-    minLength = 0,
-    maxLength = Number.MAX_SAFE_INTEGER,
-    options?: ValidatorOptions
-  ) {
+export class OptionalArray<T extends ValidatorBase> extends ArrayValidator<T, undefined> {
+  public constructor(schema: T, minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super(schema, minLength, maxLength, { ...options, required: false })
   }
 }

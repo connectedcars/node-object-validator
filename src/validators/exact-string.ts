@@ -16,14 +16,14 @@ export function validateExactString(value: unknown, expected: string, context?: 
   return []
 }
 
-export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
-  public expected: string
+export abstract class ExactStringValidator<T extends string = never, O = never> extends ValidatorBase<T | O> {
+  public expected: T
 
-  public constructor(expected: string, options?: ValidatorOptions) {
+  public constructor(expected: T, options?: ValidatorOptions) {
     super(options)
     this.expected = expected
     if (options?.optimize !== false) {
-      this.optimize()
+      this.optimize(expected)
     }
   }
 
@@ -43,14 +43,11 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
     // prettier-ignore
     const code = [
       `const ${localValueRef} = ${valueRef}`,
-      `if (${localValueRef} != null) {`,
+      ...this.nullCheckWrap([
       `  if (${localValueRef} !== ${expectedStr}) {`,
       `    errors.push(new NotExactStringFail(\`Must strictly equal ${expectedStr}\`, ${localValueRef}${contextStr}))`,
       `  }`,
-      ...(this.required ? [
-      `} else {`,
-      `  errors.push(new RequiredFail(\`Is required\`, ${localValueRef}${contextStr}))`] : []),
-      '}',
+      ], localValueRef, contextStr),
       ...(earlyFail ? [
       `if (errors.length > 0) {`,
       `  return errors`,
@@ -80,14 +77,14 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
   }
 }
 
-export class RequiredExactString extends ExactStringValidator {
-  public constructor(expected: string, options?: ValidatorOptions) {
+export class RequiredExactString<T extends string> extends ExactStringValidator<T> {
+  public constructor(expected: T, options?: ValidatorOptions) {
     super(expected, { ...options, required: true })
   }
 }
 
-export class OptionalExactString extends ExactStringValidator<undefined | null> {
-  public constructor(expected: string, options?: ValidatorOptions) {
+export class OptionalExactString<T extends string> extends ExactStringValidator<T, undefined> {
+  public constructor(expected: T, options?: ValidatorOptions) {
     super(expected, { ...options, required: false })
   }
 }

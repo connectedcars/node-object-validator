@@ -22,13 +22,13 @@ export function validateUndefined(value: unknown, context?: string): ValidationF
   return []
 }
 
-export class UndefinedValidator<O = never> extends ValidatorBase<undefined | O> {
+export abstract class UndefinedValidator<O = never> extends ValidatorBase<undefined | O> {
   public constructor(options?: ValidatorOptions) {
-    super({ ...options, nullCheck: false })
+    super({ ...options, required: false })
     this.optionsString = options
       ? generateOptionsString(options, {
           required: true,
-          nullCheck: false,
+          nullable: false,
           earlyFail: false,
           optimize: true
         })
@@ -53,14 +53,13 @@ export class UndefinedValidator<O = never> extends ValidatorBase<undefined | O> 
     // prettier-ignore
     const code: string[] = [
       `const ${localValueRef} = ${valueRef}`,
-      `if (${localValueRef} !== null) {`,
+      ...(this.nullable ? [
+      `if (${localValueRef} !== null) {`] : []),
       `  if (${localValueRef} !== undefined) {`,
       `    errors.push(new NotUndefinedFail(\`Must be an undefined\`, ${localValueRef}${contextStr}))`,
       `  }`,
-      ...(this.required ? [
-      `} else {`,
-      `  errors.push(new RequiredFail(\`Is required\`, ${localValueRef}${contextStr}))`] : []),
-      '}',
+      ...(this.nullable ? [
+      `}`] : []),
       ...(earlyFail ? [
       `if (errors.length > 0) {`,
       `  return errors`,
@@ -85,9 +84,6 @@ export class UndefinedValidator<O = never> extends ValidatorBase<undefined | O> 
   }
 
   protected validateValue(value: unknown, context?: string): ValidationFailure[] {
-    if (value === null) {
-      return this.required ? [new RequiredFail(`Is required`, value, context)] : []
-    }
     return validateUndefined(value, context)
   }
 }
@@ -98,8 +94,8 @@ export class RequiredUndefined extends UndefinedValidator {
   }
 }
 
-export class OptionalUndefined extends UndefinedValidator<null> {
+export class NullableUndefined extends UndefinedValidator {
   public constructor(options?: ValidatorOptions) {
-    super({ ...options, required: false })
+    super({ ...options, required: true, nullable: true })
   }
 }

@@ -2,7 +2,25 @@ import { isValidType, ValidatorBase, ValidatorExportOptions, ValidatorOptions } 
 import { NotIntegerStringFail, OutOfRangeFail, ValidationFailure, WrongLengthFail } from '../errors'
 import { validateString } from './string'
 
-export function validateIntegerString(value: unknown, min: number, max: number, context?: string): ValidationFailure[] {
+export function isIntegerString(
+  value: unknown,
+  min = Number.MIN_SAFE_INTEGER,
+  max = Number.MAX_SAFE_INTEGER,
+  context?: string
+): value is string {
+  const errors = validateIntegerString(value, min, max, context)
+  if (errors.length === 0) {
+    return true
+  }
+  return false
+}
+
+export function validateIntegerString(
+  value: unknown,
+  min = Number.MIN_SAFE_INTEGER,
+  max = Number.MAX_SAFE_INTEGER,
+  context?: string
+): ValidationFailure[] {
   const stringError = validateString(value, 0, Number.MAX_SAFE_INTEGER, context)
   if (!isValidType<string>(value, stringError)) {
     return [new NotIntegerStringFail(`Must be a string with an integer`, value, context)]
@@ -20,7 +38,7 @@ export function validateIntegerString(value: unknown, min: number, max: number, 
   return []
 }
 
-export class IntegerStringValidator<O = never> extends ValidatorBase<string | O> {
+export abstract class IntegerStringValidator<O = never> extends ValidatorBase<string | O> {
   private min: number
   private max: number
 
@@ -54,7 +72,7 @@ export class RequiredIntegerString extends IntegerStringValidator {
   }
 }
 
-export class OptionalIntegerString extends IntegerStringValidator<undefined | null> {
+export class OptionalIntegerString extends IntegerStringValidator<undefined> {
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super(min, max, { ...options, required: false })
   }

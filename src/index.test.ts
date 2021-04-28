@@ -1,14 +1,10 @@
 import { AssertEqual } from './common'
 import { NotExactStringFail, RequiredFail, UnionFail } from './errors'
 import {
-  DateTimeValidator,
-  ExactStringValidator,
-  ObjectValidator,
   OptionalArray,
   OptionalInteger,
   OptionalObject,
   OptionalString,
-  RegexMatchValidator,
   RequiredArray,
   RequiredDateTime,
   RequiredExactString,
@@ -19,15 +15,12 @@ import {
   RequiredObject,
   RequiredRegexMatch,
   RequiredString,
-  RequiredUnion,
-  StringValidator,
-  UnionValidator,
-  UnknownValidator
+  RequiredUnknown
 } from './index'
-import { RequiredEnum } from './validators/union'
+import { RequiredEnum, RequiredUnion } from './validators/union'
 
 describe.each([false, true])('Shorthand validation of complex objects (optimize: %s)', optimize => {
-  const validator = new ObjectValidator(
+  const validator = new RequiredObject(
     {
       type: new RequiredExactString('gps_odometer_km'),
       unitId: new RequiredString(1, 32),
@@ -259,21 +252,21 @@ describe.each([false, true])('Shorthand validation of complex objects (optimize:
 })
 
 describe.each([false, true])('Complex objects with unions using full syntax (optimize: %s)', optimize => {
-  const buildUpdateMessageValidator = new ObjectValidator(
+  const buildUpdateMessageValidator = new RequiredObject(
     {
-      buildId: new StringValidator(),
-      repoUrl: new RegexMatchValidator(/^http[s]?:\/\//),
-      branchName: new StringValidator(),
+      buildId: new RequiredString(),
+      repoUrl: new RequiredRegexMatch(/^http[s]?:\/\//),
+      branchName: new RequiredString(),
       commitSha: new RequiredRegexMatch(/[0-9A-Fa-f]+/),
-      tag: new StringValidator(),
-      imageName: new StringValidator(),
-      state: new StringValidator(),
-      timestamp: new DateTimeValidator(),
-      stepStarted: new DateTimeValidator(),
-      cmd: new StringValidator(0, 1000, { required: false }),
-      error: new StringValidator(0, 8000, { required: false }),
-      currentDir: new StringValidator(0, 1000, { required: false }),
-      message: new UnknownValidator()
+      tag: new RequiredString(),
+      imageName: new RequiredString(),
+      state: new RequiredString(),
+      timestamp: new RequiredDateTime(),
+      stepStarted: new RequiredDateTime(),
+      cmd: new OptionalString(0, 1000),
+      error: new OptionalString(0, 8000),
+      currentDir: new OptionalString(0, 1000),
+      message: new RequiredUnknown()
     },
     { optimize }
   )
@@ -307,42 +300,108 @@ describe.each([false, true])('Complex objects with unions using full syntax (opt
     expect(buildUpdateMessageValidator.validate(stepUpdateExample)).toEqual([])
   })
 
+  interface CheckRunAnnotations {
+    path: string
+    start_line: number
+    end_line: number
+    start_column?: number
+    end_column?: number
+    annotation_level: 'notice' | 'warning' | 'failure'
+    message: string
+    title?: string
+    raw_details: string
+  }
+
+  const checkRunAnnotationValidator = new RequiredObject({
+    path: new RequiredString(),
+    start_line: new RequiredInteger(),
+    end_line: new RequiredInteger(),
+    start_column: new OptionalInteger(),
+    end_column: new OptionalInteger(),
+    annotation_level: new RequiredEnum(['notice', 'warning', 'failure'] as const),
+    message: new RequiredString(),
+    title: new OptionalString(),
+    raw_details: new RequiredString()
+  })
+
+  // Validate that type and interface match
+  expect(true as AssertEqual<typeof checkRunAnnotationValidator.tsType, CheckRunAnnotations>).toEqual(true)
+
+  interface CheckoutImages {
+    alt: string
+    image_url: string
+    caption?: string
+    actions?: {
+      label: string
+      description: string
+      identifier: string
+    }
+  }
+
+  const checkRunImagesValidator = new RequiredObject({
+    alt: new RequiredString(),
+    image_url: new RequiredString(),
+    caption: new OptionalString(),
+    actions: new OptionalObject({
+      label: new RequiredString(),
+      description: new RequiredString(),
+      identifier: new RequiredString()
+    })
+  })
+
+  // Validate that type and interface match
+  expect(true as AssertEqual<typeof checkRunImagesValidator.tsType, CheckoutImages>).toEqual(true)
+
+  interface CheckRunOutput {
+    title: string
+    summary: string
+    text?: string
+    annotations?: CheckRunAnnotations[]
+    images?: CheckoutImages[]
+  }
+
   const checkRunOutputValidator = new OptionalObject({
     title: new RequiredString(0, 255),
     summary: new RequiredString(0, 255),
     text: new OptionalString(),
-    annotations: new OptionalArray(
-      new RequiredObject({
-        path: new RequiredString(),
-        start_line: new RequiredInteger(),
-        end_line: new RequiredInteger(),
-        start_column: new OptionalInteger(),
-        end_column: new OptionalInteger(),
-        annotation_level: new RequiredUnion([
-          new ExactStringValidator('notice'),
-          new ExactStringValidator('warning'),
-          new ExactStringValidator('failure')
-        ]),
-        message: new RequiredString(),
-        title: new OptionalString(),
-        raw_details: new RequiredString()
-      }),
-      0,
-      50
-    ),
-    images: new OptionalArray(
-      new RequiredObject({
-        alt: new RequiredString(),
-        image_url: new RequiredString(),
-        caption: new OptionalString(),
-        actions: new OptionalObject({
-          label: new RequiredString(),
-          description: new RequiredString(),
-          identifier: new RequiredString()
-        })
-      })
-    )
+    annotations: new OptionalArray(checkRunAnnotationValidator, 0, 50),
+    images: new OptionalArray(checkRunImagesValidator)
   })
+
+  // Validate that type and interface match
+  expect(true as AssertEqual<typeof checkRunOutputValidator.tsType, CheckRunOutput | undefined>).toEqual(true)
+
+  interface CheckRunStarted {
+    name: string
+    head_sha: string
+    details_url?: string
+    external_id?: string
+    status: 'queued' | 'in_progress'
+    started_at?: string
+    output?: CheckRunOutput
+  }
+
+  const checkRunStartedValidator = new RequiredObject({
+    name: new RequiredString(),
+    head_sha: new RequiredString(),
+    details_url: new OptionalString(),
+    external_id: new OptionalString(),
+    status: new RequiredEnum(['queued', 'in_progress'] as const),
+    started_at: new OptionalString(),
+    output: checkRunOutputValidator
+  })
+
+  // Validate that type and interface match
+  expect(true as AssertEqual<typeof checkRunStartedValidator.tsType, CheckRunStarted>).toEqual(true)
+
+  type CheckRunConclusion =
+    | 'success'
+    | 'failure'
+    | 'neutral'
+    | 'cancelled'
+    | 'skipped'
+    | 'timed_out'
+    | 'action_required'
 
   const checkConclusionValidator = new RequiredEnum([
     'success',
@@ -352,105 +411,41 @@ describe.each([false, true])('Complex objects with unions using full syntax (opt
     'skipped',
     'timed_out',
     'action_required'
-  ])
+  ] as const)
 
-  interface CheckRunStarted {
-    name: string
-    head_sha: string
-    details_url: string
-    external_id: string
-    status: 'queued' | 'in_progress'
-    started_at: string
-    output: {
-      title: string
-      summary: string
-      text: string
-      annotations: Array<{
-        path: string
-        start_line: number
-        end_line: number
-        start_column: number
-        end_column: number
-        annotation_level: 'notice' | 'warning' | 'failure'
-        message: string
-        title: string
-        raw_details: string
-      }>
-      images: Array<{
-        alt: string
-        image_url: string
-        caption: string
-        actions: {
-          label: string
-          description: string
-          identifier: string
-        }
-      }>
-    }
-  }
-
-  const checkRunStartedValidator = new ObjectValidator<CheckRunStarted>({
-    name: new RequiredString(),
-    head_sha: new RequiredString(),
-    details_url: new OptionalString(),
-    external_id: new OptionalString(),
-    status: new RequiredUnion([new ExactStringValidator('queued'), new ExactStringValidator('in_progress')]),
-    started_at: new OptionalString(),
-    output: checkRunOutputValidator
-  })
+  // Validate that type and interface match
+  expect(true as AssertEqual<typeof checkConclusionValidator.tsType, CheckRunConclusion>).toEqual(true)
 
   interface CheckRunCompleted {
     name: string
     head_sha: string
-    details_url: string
-    external_id: string
+    details_url?: string | undefined
+    external_id?: string
     status: 'completed'
-    started_at: string
-    conclusion: 'success' | 'failure' | 'neutral' | 'cancelled' | 'skipped' | 'timed_out' | 'action_required'
+    started_at?: string
+    conclusion: CheckRunConclusion
     completed_at: string
-    output: {
-      title: string
-      summary: string
-      text: string
-      annotations: Array<{
-        path: string
-        start_line: number
-        end_line: number
-        start_column: number
-        end_column: number
-        annotation_level: 'notice' | 'warning' | 'failure'
-        message: string
-        title: string
-        raw_details: string
-      }>
-      images: Array<{
-        alt: string
-        image_url: string
-        caption: string
-        actions: {
-          label: string
-          description: string
-          identifier: string
-        }
-      }>
-    }
+    output?: CheckRunOutput
   }
 
-  const checkRunCompletedValidator = new ObjectValidator<CheckRunCompleted>({
+  const checkRunCompletedValidator = new RequiredObject({
     name: new RequiredString(),
     head_sha: new RequiredString(),
     details_url: new OptionalString(),
     external_id: new OptionalString(),
-    status: new ExactStringValidator('completed'),
+    status: new RequiredExactString('completed'),
     started_at: new OptionalString(),
     conclusion: checkConclusionValidator,
-    completed_at: new DateTimeValidator(),
+    completed_at: new RequiredDateTime(),
     output: checkRunOutputValidator
   })
 
+  // Validate that type and interface match
+  expect(true as AssertEqual<typeof checkRunCompletedValidator.tsType, CheckRunCompleted>).toEqual(true)
+
   type CheckRun = CheckRunStarted | CheckRunCompleted
 
-  const checkRunValidator = new UnionValidator<CheckRun>([checkRunStartedValidator, checkRunCompletedValidator])
+  const checkRunValidator = new RequiredUnion([checkRunStartedValidator, checkRunCompletedValidator])
 
   it('should validate completed checkrun', () => {
     const sample: unknown = {
@@ -467,9 +462,9 @@ describe.each([false, true])('Complex objects with unions using full syntax (opt
     }
     expect(checkRunCompletedValidator.validate(sample)).toEqual([])
     expect(checkRunValidator.validate(sample)).toEqual([])
-    if (checkRunValidator.isValid(sample)) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const itShouldCastToCheckRun: AssertEqual<typeof sample, CheckRun> = true
+
+    if (checkRunValidator.isValid<CheckRun>(sample)) {
+      expect(true as AssertEqual<typeof sample, CheckRun>).toEqual(true)
     } else {
       fail('did not validate but should')
     }

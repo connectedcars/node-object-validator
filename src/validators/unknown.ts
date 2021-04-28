@@ -1,24 +1,9 @@
-import {
-  CodeGenResult,
-  generateOptionsString,
-  ValidatorBase,
-  ValidatorExportOptions,
-  ValidatorOptions
-} from '../common'
+import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { RequiredFail, ValidationFailure } from '../errors'
 
-// TODO: Remove null
-export class UnknownValidator<O = never> extends ValidatorBase<O> {
+export abstract class UnknownValidator<O = never> extends ValidatorBase<unknown | O> {
   public constructor(options?: ValidatorOptions) {
-    super({ ...options, nullCheck: false })
-    this.optionsString = options
-      ? generateOptionsString(options, {
-          required: true,
-          nullCheck: false,
-          earlyFail: false,
-          optimize: true
-        })
-      : ''
+    super({ ...options })
     if (options?.optimize !== false) {
       this.optimize()
     }
@@ -80,7 +65,7 @@ export class RequiredUnknown extends UnknownValidator {
   }
 }
 
-export class OptionalUnknown extends UnknownValidator<undefined | null> {
+export class OptionalUnknown extends UnknownValidator<undefined> {
   public constructor(options?: ValidatorOptions) {
     super({ ...options, required: false })
   }

@@ -1,5 +1,4 @@
 import {
-  ObjectValidator,
   OptionalObject,
   RequiredArray,
   RequiredDateTime,
@@ -34,8 +33,8 @@ const schema = {
   )
 }
 
-const gpsOdometerKm = new ObjectValidator(schema, { optimize: false, earlyFail: true })
-const gpsOdometerKmOptimized = new ObjectValidator(schema, { optimize: true, earlyFail: true })
+const gpsOdometerKm = new RequiredObject(schema, { optimize: false, earlyFail: true })
+const gpsOdometerKmOptimized = new RequiredObject(schema, { optimize: true, earlyFail: true })
 
 const benchmarks: { [key: string]: unknown } = {
   success: {

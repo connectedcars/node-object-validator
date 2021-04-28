@@ -1,23 +1,16 @@
-import {
-  isValidator,
-  ValidateOptions,
-  Validator,
-  ValidatorBase,
-  ValidatorExportOptions,
-  ValidatorOptions
-} from '../common'
+import { isValidator, ValidateOptions, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { ValidationFailure } from '../errors'
-import { ArrayValidator } from './array'
-import { BooleanValidator } from './boolean'
-import { DateValidator } from './date'
-import { DateTimeValidator, isDateTime } from './datetime'
-import { FloatValidator } from './float'
-import { IntegerValidator } from './integer'
-import { NullValidator } from './null'
-import { ObjectValidator } from './object'
-import { RegexMatchValidator } from './regex-match'
-import { StringValidator } from './string'
-import { OptionalUnknown, UnknownValidator } from './unknown'
+import { RequiredArray } from './array'
+import { RequiredBoolean } from './boolean'
+import { RequiredDate } from './date'
+import { isDateTime, RequiredDateTime } from './datetime'
+import { RequiredFloat } from './float'
+import { RequiredInteger } from './integer'
+import { RequiredNull } from './null'
+import { ObjectSchema, RequiredObject } from './object'
+import { RequiredRegexMatch } from './regex-match'
+import { RequiredString } from './string'
+import { OptionalUnknown, RequiredUnknown } from './unknown'
 
 export type Sample =
   | null
@@ -27,13 +20,13 @@ export type Sample =
   | Sample[]
   | Date
   | RegExp
-  | Validator
+  | ValidatorBase
   | undefined
   | { [prop: string]: Sample | undefined }
 
-export function sampleToValidator(sample: Sample, options?: ValidatorOptions): Validator {
+export function sampleToValidator(sample: Sample, options?: ValidatorOptions): ValidatorBase {
   if (sample === null) {
-    return new NullValidator(options)
+    return new RequiredNull(options)
   }
   if (isValidator(sample)) {
     return sample
@@ -46,9 +39,9 @@ export function sampleToValidator(sample: Sample, options?: ValidatorOptions): V
     case 'object': {
       if (Array.isArray(sample)) {
         if (sample.length === 0) {
-          return new ArrayValidator(new UnknownValidator(options))
+          return new RequiredArray(new RequiredUnknown(options))
         } else {
-          return new ArrayValidator(
+          return new RequiredArray(
             isValidator(sample[0]) ? sample[0] : sampleToValidator(sample[0]),
             0,
             Number.MAX_SAFE_INTEGER,
@@ -56,38 +49,38 @@ export function sampleToValidator(sample: Sample, options?: ValidatorOptions): V
           )
         }
       } else if (sample instanceof Date) {
-        return new DateValidator(options)
+        return new RequiredDate(options)
       } else if (sample instanceof RegExp) {
-        return new RegexMatchValidator(sample, options)
+        return new RequiredRegexMatch(sample, options)
       } else {
-        const objectSchema: Record<string, Validator> = {}
+        const objectSchema: ObjectSchema = {}
         for (const key of Object.keys(sample)) {
           const prop = sample[key]
           objectSchema[key] = sampleToValidator(prop)
         }
-        return new ObjectValidator(objectSchema, options)
+        return new RequiredObject(objectSchema, options)
       }
     }
     case 'number': {
       if (Number.isInteger(sample)) {
-        return new IntegerValidator(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, options)
+        return new RequiredInteger(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, options)
       }
-      return new FloatValidator(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, options)
+      return new RequiredFloat(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, options)
     }
     case 'string': {
       if (isDateTime(sample)) {
-        return new DateTimeValidator(options)
+        return new RequiredDateTime(options)
       } else {
-        return new StringValidator(0, Number.MAX_SAFE_INTEGER, options)
+        return new RequiredString(0, Number.MAX_SAFE_INTEGER, options)
       }
     }
     case 'boolean': {
-      return new BooleanValidator(options)
+      return new RequiredBoolean(options)
     }
   }
 }
 
-export function isSample<T>(sample: Sample, value: unknown, context?: string): value is T {
+export function isSample<T extends Sample>(sample: T, value: unknown, context?: string): value is SampleWrap<T> {
   const errors = validateSample(sample, value, context)
   if (errors.length === 0) {
     return true
@@ -105,11 +98,18 @@ export function validateSample(
   return validator.validate(value, context, options)
 }
 
-export class SampleValidator<T, O = never> extends ValidatorBase<T | O> {
-  public schema: Sample
-  private validator: Validator
+// prettier-ignore
+type SampleWrap<O> =
+  O extends ValidatorBase ? O['tsType'] :
+  O extends number ? number  :
+  O extends string ? string  :
+  O extends boolean ? boolean : O
 
-  public constructor(sample: Sample, options?: ValidatorOptions) {
+export abstract class SampleValidator<T extends Sample = never, O = never> extends ValidatorBase<SampleWrap<T> | O> {
+  public schema: T
+  private validator: ValidatorBase
+
+  public constructor(sample: T, options?: ValidatorOptions) {
     super(options)
     this.schema = sample
     this.validator = sampleToValidator(this.schema, options)
@@ -124,14 +124,14 @@ export class SampleValidator<T, O = never> extends ValidatorBase<T | O> {
   }
 }
 
-export class RequiredSample<T> extends SampleValidator<T> {
-  public constructor(schema: Sample, options?: ValidatorOptions) {
+export class RequiredSample<T extends Sample> extends SampleValidator<T> {
+  public constructor(schema: T, options?: ValidatorOptions) {
     super(schema, { ...options, required: true })
   }
 }
 
-export class OptionalSample<T> extends SampleValidator<T, null | undefined> {
-  public constructor(schema: Sample, options?: ValidatorOptions) {
+export class OptionalSample<T extends Sample> extends SampleValidator<T, undefined> {
+  public constructor(schema: T, options?: ValidatorOptions) {
     super(schema, { ...options, required: false })
   }
 }

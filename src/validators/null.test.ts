@@ -1,6 +1,6 @@
 import { AssertEqual } from '../common'
 import { NotNullFail, RequiredFail } from '../errors'
-import { isNull, NullValidator, OptionalNull, RequiredNull, validateNull } from './null'
+import { isNull, OptionalNull, RequiredNull, validateNull } from './null'
 
 describe('Null', () => {
   describe('validateNull', () => {
@@ -14,19 +14,36 @@ describe('Null', () => {
     it('should cast value to null', () => {
       const value = null as unknown
       if (isNull(value)) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const itShouldCastNumberArray: AssertEqual<typeof value, null> = true
+        expect(true as AssertEqual<typeof value, null>).toEqual(true)
       } else {
         fail('did not validate but should')
       }
+    })
+
+    it('should fail validation', () => {
+      const value = 'string' as unknown
+      expect(isNull(value)).toEqual(false)
+    })
+  })
+
+  describe('RequiredNull', () => {
+    it('should return an function body', () => {
+      const validator = new RequiredNull({ optimize: false })
+      expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
+    })
+
+    it('should export types', () => {
+      const validator = new RequiredNull({ optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('null')
     })
   })
 })
 
 describe.each([false, true])('Null (optimize: %s)', optimize => {
-  describe('NullValidator', () => {
+  describe('RequiredNull', () => {
     it('should generate validation code and give same result', () => {
-      const validator = new NullValidator({ optimize })
+      const validator = new RequiredNull({ optimize })
       if (optimize) {
         expect(validator['optimizedValidate']).not.toBeNull()
       } else {
@@ -37,23 +54,23 @@ describe.each([false, true])('Null (optimize: %s)', optimize => {
     })
 
     it('should export validator code with options', () => {
-      const validator = new NullValidator({ optimize })
+      const validator = new RequiredNull({ optimize })
       const code = validator.toString()
       if (optimize) {
-        expect(code).toEqual('new NullValidator()')
+        expect(code).toEqual('new RequiredNull()')
       } else {
-        expect(code).toEqual('new NullValidator({ optimize: false })')
+        expect(code).toEqual('new RequiredNull({ optimize: false })')
       }
     })
 
-    it('should export types', () => {
-      const validator = new NullValidator({ optimize })
-      const code = validator.toString({ types: true })
-      expect(code).toEqual('null')
+    it('accepts valid values', () => {
+      const validator = new RequiredNull({ optimize })
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, null>).toEqual(true)
     })
 
-    it('requires value to be an Null', () => {
-      const validator = new NullValidator({ optimize })
+    it('rejects invalid values', () => {
+      const validator = new RequiredNull({ optimize })
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(false)).toStrictEqual([new NotNullFail('Must be an null', false)])
       expect(validator.validate(1)).toStrictEqual([new NotNullFail('Must be an null', 1)])
@@ -62,11 +79,10 @@ describe.each([false, true])('Null (optimize: %s)', optimize => {
       expect(validator.validate('')).toStrictEqual([new NotNullFail('Must be an null', '')])
       expect(validator.validate({})).toStrictEqual([new NotNullFail('Must be an null', {})])
       expect(validator.validate([])).toStrictEqual([new NotNullFail('Must be an null', [])])
+      expect(true as AssertEqual<typeof validator.tsType, null>).toEqual(true)
     })
-  })
 
-  describe('RequiredNull', () => {
-    it('rejects empty value', () => {
+    it('rejects undefined', () => {
       const validator = new RequiredNull({ optimize })
       expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
     })
@@ -76,6 +92,7 @@ describe.each([false, true])('Null (optimize: %s)', optimize => {
     it('accepts empty value', () => {
       const validator = new OptionalNull({ optimize })
       expect(validator.validate(undefined)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, null | undefined>).toEqual(true)
     })
   })
 })

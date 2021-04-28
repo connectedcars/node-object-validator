@@ -16,7 +16,7 @@ export function validateBoolean(value: unknown, context?: string): ValidationFai
   return []
 }
 
-export class BooleanValidator<O = never> extends ValidatorBase<boolean | O> {
+export abstract class BooleanValidator<O = never> extends ValidatorBase<boolean | O> {
   public constructor(options?: ValidatorOptions) {
     super(options)
     if (options?.optimize !== false) {
@@ -39,14 +39,11 @@ export class BooleanValidator<O = never> extends ValidatorBase<boolean | O> {
     // prettier-ignore
     const code: string[] = [
       `const ${localValueRef} = ${valueRef}`,
-      `if (${localValueRef} != null) {`,
+      ...this.nullCheckWrap([
       `  if (typeof ${localValueRef} !== 'boolean') {`,
       `    errors.push(new NotBooleanFail(\`Must be an boolean\`, ${localValueRef}${contextStr}))`,
       `  }`,
-      ...(this.required ? [
-      `} else {`,
-      `  errors.push(new RequiredFail(\`Is required\`, ${localValueRef}${contextStr}))`] : []),
-      '}',
+      ], localValueRef, contextStr),
       ...(earlyFail ? [
       `if (errors.length > 0) {`,
       `  return errors`,
@@ -80,7 +77,19 @@ export class RequiredBoolean extends BooleanValidator {
   }
 }
 
-export class OptionalBoolean extends BooleanValidator<undefined | null> {
+export class OptionalBoolean extends BooleanValidator<undefined> {
+  public constructor(options?: ValidatorOptions) {
+    super({ ...options, required: false })
+  }
+}
+
+export class NullableBoolean extends BooleanValidator<null> {
+  public constructor(options?: ValidatorOptions) {
+    super({ ...options, required: false, nullable: true })
+  }
+}
+
+export class OptionalNullableBoolean extends BooleanValidator<undefined | null> {
   public constructor(options?: ValidatorOptions) {
     super({ ...options, required: false })
   }

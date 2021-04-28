@@ -1,0 +1,57 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Regex (optimize: false) RequiredRegexMatch should return an function body 1`] = `
+Array [
+  Object {
+    "DoesNotMatchRegexFail": [Function],
+    "NotStringFail": [Function],
+    "RequiredFail": [Function],
+    "WrongLengthFail": [Function],
+  },
+  Array [
+    "const regex1 = /hello/",
+  ],
+  Array [
+    "const value2 = value1",
+    "if (value2 !== undefined) {",
+    "  if (typeof value2 === 'string') {",
+    "    if (!regex1.test(value2)) {",
+    "      errors.push(new DoesNotMatchRegexFail(\`Did not match '/hello/'\`, value2, context))",
+    "    }",
+    "  } else {",
+    "    errors.push(new NotStringFail(\`Must be a string\`, value2, context))",
+    "  }",
+    "} else {",
+    "  errors.push(new RequiredFail(\`Is required\`, value2, context))",
+    "}",
+  ],
+]
+`;
+
+exports[`Regex (optimize: true) RequiredRegexMatch should return an function body 1`] = `
+Array [
+  Object {
+    "DoesNotMatchRegexFail": [Function],
+    "NotStringFail": [Function],
+    "RequiredFail": [Function],
+    "WrongLengthFail": [Function],
+  },
+  Array [
+    "const regex1 = /hello/",
+  ],
+  Array [
+    "const value2 = value1",
+    "if (value2 !== undefined) {",
+    "  if (typeof value2 === 'string') {",
+    "    if (!regex1.test(value2)) {",
+    "      errors.push(new DoesNotMatchRegexFail(\`Did not match '/hello/'\`, value2, context))",
+    "    }",
+    "  } else {",
+    "    errors.push(new NotStringFail(\`Must be a string\`, value2, context))",
+    "  }",
+    "} else {",
+    "  errors.push(new RequiredFail(\`Is required\`, value2, context))",
+    "}",
+  ],
+]
+`;

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Array ArrayValidator should return an function body 1`] = `
+exports[`Array RequiredArray should return an function body 1`] = `
 Array [
   Object {
     "NotArrayFail": [Function],
@@ -14,12 +14,12 @@ Array [
   ],
   Array [
     "const arrayValue1 = value1",
-    "if (arrayValue1 != null) {",
+    "if (arrayValue1 !== undefined) {",
     "  if (Array.isArray(arrayValue1)){",
-    "    if (arrayValue1.length < 10) {",
+    "    if (arrayValue1.length <= 10) {",
     "      for (const [i2, item3] of arrayValue1.entries()) {",
     "        const value5 = item3",
-    "        if (value5 != null) {",
+    "        if (value5 !== undefined) {",
     "          if (typeof value5 === 'number' && Number.isInteger(value5)) {",
     "            if (value5 < -9007199254740991 || value5 > 9007199254740991) {",
     "              errors.push(new OutOfRangeFail(\`Must be between -9007199254740991 and 9007199254740991\`, value5, \`[\${i2}]\`))",

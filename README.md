@@ -18,23 +18,24 @@ npm install @connectedcars/object-validator
 
 The following validators are supported:
 
-* [Array](#arrayvalidatorvalidator-min-max-options): Validate that a value is an array of a specific type using other validators and min/max length of array
-* [Boolean](#booleanvalidator): Validate that a value is a boolean
-* [Date](#datevalidator): Validate that a value is a JavaScript Date object
-* [DateTime](#datetimevalidator): Validate that a value is an ISO 8601 date/time string
-* [ExactString](#exactstringvalidatorexpected): Validate that a value is a string that matches an exact string
-* [FloatString](#floatstringvalidatormin-max): Validate that a value is float string within a min and max limit
-* [Float](#floatvalidatormin-max): Validate that a value is a float within a min and max limit
-* [IntegerString](#integerstringvalidatormin-max): Validate that a value is a integer string within a min and max limit
-* [Integer](#integervalidatormin-max): Validate that a value is a integer within a min and max limit
-* [Null](#nullvalidator): Validate that a value is null
-* [Object](#objectvalidatorschema): Validate that a value is an object using other validators
-* [RegexMatch](#regexmatchvalidatorregex): Validate that a value is a string that matches a regular expression
-* [Sample](#samplevalidatorsample): Validate that a value matches a sample
-* [String](#stringvalidatormin-max): Validate that a value is a string within a min and max limit
-* [Undefined](#undefinedvalidator): Validate that a value is undefined
-* [Union](#unionvalidatorvalidator): Validate that a value validates at least on validator out of a number of validators
-* [Unknown](#unknownvalidator): Validate that a value is not undefined or or unset on a object
+* [Array](#array-validator-min-max-options): Validate that a value is an array of a specific type using other validators and min/max length of array
+* [Boolean](#boolean): Validate that a value is a boolean
+* [Date](#date): Validate that a value is a JavaScript Date object
+* [DateTime](#datetime): Validate that a value is an ISO 8601 date/time string
+* [ExactString](#exactstring-expected): Validate that a value is a string that matches an exact string
+* [FloatString](#floatstring-min-max): Validate that a value is float string within a min and max limit
+* [Float](#floatmin-max): Validate that a value is a float within a min and max limit
+* [IntegerString](#integerstring-min-max): Validate that a value is a integer string within a min and max limit
+* [Integer](#integer-min-max): Validate that a value is a integer within a min and max limit
+* [Null](#null): Validate that a value is null
+* [Object](#object-schema): Validate that a value is an object using other validators
+* [RegexMatch](#regexmatch-regex): Validate that a value is a string that matches a regular expression
+* [Sample](#sample-sample): Validate that a value matches a sample
+* [String](#string-min-max): Validate that a value is a string within a min and max limit
+* [Undefined](#undefined): Validate that a value is undefined
+* [Union](#union-validator): Validate that a value validates at least one validator out of a number of validators
+* [Enum](#enumstring): Validate that a value validates is a string and matches at least one exact string
+* [Unknown](#unknown): Validate that a value is not undefined or or unset on a object
 
 Validation functions:
 
@@ -48,7 +49,7 @@ Common options:
 
 * optimized: Create optimized function and use this for validation (default: true)
 * required: Is this validator required (default: true)
-* nullCheck: Enable or disable null check (default: true)
+* nullable: Allow value to be null (default: false)
 * earlyFail: Return on first error (default: false)
 
 # How to use
@@ -58,27 +59,9 @@ Common options:
 The sample validator enables building very quick validators where that you slowly can add more validation as you go along.
 
 ``` typescript
-import { SampleValidator } from '@connectedcars/object-validator'
+import { RequiredSample } from '@connectedcars/object-validator'
 
-interface Trip {
-  type: 'gps_odometer_km'
-  unitId: string
-  recordedAt: string
-  tripId: number
-  value: number
-  position: {
-    latitude: number
-    longitude: number
-    accuracy: number
-  }
-  positions: Array<{
-    latitude: number
-    longitude: number
-    accuracy: number
-  }>
-}
-
-const tripValidator = new SampleValidator<Trip>({
+const tripValidator = new RequiredSample({
   type: new RequiredExactString('trip'),
   unitId: '1234567',
   messageId: 'MSG-12345',
@@ -99,7 +82,25 @@ const tripValidator = new SampleValidator<Trip>({
 
 // Returns true if unknownValue validates
 if(objectValidator.isValid(unknownValue)) {
-  console.log(unknownValue.tripId) // unknownValue has been type cast to Trip
+  // unknownValue has been cast to the following type
+  // {
+  //  type: 'gps_odometer_km'
+  //  unitId: string
+  //  recordedAt: string
+  //  tripId: number
+  //  value: number
+  //  position: {
+  //    latitude: number
+  //    longitude: number
+  //    accuracy: number
+  //  }
+  //  positions: Array<{
+  //    latitude: number
+  //    longitude: number
+  //    accuracy: number
+  //  }>
+  // }
+  console.log(unknownValue.tripId)
 }
 
 console.log(tripValidator.toString()) // Dump validator code
@@ -110,7 +111,7 @@ console.log(tripValidator.toString({ type: true })) // Dump typescript interface
 
 ``` typescript
 import {
-  ObjectValidator,
+  RequiredObject,
   OptionalObject,
   RequiredArray,
   RequiredDateTime,
@@ -121,25 +122,7 @@ import {
   RequiredExactString
 } from '@connectedcars/object-validator'
 
-interface Trip {
-  type: 'gps_odometer_km'
-  unitId: string
-  recordedAt: string
-  tripId: number
-  value: number
-  position: {
-    latitude: number
-    longitude: number
-    accuracy: number
-  }
-  positions: Array<{
-    latitude: number
-    longitude: number
-    accuracy: number
-  }>
-}
-
-const tripValidator = new ObjectValidator<Trip>(
+const tripValidator = new RequiredObject(
   {
     type: new RequiredExactString('trip'),
     unitId: new RequiredString(1, 32),
@@ -203,31 +186,31 @@ let knownValue = objectValidator.cast(unknownValue)
 
 # Validators
 
-## ArrayValidator(validator, min, max, options)
+## Array (validator, min, max, options)
 
-Alias: RequiredArray, OptionalArray
+Validators: RequiredArray, OptionalArray
 
 Function: isArray
 
 ``` typescript
-let arrayValidator = new ArrayValidator(new IntegerValidator(0, 10), 0, 2)
+let arrayValidator = new RequiredArray(new RequiredInteger(0, 10), 0, 2)
 let errors = arrayValidator.validate([1, 10])
 ```
 
 ``` typescript
-if (isArray(new IntegerValidator(0, 10), [1, 10] 0, 2))  {
+if (isArray(new RequiredInteger(0, 10), [1, 10] 0, 2))  {
   console.log('Is integer array')
 }
 ```
 
-## BooleanValidator
+## Boolean
 
-Alias: RequiredBoolean, OptionalBoolean
+Validators: RequiredBoolean, OptionalBoolean
 
 Function: isBoolean
 
 ``` typescript
-let booleanValidator = new BooleanValidator()
+let booleanValidator = new RequiredBoolean()
 let errors = booleanValidator.validate(true)
 ```
 
@@ -237,14 +220,14 @@ if (isBoolean(true)) {
 }
 ```
 
-## DateValidator
+## Date
 
-Alias: RequiredDate, OptionalDate
+Validators: RequiredDate, OptionalDate
 
 Function: isDate
 
 ``` typescript
-let dateValidator = new DateValidator()
+let dateValidator = new RequiredDate()
 let errors = dateValidator.validate(new Date())
 ```
 
@@ -254,14 +237,14 @@ if (isDate(new Date())) {
 }
 ```
 
-## DateTimeValidator
+## DateTime
 
-Alias: RequiredDateTime, OptionalDateTime
+Validators: RequiredDateTime, OptionalDateTime
 
 Function: isDateTime
 
 ``` typescript
-let dateTimeValidator = new DateTimeValidator()
+let dateTimeValidator = new RequiredDateTime()
 let errors = dateTimeValidator.validate('2018-08-06T13:37:00Z')
 ```
 
@@ -271,14 +254,14 @@ if (isDateTime('2018-08-06T13:37:00Z')) {
 }
 ```
 
-## ExactStringValidator(expected)
+## ExactString (expected)
 
-Alias: RequiredExactString, OptionalExactString
+Validators: RequiredExactString, OptionalExactString
 
 Function: isExactString
 
 ``` typescript
-let exactStringValidator = new ExactStringValidator('mystring')
+let exactStringValidator = new RequiredExactString('mystring')
 let errors = exactStringValidator.validate('mystring')
 ```
 
@@ -288,14 +271,14 @@ if (isExactString('mystring', 'mystring')) {
 }
 ```
 
-## FloatStringValidator(min, max)
+## FloatString (min, max)
 
-Alias: RequiredFloatString, OptionalFloatString
+Validators: RequiredFloatString, OptionalFloatString
 
 Function: isFloatString
 
 ``` typescript
-let floatStringValidator = new FloatStringValidator()
+let floatStringValidator = new RequiredFloatString()
 let errors = floatStringValidator.validate("1.0")
 ```
 
@@ -305,14 +288,14 @@ if (isFloatString('1.1')) {
 }
 ```
 
-## FloatValidator(min, max)
+## Float (min, max)
 
-Alias: RequiredFloat, OptionalFloat
+Validators: RequiredFloat, OptionalFloat
 
 Function:
 
 ``` typescript
-let floatValidator = new FloatValidator()
+let floatValidator = new RequiredFloat()
 let errors = floatValidator.validate(1.0)
 ```
 
@@ -322,14 +305,14 @@ if (isFloat(1.1)) {
 }
 ```
 
-## IntegerStringValidator(min, max)
+## IntegerString (min, max)
 
-Alias: RequiredIntegerString, OptionalIntegerString
+Validators: RequiredIntegerString, OptionalIntegerString
 
 Function: isIntegerString
 
 ``` typescript
-let integerStringValidator = new IntegerStringValidator()
+let integerStringValidator = new RequiredIntegerString()
 let errors = integerStringValidator.validate('10')
 ```
 
@@ -339,14 +322,14 @@ if (isIntegerString('10')) {
 }
 ```
 
-## IntegerValidator(min, max)
+## Integer (min, max)
 
-Alias: RequiredInteger, OptionalInteger
+Validators: RequiredInteger, OptionalInteger
 
 Function: isInteger
 
 ``` typescript
-let integerValidator = new IntegerValidator()
+let integerValidator = new RequiredInteger()
 let errors = integerValidator.validate(10)
 ```
 
@@ -356,14 +339,14 @@ if (isInteger(10)) {
 }
 ```
 
-## NullValidator
+## Null
 
-Alias: RequiredNull, OptionalNull
+Validators: RequiredNull, OptionalNull
 
 Function: isNull
 
 ``` typescript
-let nullValidator = new NullValidator()
+let nullValidator = new RequiredNull()
 let errors = nullValidator.validate(null)
 ```
 
@@ -373,15 +356,15 @@ if (isNull(10)) {
 }
 ```
 
-## ObjectValidator(schema)
+## Object (schema)
 
-Alias: RequiredObject, OptionalObject
+Validators: RequiredObject, OptionalObject
 
 Function: isObject
 
 ``` typescript
-let objectValidator = new ObjectValidator({
-  int: new IntegerValidator(0, 10)
+let objectValidator = new RequiredObject({
+  int: new RequiredInteger(0, 10)
 })
 let errors = objectValidator.validate({
   int: 10
@@ -389,19 +372,19 @@ let errors = objectValidator.validate({
 ```
 
 ``` typescript
-if (isObject({ int: new IntegerValidator(0, 10) }, { int: 10 })) {
+if (isObject({ int: new RequiredInteger(0, 10) }, { int: 10 })) {
   console.log('Is object')
 }
 ```
 
-## RegexMatchValidator(regex)
+## RegexMatch (regex)
 
-Alias: RequiredRegexMatch, OptionalRegexMatch
+Validators: RequiredRegexMatch, OptionalRegexMatch
 
 Function: isRegexMatch
 
 ``` typescript
-let regexMatchValidator = new RegexMatchValidator(/^hello$/)
+let regexMatchValidator = new RequiredRegexMatch(/^hello$/)
 let errors = regexMatchValidator.validate('hello')
 ```
 
@@ -411,9 +394,9 @@ if (isRegexMatch(/hello/, 'hello')) {
 }
 ```
 
-## SampleValidator(sample)
+## Sample (sample)
 
-Alias: RequiredSample, OptionalSample
+Validators: RequiredSample, OptionalSample
 
 Function: isSample
 
@@ -425,9 +408,9 @@ The sample validator will convert a sample to a validator based on types with a 
 
 
 ``` typescript
-let sampleValidator = new SampleValidator({
+let sampleValidator = new RequiredSample({
   date: '2018-08-06T13:37:00Z'
-  key: new ExactStringValidator('value')
+  key: new RequiredExactString('value')
 })
 let errors = sampleValidator.validate({
   date: '2018-08-06T13:37:00Z',
@@ -438,7 +421,7 @@ let errors = sampleValidator.validate({
 ``` typescript
 let sample = {
   date: '2018-08-06T13:37:00Z'
-  key: new ExactStringValidator('value')
+  key: new RequiredExactString('value')
 }
 let value = {
   date: '2018-08-06T13:37:00Z',
@@ -476,7 +459,7 @@ const sample = {
     }
   ]
 }
-const sampleValidator = new SampleValidator(sample, { optimize })
+const sampleValidator = new RequiredSample(sample, { optimize })
 const errors = sampleValidator.validate(sample)
 ```
 
@@ -487,14 +470,14 @@ console.log(`interface MyType ${sampleValidator.toString({ types: true })}`)
 console.log(`let myTypeValidator = ${sampleValidator.toString()}`)
 ```
 
-## StringValidator(min, max)
+## String (min, max)
 
-Alias: RequiredString, OptionalString
+Validators: RequiredString, OptionalString
 
 Function: isString
 
 ``` typescript
-let stringValidator = new StringValidator()
+let stringValidator = new RequiredString()
 let errors = stringValidator.validate('hello1234')
 ```
 
@@ -504,14 +487,14 @@ if (isString('hello1234')) {
 }
 ```
 
-## UndefinedValidator
+## Undefined
 
-Alias: RequiredUndefined, OptionalUndefined
+Validators: RequiredUndefined, OptionalUndefined
 
 Function: isUndefined
 
 ``` typescript
-let undefinedValidator = new UndefinedValidator()
+let undefinedValidator = new RequiredUndefined()
 let errors = undefinedValidator.validate(undefined)
 ```
 
@@ -521,18 +504,18 @@ if (isUndefined(undefined)) {
 }
 ```
 
-## UnionValidator([validator, ...])
+## Union ([validator, ...])
 
-Alias: RequiredUnion, OptionalUnion
+Validators: RequiredUnion, OptionalUnion
 
 Function: isUnion
 
 The union validator takes a union of validates and validates the value with each of them, it will stop when the first validates and return a positive result. It has a special optimization for a union of ObjectValidators with a shared required ExactString key, it will use the key to figure out what validator to use.
 
 ``` typescript
-let unionValidator = new UnionValidator([
-  new IntegerValidator(),
-  new StringValidator()
+let unionValidator = new RequiredUnion([
+  new RequiredInteger(),
+  new RequiredString()
 ])
 let errors1 = unionValidator.validate('hello')
 let errors2 = unionValidator.validate(10)
@@ -540,8 +523,8 @@ let errors2 = unionValidator.validate(10)
 
 ``` typescript
 let union = [
-  new IntegerValidator(),
-  new StringValidator()
+  new RequiredInteger(),
+  new RequiredString()
 ]
 if (isSample(union, 10)) {
   console.log('Is union match')
@@ -551,23 +534,6 @@ if (isSample(union, 10)) {
 Example of shared required ExactString key:
 
 ``` typescript
-interface NumberMessage {
-  type: 'number'
-  value: number
-}
-
-interface StringMessage {
-  type: 'string'
-  value: number
-}
-
-interface ErrorMessage {
-  type: 'error'
-  error: string
-}
-
-type Message = ErrorMessage | StringMessage | NumberMessage
-
 const numberMessageValidator = new RequiredObject({
   type: new RequiredExactString('number'),
   value: new RequiredFloat()
@@ -583,7 +549,7 @@ const errorMessageValidator = new RequiredObject({
   error: new RequiredString()
 })
 
-const messageValidator = new UnionValidator<Message>([
+const messageValidator = new UnionValidator([
   numberMessageValidator,
   stringMessageValidator,
   errorMessageValidator
@@ -592,25 +558,29 @@ const messageValidator = new UnionValidator<Message>([
 let errors = messageValidator.validate({ type: 'string', value: 'hello' })
 ```
 
-## UnknownValidator
+## EnumValidator([string, ...])
 
-Alias: RequiredUnknown, OptionalUnknown
+Alias: RequiredEnum, OptionalEnum
 
-Function: isUnknown
+The enum validator is a short hand instance of the union validator:
+
+``` typescript
+let unionValidator = new RequiredEnum(['hello', 'more'])
+let errors1 = unionValidator.validate('hello')
+let errors2 = unionValidator.validate(10)
+```
+
+## Unknown
+
+Validators: RequiredUnknown, OptionalUnknown
 
 The unknown validator only makes sense to use with another validate like the object validator to require a key even when the type is not known.
 
 ``` typescript
-let unknownValidator = new UnknownValidator()
+let unknownValidator = new RequiredUnknown()
 let errors1 = unknownValidator.validate('hello')
 let errors2 = unknownValidator.validate(10)
 let errors3 = unknownValidator.validate(null)
-```
-
-``` typescript
-if (isUnknown('hello1234')) {
-  console.log('Is unknown')
-}
 ```
 
 # Benchmark

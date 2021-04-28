@@ -1,3 +1,4 @@
+import { AssertEqual } from '../common'
 import {
   DoesNotMatchRegexFail,
   NotDateFail,
@@ -7,7 +8,7 @@ import {
   RequiredFail,
   WrongLengthFail
 } from '../errors'
-import { SampleValidator, validateSample } from './sample'
+import { isSample, OptionalSample, RequiredSample, validateSample } from './sample'
 
 describe('Sample', () => {
   describe('validateSample', () => {
@@ -74,12 +75,170 @@ describe('Sample', () => {
       expect(validateSample('', 2)).toEqual([new NotStringFail('Must be a string', 2)])
     })
   })
+
+  describe('isSample', () => {
+    it('should cast value to boolean', () => {
+      const value = true as unknown
+      if (isSample(true, value)) {
+        expect(true as AssertEqual<typeof value, boolean>).toEqual(true)
+      } else {
+        fail('did not validate but should')
+      }
+    })
+
+    it('should cast value to string', () => {
+      const value = '' as unknown
+      if (isSample('hello', value)) {
+        expect(true as AssertEqual<typeof value, string>).toEqual(true)
+      } else {
+        fail('did not validate but should')
+      }
+    })
+
+    it('should cast value to number', () => {
+      const value = 5 as unknown
+      if (isSample(10, value)) {
+        expect(true as AssertEqual<typeof value, number>).toEqual(true)
+      } else {
+        fail('did not validate but should')
+      }
+    })
+
+    it('should cast value to number array', () => {
+      const value = [1] as unknown
+      if (isSample([10], value)) {
+        expect(true as AssertEqual<typeof value, number[]>).toEqual(true)
+      } else {
+        fail('did not validate but should')
+      }
+    })
+
+    it('should cast value to string array', () => {
+      const value = [''] as unknown
+      if (isSample(['hello', 'hello2'], value)) {
+        expect(true as AssertEqual<typeof value, string[]>).toEqual(true)
+      } else {
+        fail('did not validate but should')
+      }
+    })
+
+    it('should fail validation', () => {
+      const value = 'string' as unknown
+      expect(isSample(10, value)).toEqual(false)
+    })
+  })
+
+  describe('RequiredSample', () => {
+    it('should return an function body', () => {
+      const validator = new RequiredSample(10, { optimize: false })
+      expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
+    })
+
+    it('should export types', () => {
+      const validator = new RequiredSample(10, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('number')
+    })
+  })
 })
 
 describe.each([false, true])('Sample (optimize: %s)', optimize => {
   describe('SampleValidator', () => {
+    it('should generate validation code and give same result', () => {
+      const validator = new RequiredSample(true, { optimize })
+      if (optimize) {
+        expect(validator['validator']['optimizedValidate']).not.toBeNull()
+      } else {
+        expect(validator['validator']['optimizedValidate']).toBeNull()
+      }
+      expect(validator.validate(false)).toEqual([])
+    })
+
+    it('should export validator code with options', () => {
+      const sample = {
+        type: 'gps_odometer_km',
+        recordedAt: '2018-08-06T13:37:00Z',
+        tripId: 1337,
+        position: {
+          latitude: 55.332131,
+          longitude: 12.54454,
+          accuracy: 18
+        },
+        positions: [
+          {
+            latitude: 55.332131,
+            longitude: 12.54454,
+            accuracy: 18
+          }
+        ]
+      }
+      const sampleValidator = new RequiredSample(sample, { optimize })
+      const code = sampleValidator.toString()
+      const expected = [
+        'new RequiredObject({',
+        `  'type': new RequiredString(),`,
+        `  'recordedAt': new RequiredDateTime(),`,
+        `  'tripId': new RequiredInteger(),`,
+        `  'position': new RequiredObject({`,
+        `    'latitude': new RequiredFloat(),`,
+        `    'longitude': new RequiredFloat(),`,
+        `    'accuracy': new RequiredInteger()`,
+        '  }),',
+        `  'positions': new RequiredArray(new RequiredObject({`,
+        `    'latitude': new RequiredFloat(),`,
+        `    'longitude': new RequiredFloat(),`,
+        `    'accuracy': new RequiredInteger()`,
+        '  }))'
+      ]
+      if (optimize) {
+        expect(code).toEqual([...expected, '})'].join('\n'))
+      } else {
+        expect(code).toEqual([...expected, '}, { optimize: false })'].join('\n'))
+      }
+    })
+
+    it('should export types', () => {
+      const sample = {
+        type: 'gps_odometer_km',
+        recordedAt: '2018-08-06T13:37:00Z',
+        tripId: 1337,
+        position: {
+          latitude: 55.332131,
+          longitude: 12.54454,
+          accuracy: 18
+        },
+        positions: [
+          {
+            latitude: 55.332131,
+            longitude: 12.54454,
+            accuracy: 18
+          }
+        ]
+      }
+      const sampleValidator = new RequiredSample(sample, { optimize })
+      const code = sampleValidator.toString({ types: true })
+      const expected = [
+        '{',
+        `  'type': string`,
+        `  'recordedAt': string`,
+        `  'tripId': number`,
+        `  'position': {`,
+        `    'latitude': number`,
+        `    'longitude': number`,
+        `    'accuracy': number`,
+        '  }',
+        `  'positions': Array<{`,
+        `    'latitude': number`,
+        `    'longitude': number`,
+        `    'accuracy': number`,
+        '  }>',
+        '}'
+      ]
+      expect(code).toEqual(expected.join('\n'))
+    })
+
     it('should validate an array', () => {
-      const arrayValidator = new SampleValidator([1], { optimize })
+      const arrayValidator = new RequiredSample([1], { optimize })
       const errors = arrayValidator.validate([1, 2, 4, 5])
       expect(errors).toEqual([])
     })
@@ -109,92 +268,43 @@ describe.each([false, true])('Sample (optimize: %s)', optimize => {
           }
         ]
       }
-      const sampleValidator = new SampleValidator(sample, { optimize })
-      const errors = sampleValidator.validate(sample)
-      expect(errors).toEqual([])
-    })
-
-    it('should export validator code with options', () => {
-      const sample = {
-        type: 'gps_odometer_km',
-        recordedAt: '2018-08-06T13:37:00Z',
-        tripId: 1337,
-        position: {
-          latitude: 55.332131,
-          longitude: 12.54454,
-          accuracy: 18
-        },
-        positions: [
+      const validator = new RequiredSample(sample, { optimize })
+      expect(validator.validate(sample)).toEqual([])
+      expect(
+        true as AssertEqual<
+          typeof validator.tsType,
           {
-            latitude: 55.332131,
-            longitude: 12.54454,
-            accuracy: 18
+            type: string
+            unitId: string
+            recordedAt: string
+            tripId: number
+            value: number
+            position: {
+              latitude: number
+              longitude: number
+              accuracy: number
+              extra: {
+                tag: string
+                tagversion: number
+                tagDepth: number
+              }
+            }
+            positions: {
+              latitude: number
+              longitude: number
+              accuracy: number
+            }[]
           }
-        ]
-      }
-      const sampleValidator = new SampleValidator(sample, { optimize })
-      const code = sampleValidator.toString()
-      const expected = [
-        'new ObjectValidator({',
-        `  'type': new StringValidator(),`,
-        `  'recordedAt': new DateTimeValidator(),`,
-        `  'tripId': new IntegerValidator(),`,
-        `  'position': new ObjectValidator({`,
-        `    'latitude': new FloatValidator(),`,
-        `    'longitude': new FloatValidator(),`,
-        `    'accuracy': new IntegerValidator()`,
-        '  }),',
-        `  'positions': new ArrayValidator(new ObjectValidator({`,
-        `    'latitude': new FloatValidator(),`,
-        `    'longitude': new FloatValidator(),`,
-        `    'accuracy': new IntegerValidator()`,
-        '  }))'
-      ]
-      if (optimize) {
-        expect(code).toEqual([...expected, '})'].join('\n'))
-      } else {
-        expect(code).toEqual([...expected, '}, { optimize: false })'].join('\n'))
-      }
+        >
+      ).toEqual(true)
     })
+  })
 
-    it('should export types', () => {
-      const sample = {
-        type: 'gps_odometer_km',
-        recordedAt: '2018-08-06T13:37:00Z',
-        tripId: 1337,
-        position: {
-          latitude: 55.332131,
-          longitude: 12.54454,
-          accuracy: 18
-        },
-        positions: [
-          {
-            latitude: 55.332131,
-            longitude: 12.54454,
-            accuracy: 18
-          }
-        ]
-      }
-      const sampleValidator = new SampleValidator(sample, { optimize })
-      const code = sampleValidator.toString({ types: true })
-      const expected = [
-        '{',
-        `  'type': string`,
-        `  'recordedAt': string`,
-        `  'tripId': number`,
-        `  'position': {`,
-        `    'latitude': number`,
-        `    'longitude': number`,
-        `    'accuracy': number`,
-        '  }',
-        `  'positions': Array<{`,
-        `    'latitude': number`,
-        `    'longitude': number`,
-        `    'accuracy': number`,
-        '  }>',
-        '}'
-      ]
-      expect(code).toEqual(expected.join('\n'))
+  describe('OptionalSample', () => {
+    it('accepts empty value', () => {
+      const validator = new OptionalSample(true, { optimize })
+      expect(validator.validate(undefined)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, boolean | undefined>).toEqual(true)
     })
   })
 })

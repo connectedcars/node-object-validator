@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Undefined RequiredBoolean should return an function body 1`] = `
+Array [
+  Object {
+    "NotUndefinedFail": [Function],
+    "RequiredFail": [Function],
+  },
+  Array [],
+  Array [
+    "const value1 = value1",
+    "  if (value1 !== undefined) {",
+    "    errors.push(new NotUndefinedFail(\`Must be an undefined\`, value1, context))",
+    "  }",
+  ],
+]
+`;

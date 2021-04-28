@@ -23,7 +23,7 @@ export function validateDateTime(value: unknown, context?: string): ValidationFa
   return []
 }
 
-export class DateTimeValidator<O = never> extends ValidatorBase<string | O> {
+export abstract class DateTimeValidator<O = never> extends ValidatorBase<string | O> {
   public constructor(options?: ValidatorOptions) {
     super(options)
     if (options?.optimize !== false) {
@@ -46,7 +46,7 @@ export class DateTimeValidator<O = never> extends ValidatorBase<string | O> {
     // prettier-ignore
     const code: string[] = [
       `const ${localValueRef} = ${valueRef}`,
-      `if (${localValueRef} != null) {`,
+      ...this.nullCheckWrap([
       `  if (typeof ${localValueRef} === 'string') {`,
       `    if (${localValueRef}.length >= 20 && ${localValueRef}.length <= 30) {`,
       `      if (!dateTimePattern.test(${localValueRef})) {`,
@@ -58,10 +58,7 @@ export class DateTimeValidator<O = never> extends ValidatorBase<string | O> {
       `  } else {`,
       `    errors.push(new NotStringFail(\`Must be a string\`, ${localValueRef}${contextStr}))`,
       `  }`,
-      ...(this.required ? [
-      `} else {`,
-      `  errors.push(new RequiredFail(\`Is required\`, ${localValueRef}${contextStr}))`] : []),
-      '}',
+      ], localValueRef, contextStr),
       ...(earlyFail ? [
       `if (errors.length > 0) {`,
       `  return errors`,
@@ -98,7 +95,7 @@ export class RequiredDateTime extends DateTimeValidator {
   }
 }
 
-export class OptionalDateTime extends DateTimeValidator<undefined | null> {
+export class OptionalDateTime extends DateTimeValidator<undefined> {
   public constructor(options?: ValidatorOptions) {
     super({ ...options, required: false })
   }

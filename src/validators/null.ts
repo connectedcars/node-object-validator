@@ -22,13 +22,13 @@ export function validateNull(value: unknown, context?: string): ValidationFailur
   return []
 }
 
-export class NullValidator<O = never> extends ValidatorBase<null | O> {
+export abstract class NullValidator<O = never> extends ValidatorBase<null | O> {
   public constructor(options?: ValidatorOptions) {
-    super({ ...options, nullCheck: false })
+    super({ ...options })
     this.optionsString = options
       ? generateOptionsString(options, {
           required: true,
-          nullCheck: false,
+          nullable: false,
           earlyFail: false,
           optimize: true
         })

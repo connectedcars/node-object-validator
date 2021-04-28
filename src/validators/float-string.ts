@@ -2,7 +2,25 @@ import { validateString } from '..'
 import { isValidType, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotFloatStringFail, OutOfRangeFail, ValidationFailure, WrongLengthFail } from '../errors'
 
-export function validateFloatString(value: unknown, min: number, max: number, context?: string): ValidationFailure[] {
+export function isFloatString(
+  value: unknown,
+  min = Number.MIN_SAFE_INTEGER,
+  max = Number.MAX_SAFE_INTEGER,
+  context?: string
+): value is string {
+  const errors = validateFloatString(value, min, max, context)
+  if (errors.length === 0) {
+    return true
+  }
+  return false
+}
+
+export function validateFloatString(
+  value: unknown,
+  min = Number.MIN_SAFE_INTEGER,
+  max = Number.MAX_SAFE_INTEGER,
+  context?: string
+): ValidationFailure[] {
   const stringError = validateString(value, 0, Number.MAX_SAFE_INTEGER, context)
   if (!isValidType<string>(value, stringError)) {
     return [new NotFloatStringFail(`Must be a string with a float`, value, context)]
@@ -20,7 +38,7 @@ export function validateFloatString(value: unknown, min: number, max: number, co
   return []
 }
 
-export class FloatStringValidator<O = never> extends ValidatorBase<number | O> {
+export abstract class FloatStringValidator<O = never> extends ValidatorBase<string | O> {
   private min: number
   private max: number
 
@@ -54,7 +72,7 @@ export class RequiredFloatString extends FloatStringValidator {
   }
 }
 
-export class OptionalFloatString extends FloatStringValidator<undefined | null> {
+export class OptionalFloatString extends FloatStringValidator<undefined> {
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super(min, max, { ...options, required: false })
   }

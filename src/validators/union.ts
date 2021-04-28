@@ -1,12 +1,16 @@
-import { DateTimeValidator, DateValidator, IntegerValidator } from '..'
 import {
-  CodeGenResult,
-  ValidateOptions,
-  Validator,
-  ValidatorBase,
-  ValidatorExportOptions,
-  ValidatorOptions
-} from '../common'
+  ExactStringValidator,
+  isPlainObject,
+  ObjectValidator,
+  RequiredDate,
+  RequiredDateTime,
+  RequiredExactString,
+  RequiredFloat,
+  RequiredFloatString,
+  RequiredInteger,
+  RequiredIntegerString
+} from '..'
+import { CodeGenResult, ValidateOptions, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import {
   NotDatetimeOrDateFail,
   NotFloatOrFloatStringFail,
@@ -16,13 +20,12 @@ import {
   UnionFail,
   ValidationFailure
 } from '../errors'
-import { ExactStringValidator } from './exact-string'
-import { FloatValidator } from './float'
-import { FloatStringValidator } from './float-string'
-import { IntegerStringValidator } from './integer-string'
-import { isPlainObject, ObjectValidator } from './object'
 
-export function isUnion<T>(schema: Validator[], value: unknown, context?: string): value is T {
+export function isUnion<T extends ValidatorBase[]>(
+  schema: T,
+  value: unknown,
+  context?: string
+): value is T[number]['tsType'] {
   const errors = validateUnion(schema, value, context)
   if (errors.length === 0) {
     return true
@@ -34,11 +37,11 @@ function findUnionKey(schema: ObjectValidator[]): string | null {
   let unionKey: string | null = null
   for (const key of Object.keys(schema[0].schema)) {
     const firstValidator = schema[0].schema[key]
-    if (firstValidator instanceof ExactStringValidator && firstValidator.required === true) {
+    if (firstValidator instanceof RequiredExactString) {
       const seenExpected: string[] = [firstValidator.expected]
       for (let i = 1; i < schema.length; i++) {
         const validator = schema[i].schema[key]
-        if (validator instanceof ExactStringValidator && firstValidator.required === true) {
+        if (validator instanceof RequiredExactString) {
           if (seenExpected.includes(validator.expected)) {
             break
           }
@@ -59,7 +62,7 @@ export interface ValidateUnionOptions extends ValidateOptions {
 }
 
 export function validateUnion(
-  schema: Validator[],
+  schema: ValidatorBase[],
   value: unknown,
   context?: string,
   options?: ValidateUnionOptions
@@ -108,16 +111,18 @@ export interface UnionValidatorOptions extends ValidatorOptions {
   every?: boolean
 }
 
-export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
-  public schema: Validator[]
+export abstract class UnionValidator<T extends ValidatorBase[], O = never> extends ValidatorBase<
+  T[number]['tsType'] | O
+> {
+  public schema: T
   private every: boolean
 
-  public constructor(schema: Validator[], options?: UnionValidatorOptions) {
+  public constructor(schema: T, options?: UnionValidatorOptions) {
     super(options)
     this.schema = schema
     this.every = options?.every ? true : false
     if (options?.optimize !== false) {
-      this.optimize()
+      this.optimize(schema)
     }
   }
 
@@ -139,15 +144,6 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
       NotObjectFail: NotObjectFail
     }
     const declarations = [`const ${schemaRef} = ${validatorRef}.schema`]
-
-    // prettier-ignore
-    const code = [
-      `const ${unionValueRef} = ${valueRef}`,
-      `const ${unionValueRef}orgErrors = errors`,
-      `let ${unionValueRef}Errors = []`,
-      `if (${unionValueRef} != null) {`,
-      `  let errors = []`,
-    ]
 
     let unionCode: string[] = []
 
@@ -182,7 +178,7 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
       if (unionKey) {
         const expectedString = ((validator as ObjectValidator).schema[
           unionKey
-        ] as ExactStringValidator).expected.replace(/'/g, "\\'")
+        ] as ExactStringValidator<''>).expected.replace(/'/g, "\\'")
 
         // prettier-ignore
         entryCode = [
@@ -231,20 +227,21 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
         `  }`
       ]
     }
-
     // prettier-ignore
-    code.push(
+    const code = [
+      `const ${unionValueRef} = ${valueRef}`,
+      `const ${unionValueRef}orgErrors = errors`,
+      `let ${unionValueRef}Errors = []`,
+      ...this.nullCheckWrap([
+      `  let errors = []`,
       ...unionCode,
       `  ${unionValueRef}orgErrors.push(...${unionValueRef}Errors)`,
-      ...(this.required ? [
-      `} else {`,
-      `  errors.push(new RequiredFail(\`Is required\`, ${unionValueRef}${contextStr}))`] : []),
-      '}',
+      ], unionValueRef, contextStr),
       ...(earlyFail ? [
       `if (errors.length > 0) {`,
       `  return errors`,
       `}`] : []),
-    )
+    ]
 
     return [imports, declarations, code]
   }
@@ -263,42 +260,45 @@ export class UnionValidator<T, O = never> extends ValidatorBase<T | O> {
   }
 }
 
-export class RequiredUnion<T> extends UnionValidator<T> {
-  public constructor(schema: Validator[], options?: ValidatorOptions) {
+export class RequiredUnion<T extends ValidatorBase[]> extends UnionValidator<T> {
+  public constructor(schema: T, options?: UnionValidatorOptions) {
     super(schema, { ...options, required: true })
   }
 }
 
-export class OptionalUnion<T> extends UnionValidator<T, undefined | null> {
-  public constructor(schema: Validator[], options?: ValidatorOptions) {
+export class OptionalUnion<T extends ValidatorBase[]> extends UnionValidator<T, undefined> {
+  public constructor(schema: T, options?: UnionValidatorOptions) {
     super(schema, { ...options, required: false })
   }
 }
 
-export class EnumValidator<T, O = never> extends UnionValidator<T, O> {
-  public constructor(schema: string[], options?: ValidatorOptions) {
+export abstract class EnumValidator<T extends readonly string[], C = never> extends UnionValidator<
+  ExactStringValidator<T[number]>[],
+  C
+> {
+  public constructor(schema: T, options?: ValidatorOptions) {
     super(
-      schema.map(e => new ExactStringValidator(e)),
+      schema.map(v => new RequiredExactString(v)),
       options
     )
   }
 }
 
-export class RequiredEnum<T> extends EnumValidator<T> {
-  public constructor(schema: string[], options?: ValidatorOptions) {
+export class RequiredEnum<T extends readonly string[]> extends EnumValidator<T> {
+  public constructor(schema: T, options?: ValidatorOptions) {
     super(schema, { ...options, required: true })
   }
 }
 
-export class OptionalEnum<T> extends EnumValidator<T, undefined | null> {
-  public constructor(schema: string[], options?: ValidatorOptions) {
+export class OptionalEnum<T extends readonly string[]> extends EnumValidator<T, undefined> {
+  public constructor(schema: T, options?: ValidatorOptions) {
     super(schema, { ...options, required: false })
   }
 }
 
-export class DateTimeOrDateValidator<O = never> extends UnionValidator<string | Date | O> {
+export abstract class DateTimeOrDateValidator<O = never> extends UnionValidator<ValidatorBase[], string | Date | O> {
   public constructor(options?: ValidatorOptions) {
-    super([new DateTimeValidator(), new DateValidator()], options)
+    super([new RequiredDateTime(), new RequiredDate()], options)
   }
 
   public validate(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
@@ -322,17 +322,20 @@ export class RequiredDateTimeOrDate extends DateTimeOrDateValidator {
   }
 }
 
-export class OptionalDateTimeOrDate extends DateTimeOrDateValidator<undefined | null> {
+export class OptionalDateTimeOrDate extends DateTimeOrDateValidator<undefined> {
   public constructor(options?: ValidatorOptions) {
     super({ ...options, required: false })
   }
 }
 
-export class FloatOrFloatStringValidator<O = never> extends UnionValidator<number | string | O> {
+export abstract class FloatOrFloatStringValidator<O = never> extends UnionValidator<
+  ValidatorBase[],
+  number | string | O
+> {
   private errStr: string
 
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super([new FloatValidator(min, max), new FloatStringValidator(min, max)], options)
+    super([new RequiredFloat(min, max), new RequiredFloatString(min, max)], options)
     if (min === Number.MIN_SAFE_INTEGER && max !== Number.MAX_SAFE_INTEGER) {
       this.errStr = `Must be a float or a string formatted float smaller than ${max}`
     } else if (min !== Number.MIN_SAFE_INTEGER && max === Number.MAX_SAFE_INTEGER) {
@@ -359,17 +362,20 @@ export class RequiredFloatOrFloatString extends FloatOrFloatStringValidator {
   }
 }
 
-export class OptionalFloatOrFloatString extends FloatOrFloatStringValidator<undefined | null> {
+export class OptionalFloatOrFloatString extends FloatOrFloatStringValidator<undefined> {
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super(min, max, { ...options, required: false })
   }
 }
 
-export class IntegerOrIntegerStringValidator<O = never> extends UnionValidator<number | string | O> {
+export abstract class IntegerOrIntegerStringValidator<O = never> extends UnionValidator<
+  ValidatorBase[],
+  number | string | O
+> {
   private errStr: string
 
   public constructor(min = 0, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super([new IntegerValidator(min, max), new IntegerStringValidator(min, max)], options)
+    super([new RequiredInteger(min, max), new RequiredIntegerString(min, max)], options)
     if (min === Number.MIN_SAFE_INTEGER && max !== Number.MAX_SAFE_INTEGER) {
       this.errStr = `Must be a integer or a string formatted integer smaller than ${max}`
     } else if (min !== Number.MIN_SAFE_INTEGER && max === Number.MAX_SAFE_INTEGER) {
@@ -396,7 +402,7 @@ export class RequiredIntegerOrIntegerString extends IntegerOrIntegerStringValida
   }
 }
 
-export class OptionalIntegerOrIntegerString extends IntegerOrIntegerStringValidator<undefined | null> {
+export class OptionalIntegerOrIntegerString extends IntegerOrIntegerStringValidator<undefined> {
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super(min, max, { ...options, required: false })
   }

@@ -29,7 +29,7 @@ export function validateInteger(
   return []
 }
 
-export class IntegerValidator<O = never> extends ValidatorBase<number | O> {
+export abstract class IntegerValidator<O = never> extends ValidatorBase<number | O> {
   private min: number
   private max: number
 
@@ -57,7 +57,7 @@ export class IntegerValidator<O = never> extends ValidatorBase<number | O> {
     // prettier-ignore
     const code: string[] = [
       `const ${localValueRef} = ${valueRef}`,
-      `if (${localValueRef} != null) {`,
+      ...this.nullCheckWrap([
       `  if (typeof ${localValueRef} === 'number' && Number.isInteger(${localValueRef})) {`,
       `    if (${localValueRef} < ${this.min} || ${localValueRef} > ${this.max}) {`,
       `      errors.push(new OutOfRangeFail(\`Must be between ${this.min} and ${this.max}\`, ${localValueRef}${contextStr}))`,
@@ -65,10 +65,7 @@ export class IntegerValidator<O = never> extends ValidatorBase<number | O> {
       `  } else {`,
       `    errors.push(new NotIntegerFail(\`Must be an integer\`, ${localValueRef}${contextStr}))`,
       `  }`,
-      ...(this.required ? [
-      `} else {`,
-      `  errors.push(new RequiredFail(\`Is required\`, ${localValueRef}${contextStr}))`] : []),
-      '}',
+      ], localValueRef, contextStr),
       ...(earlyFail ? [
       `if (errors.length > 0) {`,
       `  return errors`,
@@ -106,7 +103,7 @@ export class RequiredInteger extends IntegerValidator {
   }
 }
 
-export class OptionalInteger extends IntegerValidator<undefined | null> {
+export class OptionalInteger extends IntegerValidator<undefined> {
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super(min, max, { ...options, required: false })
   }

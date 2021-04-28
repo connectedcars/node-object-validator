@@ -1,3 +1,4 @@
+import { AssertEqual } from '../common'
 import {
   NotDatetimeOrDateFail,
   NotExactStringFail,
@@ -13,10 +14,7 @@ import { RequiredObject } from './object'
 import { RequiredRegexMatch } from './regex-match'
 import { RequiredString } from './string'
 import {
-  DateTimeOrDateValidator,
-  EnumValidator,
-  FloatOrFloatStringValidator,
-  IntegerOrIntegerStringValidator,
+  isUnion,
   OptionalDateTimeOrDate,
   OptionalEnum,
   OptionalFloatOrFloatString,
@@ -27,7 +25,6 @@ import {
   RequiredFloatOrFloatString,
   RequiredIntegerOrIntegerString,
   RequiredUnion,
-  UnionValidator,
   validateUnion
 } from './union'
 
@@ -38,7 +35,7 @@ interface NumberMessage {
 
 interface StringMessage {
   type: 'string'
-  value: number
+  value: string
 }
 
 interface ErrorMessage {
@@ -48,22 +45,7 @@ interface ErrorMessage {
 
 type Message = ErrorMessage | StringMessage | NumberMessage
 
-const numberMessageValidator = new RequiredObject({
-  type: new RequiredExactString('number'),
-  value: new RequiredFloat()
-})
-
-const stringMessageValidator = new RequiredObject({
-  type: new RequiredExactString('string'),
-  value: new RequiredString()
-})
-
-const errorMessageValidator = new RequiredObject({
-  type: new RequiredExactString('error'),
-  error: new RequiredString()
-})
-
-describe('Union (optimize: %s)', () => {
+describe('Union', () => {
   describe('validateUnion', () => {
     it('should validate simple union', () => {
       const schema = [new RequiredRegexMatch(/^\d+$/), new RequiredFloat()]
@@ -73,11 +55,55 @@ describe('Union (optimize: %s)', () => {
       expect(errors2).toEqual([])
     })
   })
+
+  describe('isUnion', () => {
+    it('should cast value to boolean', () => {
+      const value = 1244 as unknown
+      if (isUnion([new RequiredString(), new RequiredFloat()], value)) {
+        expect(true as AssertEqual<typeof value, string | number>).toEqual(true)
+      } else {
+        fail('did not validate but should')
+      }
+    })
+
+    it('should fail validation', () => {
+      const value = 'string' as unknown
+      expect(isUnion([new RequiredRegexMatch(/^\d+$/), new RequiredFloat()], value)).toEqual(false)
+    })
+  })
+
+  describe('RequiredUnion', () => {
+    it('should return an function body', () => {
+      const validator = new RequiredUnion([new RequiredString(), new RequiredFloat()], { optimize: false })
+      expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
+    })
+
+    it('should export types', () => {
+      const validator = new RequiredUnion([new RequiredString(), new RequiredFloat()], { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('string | number')
+    })
+  })
 })
 
 describe.each([false, true])('Union (optimize: %s)', optimize => {
-  describe('ObjectUnion', () => {
-    const messageValidator = new UnionValidator<Message>(
+  describe('RequiredUnion', () => {
+    const numberMessageValidator = new RequiredObject({
+      type: new RequiredExactString('number'),
+      value: new RequiredFloat()
+    })
+
+    const stringMessageValidator = new RequiredObject({
+      type: new RequiredExactString('string'),
+      value: new RequiredString()
+    })
+
+    const errorMessageValidator = new RequiredObject({
+      type: new RequiredExactString('error'),
+      error: new RequiredString()
+    })
+
+    const messageValidator = new RequiredUnion(
       [numberMessageValidator, stringMessageValidator, errorMessageValidator],
       { optimize }
     )
@@ -95,7 +121,7 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
       if (optimize) {
         expect(code).toEqual(
           [
-            'new UnionValidator([',
+            'new RequiredUnion([',
             '  new RequiredObject({',
             `    'type': new RequiredExactString('number'),`,
             `    'value': new RequiredFloat()`,
@@ -114,7 +140,7 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
       } else {
         expect(code).toEqual(
           [
-            'new UnionValidator([',
+            'new RequiredUnion([',
             '  new RequiredObject({',
             `    'type': new RequiredExactString('number'),`,
             `    'value': new RequiredFloat()`,
@@ -157,6 +183,31 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         value: 'hello'
       })
       expect(errors).toEqual([])
+      expect(
+        true as AssertEqual<
+          typeof messageValidator.tsType,
+          | {
+              type: 'number'
+              value: number
+            }
+          | {
+              type: 'string'
+              value: string
+            }
+          | {
+              type: 'error'
+              error: string
+            }
+        >
+      ).toEqual(true)
+    })
+
+    it('should validate message of type string', () => {
+      const errors = messageValidator.validate({
+        type: 'string',
+        value: 'hello'
+      })
+      expect(errors).toEqual([])
     })
 
     it('should validate message of type number', () => {
@@ -175,8 +226,21 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
       expect(errors).toEqual([])
     })
 
+    it('should cast message to Message type', () => {
+      const unknownValue: unknown = {
+        type: 'error',
+        error: 'some error'
+      }
+
+      if (messageValidator.isValid<Message>(unknownValue)) {
+        expect(true as AssertEqual<typeof unknownValue, Message>).toEqual(true)
+      } else {
+        fail('did not validate but should')
+      }
+    })
+
     it('should fail validation will all error messages', () => {
-      const everyMessageValidator = new UnionValidator<Message>(
+      const everyMessageValidator = new RequiredUnion(
         [numberMessageValidator, stringMessageValidator, errorMessageValidator],
         { optimize, every: true }
       )
@@ -221,395 +285,408 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
     })
   })
 
-  describe('RequiredUnion', () => {
-    const messageValidator = new RequiredUnion<Message>(
-      [numberMessageValidator, stringMessageValidator, errorMessageValidator],
-      { optimize }
-    )
-
-    it('should validate message of type string', () => {
-      const errors = messageValidator.validate({
-        type: 'string',
-        value: 'hello'
-      })
-      expect(errors).toEqual([])
-    })
-  })
-
   describe('OptionalUnion', () => {
-    const messageValidator = new OptionalUnion<Message>(
-      [numberMessageValidator, stringMessageValidator, errorMessageValidator],
-      { optimize }
-    )
-
     it('should validate null to give no failures', () => {
-      const errors = messageValidator.validate(null)
-      expect(errors).toEqual([])
-    })
+      const validator = new OptionalUnion(
+        [
+          new RequiredObject({
+            type: new RequiredExactString('number'),
+            value: new RequiredFloat()
+          }),
+          new RequiredObject({
+            type: new RequiredExactString('string'),
+            value: new RequiredString()
+          }),
+          new RequiredObject({
+            type: new RequiredExactString('error'),
+            error: new RequiredString()
+          })
+        ],
+        { optimize }
+      )
 
-    it('should validate null to give no failures', () => {
-      const errors = messageValidator.validate(undefined)
+      const errors = validator.validate(undefined)
       expect(errors).toEqual([])
+      expect(
+        true as AssertEqual<
+          typeof validator.tsType,
+          | {
+              type: 'number'
+              value: number
+            }
+          | {
+              type: 'string'
+              value: string
+            }
+          | {
+              type: 'error'
+              error: string
+            }
+          | undefined
+        >
+      ).toEqual(true)
     })
   })
 
   describe('Enum', () => {
-    const enumValidator = new EnumValidator<'stuff' | 'hello' | 'more'>(['stuff', 'hello', 'more'], { optimize })
-    it('should validate message of type string', () => {
-      const errors = enumValidator.validate('stuff')
-      expect(errors).toEqual([])
+    describe('RequiredEnum', () => {
+      const enumValidator = new RequiredEnum(['stuff', 'hello', 'more'] as const, { optimize })
+      it('should validate message of type string', () => {
+        const errors = enumValidator.validate('hello')
+        expect(errors).toEqual([])
+        expect(true as AssertEqual<typeof enumValidator.tsType, 'stuff' | 'hello' | 'more'>).toEqual(true)
+      })
+    })
+
+    describe('OptionalEnum', () => {
+      const enumValidator = new OptionalEnum(['stuff', 'hello', 'more'] as const, { optimize })
+
+      it('should validate null to give no failures', () => {
+        expect(enumValidator.validate(undefined)).toEqual([])
+        expect(true as AssertEqual<typeof enumValidator.tsType, 'stuff' | 'hello' | 'more' | undefined>).toEqual(true)
+      })
     })
   })
 
-  describe('RequiredEnum', () => {
-    const enumValidator = new RequiredEnum<'stuff' | 'hello' | 'more'>(['stuff', 'hello', 'more'], { optimize })
-    it('should validate message of type string', () => {
-      const errors = enumValidator.validate('hello')
-      expect(errors).toEqual([])
+  describe('DateTimeOrDate', () => {
+    describe('RequiredDateTimeOrDate', () => {
+      it('requires value to be an RFC 3339 timestamp', () => {
+        const validator = new RequiredDateTimeOrDate({ optimize })
+        expect(validator.validate('2018-08-06T13:37:00Z')).toStrictEqual([])
+        expect(validator.validate('2018-08-06T13:37:00.000Z')).toStrictEqual([])
+        expect(validator.validate('2018-08-06T13:37:00+00:00')).toStrictEqual([])
+        expect(validator.validate('2018-08-06T13:37:00.000+00:00')).toStrictEqual([])
+        expect(validator.validate('')).toStrictEqual([
+          new NotDatetimeOrDateFail('Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp', '')
+        ])
+        expect(validator.validate('2018-08-06')).toStrictEqual([
+          new NotDatetimeOrDateFail(
+            'Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp',
+            '2018-08-06'
+          )
+        ])
+        expect(validator.validate('2018-08-06T13:37:00')).toStrictEqual([
+          new NotDatetimeOrDateFail(
+            'Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp',
+            '2018-08-06T13:37:00'
+          )
+        ])
+        expect(validator.validate('13:37:00')).toStrictEqual([
+          new NotDatetimeOrDateFail(
+            'Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp',
+            '13:37:00'
+          )
+        ])
+        expect(validator.validate('2018-08-ABT13:37:00Z')).toStrictEqual([
+          new NotDatetimeOrDateFail(
+            'Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp',
+            '2018-08-ABT13:37:00Z'
+          )
+        ])
+      })
+
+      it('requires value to be a Date object', () => {
+        const validator = new RequiredDateTimeOrDate({ optimize })
+        expect(validator.validate(new Date('2018-08-06T13:37:00Z'))).toStrictEqual([])
+        expect(validator.validate(new Date('2018-08-06'))).toStrictEqual([])
+        expect(validator.validate(new Date('13:37:00'))).toStrictEqual([])
+        expect(validator.validate(500)).toStrictEqual([
+          new NotDatetimeOrDateFail('Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp', 500)
+        ])
+        expect(validator.validate('')).toStrictEqual([
+          new NotDatetimeOrDateFail('Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp', '')
+        ])
+        expect(validator.validate(true)).toStrictEqual([
+          new NotDatetimeOrDateFail('Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp', true)
+        ])
+        expect(validator.validate(false)).toStrictEqual([
+          new NotDatetimeOrDateFail('Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp', false)
+        ])
+      })
+
+      it('rejects empty value', () => {
+        const validator = new RequiredDateTimeOrDate({ optimize })
+        expect(validator.validate(null)).toStrictEqual([
+          new NotDatetimeOrDateFail('Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp', null)
+        ])
+        expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
+      })
+    })
+
+    describe('OptionalDateTimeOrDate', () => {
+      it('accepts empty value', () => {
+        const validator = new OptionalDateTimeOrDate({ optimize })
+        expect(validator.validate(undefined)).toStrictEqual([])
+        expect(validator.validate(undefined)).toStrictEqual([])
+      })
     })
   })
 
-  describe('OptionalUnion', () => {
-    const enumValidator = new OptionalEnum<'stuff' | 'hello' | 'more'>(['stuff', 'hello', 'more'], { optimize })
-    it('should validate null to give no failures', () => {
-      const errors = enumValidator.validate(null)
-      expect(errors).toEqual([])
+  describe('FloatOrFloatString', () => {
+    describe('RequiredFloatOrFloatString', () => {
+      it('requires value to be a float', () => {
+        const validator = new RequiredFloatOrFloatString(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, { optimize })
+        expect(validator.validate(0.0001)).toStrictEqual([])
+        expect(validator.validate(1)).toStrictEqual([])
+        expect(validator.validate(1.25)).toStrictEqual([])
+        expect(validator.validate(123)).toStrictEqual([])
+        expect(validator.validate('0.0001')).toStrictEqual([])
+        expect(validator.validate('1')).toStrictEqual([])
+        expect(validator.validate('1.25')).toStrictEqual([])
+        expect(validator.validate('123')).toStrictEqual([])
+        expect(validator.validate('')).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float', '')
+        ])
+        expect(validator.validate('a')).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float', 'a')
+        ])
+        expect(validator.validate({})).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float', {})
+        ])
+        expect(validator.validate([])).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float', [])
+        ])
+        expect(validator.validate(true)).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float', true)
+        ])
+        expect(validator.validate(false)).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float', false)
+        ])
+      })
+
+      it('requires min value', () => {
+        const validator = new RequiredFloatOrFloatString(0.5, 500, { optimize })
+        expect(validator.validate(-0.1)).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', -0.1)
+        ])
+        expect(validator.validate(0)).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', 0)
+        ])
+        expect(validator.validate(0.1)).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', 0.1)
+        ])
+        expect(validator.validate(0.2)).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', 0.2)
+        ])
+        expect(validator.validate(0.3)).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', 0.3)
+        ])
+        expect(validator.validate(0.4)).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', 0.4)
+        ])
+        expect(validator.validate(0.49999999)).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', 0.49999999)
+        ])
+        expect(validator.validate('0.5')).toStrictEqual([])
+        expect(validator.validate('0.6')).toStrictEqual([])
+        expect(validator.validate('123.456')).toStrictEqual([])
+
+        expect(validator.validate('-0.1')).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', '-0.1')
+        ])
+        expect(validator.validate('0')).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', '0')
+        ])
+        expect(validator.validate('0.1')).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', '0.1')
+        ])
+        expect(validator.validate('0.2')).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', '0.2')
+        ])
+        expect(validator.validate('0.3')).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', '0.3')
+        ])
+        expect(validator.validate('0.4')).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', '0.4')
+        ])
+        expect(validator.validate('0.49999999')).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', '0.49999999')
+        ])
+        expect(validator.validate('0.5')).toStrictEqual([])
+        expect(validator.validate('0.6')).toStrictEqual([])
+        expect(validator.validate('123.456')).toStrictEqual([])
+      })
+
+      it('requires value to be a float', () => {
+        const validator = new RequiredFloatOrFloatString(0, Number.MAX_SAFE_INTEGER, { optimize })
+        expect(validator.validate(-0.1)).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float larger than 0', -0.1)
+        ])
+        expect(validator.validate(1)).toStrictEqual([])
+      })
+
+      it('requires value to be a float', () => {
+        const validator = new RequiredFloatOrFloatString(Number.MIN_SAFE_INTEGER, 10, { optimize })
+        expect(validator.validate(20)).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float smaller than 10', 20)
+        ])
+        expect(validator.validate(1)).toStrictEqual([])
+      })
+
+      it('requires max value', () => {
+        const validator = new RequiredFloatOrFloatString(-500, 0.5, { optimize })
+        expect(validator.validate(-0.1)).toStrictEqual([])
+        expect(validator.validate(0)).toStrictEqual([])
+        expect(validator.validate(0.1)).toStrictEqual([])
+        expect(validator.validate(0.2)).toStrictEqual([])
+        expect(validator.validate(0.3)).toStrictEqual([])
+        expect(validator.validate(0.4)).toStrictEqual([])
+        expect(validator.validate(0.5)).toStrictEqual([])
+        expect(validator.validate(0.500000001)).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float between -500 and 0.5', 0.500000001)
+        ])
+        expect(validator.validate(0.6)).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float between -500 and 0.5', 0.6)
+        ])
+        expect(validator.validate(0.7)).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float between -500 and 0.5', 0.7)
+        ])
+        expect(validator.validate('-0.1')).toStrictEqual([])
+        expect(validator.validate('0')).toStrictEqual([])
+        expect(validator.validate('0.1')).toStrictEqual([])
+        expect(validator.validate('0.2')).toStrictEqual([])
+        expect(validator.validate('0.3')).toStrictEqual([])
+        expect(validator.validate('0.4')).toStrictEqual([])
+        expect(validator.validate('0.5')).toStrictEqual([])
+        expect(validator.validate('0.500000001')).toStrictEqual([
+          new NotFloatOrFloatStringFail(
+            'Must be a float or a string formatted float between -500 and 0.5',
+            '0.500000001'
+          )
+        ])
+        expect(validator.validate('0.6')).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float between -500 and 0.5', '0.6')
+        ])
+        expect(validator.validate('0.7')).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float between -500 and 0.5', '0.7')
+        ])
+      })
     })
-
-    it('should validate null to give no failures', () => {
-      const errors = enumValidator.validate(undefined)
-      expect(errors).toEqual([])
-    })
-  })
-
-  describe('DateTimeOrDateValidator', () => {
-    it('requires value to be an RFC 3339 timestamp', () => {
-      const validator = new DateTimeOrDateValidator({ optimize })
-      expect(validator.validate('2018-08-06T13:37:00Z')).toStrictEqual([])
-      expect(validator.validate('2018-08-06T13:37:00.000Z')).toStrictEqual([])
-      expect(validator.validate('2018-08-06T13:37:00+00:00')).toStrictEqual([])
-      expect(validator.validate('2018-08-06T13:37:00.000+00:00')).toStrictEqual([])
-      expect(validator.validate('')).toStrictEqual([
-        new NotDatetimeOrDateFail('Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp', '')
-      ])
-      expect(validator.validate('2018-08-06')).toStrictEqual([
-        new NotDatetimeOrDateFail(
-          'Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp',
-          '2018-08-06'
-        )
-      ])
-      expect(validator.validate('2018-08-06T13:37:00')).toStrictEqual([
-        new NotDatetimeOrDateFail(
-          'Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp',
-          '2018-08-06T13:37:00'
-        )
-      ])
-      expect(validator.validate('13:37:00')).toStrictEqual([
-        new NotDatetimeOrDateFail('Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp', '13:37:00')
-      ])
-      expect(validator.validate('2018-08-ABT13:37:00Z')).toStrictEqual([
-        new NotDatetimeOrDateFail(
-          'Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp',
-          '2018-08-ABT13:37:00Z'
-        )
-      ])
-    })
-
-    it('requires value to be a Date object', () => {
-      const validator = new DateTimeOrDateValidator({ optimize })
-      expect(validator.validate(new Date('2018-08-06T13:37:00Z'))).toStrictEqual([])
-      expect(validator.validate(new Date('2018-08-06'))).toStrictEqual([])
-      expect(validator.validate(new Date('13:37:00'))).toStrictEqual([])
-      expect(validator.validate(500)).toStrictEqual([
-        new NotDatetimeOrDateFail('Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp', 500)
-      ])
-      expect(validator.validate('')).toStrictEqual([
-        new NotDatetimeOrDateFail('Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp', '')
-      ])
-      expect(validator.validate(true)).toStrictEqual([
-        new NotDatetimeOrDateFail('Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp', true)
-      ])
-      expect(validator.validate(false)).toStrictEqual([
-        new NotDatetimeOrDateFail('Must be a ISO 8601 date or a string formatted as an RFC 3339 timestamp', false)
-      ])
-    })
-  })
-
-  describe('RequiredDateTimeOrDate', () => {
-    it('rejects empty value', () => {
-      const validator = new RequiredDateTimeOrDate({ optimize })
-      expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required', null)])
-      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
-    })
-  })
-
-  describe('OptionalDateTimeOrDate', () => {
-    it('accepts empty value', () => {
-      const validator = new OptionalDateTimeOrDate({ optimize })
-      expect(validator.validate(undefined)).toStrictEqual([])
-      expect(validator.validate(undefined)).toStrictEqual([])
-    })
-  })
-
-  describe('FloatOrFloatStringValidator', () => {
-    it('requires value to be a float', () => {
-      const validator = new FloatOrFloatStringValidator(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, { optimize })
-      expect(validator.validate(0.0001)).toStrictEqual([])
-      expect(validator.validate(1)).toStrictEqual([])
-      expect(validator.validate(1.25)).toStrictEqual([])
-      expect(validator.validate(123)).toStrictEqual([])
-      expect(validator.validate('0.0001')).toStrictEqual([])
-      expect(validator.validate('1')).toStrictEqual([])
-      expect(validator.validate('1.25')).toStrictEqual([])
-      expect(validator.validate('123')).toStrictEqual([])
-      expect(validator.validate('')).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float', '')
-      ])
-      expect(validator.validate('a')).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float', 'a')
-      ])
-      expect(validator.validate({})).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float', {})
-      ])
-      expect(validator.validate([])).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float', [])
-      ])
-      expect(validator.validate(true)).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float', true)
-      ])
-      expect(validator.validate(false)).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float', false)
-      ])
-    })
-
-    it('requires min value', () => {
-      const validator = new FloatOrFloatStringValidator(0.5, 500, { optimize })
-      expect(validator.validate(-0.1)).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', -0.1)
-      ])
-      expect(validator.validate(0)).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', 0)
-      ])
-      expect(validator.validate(0.1)).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', 0.1)
-      ])
-      expect(validator.validate(0.2)).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', 0.2)
-      ])
-      expect(validator.validate(0.3)).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', 0.3)
-      ])
-      expect(validator.validate(0.4)).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', 0.4)
-      ])
-      expect(validator.validate(0.49999999)).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', 0.49999999)
-      ])
-      expect(validator.validate('0.5')).toStrictEqual([])
-      expect(validator.validate('0.6')).toStrictEqual([])
-      expect(validator.validate('123.456')).toStrictEqual([])
-
-      expect(validator.validate('-0.1')).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', '-0.1')
-      ])
-      expect(validator.validate('0')).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', '0')
-      ])
-      expect(validator.validate('0.1')).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', '0.1')
-      ])
-      expect(validator.validate('0.2')).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', '0.2')
-      ])
-      expect(validator.validate('0.3')).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', '0.3')
-      ])
-      expect(validator.validate('0.4')).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', '0.4')
-      ])
-      expect(validator.validate('0.49999999')).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float between 0.5 and 500', '0.49999999')
-      ])
-      expect(validator.validate('0.5')).toStrictEqual([])
-      expect(validator.validate('0.6')).toStrictEqual([])
-      expect(validator.validate('123.456')).toStrictEqual([])
-    })
-
-    it('requires value to be a float', () => {
-      const validator = new FloatOrFloatStringValidator(0, Number.MAX_SAFE_INTEGER, { optimize })
-      expect(validator.validate(-0.1)).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float larger than 0', -0.1)
-      ])
-      expect(validator.validate(1)).toStrictEqual([])
-    })
-
-    it('requires value to be a float', () => {
-      const validator = new FloatOrFloatStringValidator(Number.MIN_SAFE_INTEGER, 10, { optimize })
-      expect(validator.validate(20)).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float smaller than 10', 20)
-      ])
-      expect(validator.validate(1)).toStrictEqual([])
-    })
-
-    it('requires max value', () => {
-      const validator = new FloatOrFloatStringValidator(-500, 0.5, { optimize })
-      expect(validator.validate(-0.1)).toStrictEqual([])
-      expect(validator.validate(0)).toStrictEqual([])
-      expect(validator.validate(0.1)).toStrictEqual([])
-      expect(validator.validate(0.2)).toStrictEqual([])
-      expect(validator.validate(0.3)).toStrictEqual([])
-      expect(validator.validate(0.4)).toStrictEqual([])
-      expect(validator.validate(0.5)).toStrictEqual([])
-      expect(validator.validate(0.500000001)).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float between -500 and 0.5', 0.500000001)
-      ])
-      expect(validator.validate(0.6)).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float between -500 and 0.5', 0.6)
-      ])
-      expect(validator.validate(0.7)).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float between -500 and 0.5', 0.7)
-      ])
-      expect(validator.validate('-0.1')).toStrictEqual([])
-      expect(validator.validate('0')).toStrictEqual([])
-      expect(validator.validate('0.1')).toStrictEqual([])
-      expect(validator.validate('0.2')).toStrictEqual([])
-      expect(validator.validate('0.3')).toStrictEqual([])
-      expect(validator.validate('0.4')).toStrictEqual([])
-      expect(validator.validate('0.5')).toStrictEqual([])
-      expect(validator.validate('0.500000001')).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float between -500 and 0.5', '0.500000001')
-      ])
-      expect(validator.validate('0.6')).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float between -500 and 0.5', '0.6')
-      ])
-      expect(validator.validate('0.7')).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float between -500 and 0.5', '0.7')
-      ])
-    })
-  })
-
-  describe('RequiredFloatOrFloatString', () => {
     it('rejects empty value', () => {
       const validator = new RequiredFloatOrFloatString(0, Number.MAX_SAFE_INTEGER, { optimize })
-      expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required', null)])
+      expect(validator.validate(null)).toStrictEqual([
+        new NotFloatOrFloatStringFail('Must be a float or a string formatted float larger than 0', null)
+      ])
       expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
     })
-  })
 
-  describe('OptionalFloatString', () => {
-    it('accepts empty value', () => {
-      const validator = new OptionalFloatOrFloatString(0, Number.MAX_SAFE_INTEGER, { optimize })
-      expect(validator.validate(null)).toStrictEqual([])
-      expect(validator.validate(undefined)).toStrictEqual([])
-    })
-  })
-
-  describe('IntegerOrIntegerStringValidator', () => {
-    it('requires value to be a integer', () => {
-      const validator = new IntegerOrIntegerStringValidator(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, {
-        optimize
+    describe('OptionalFloatString', () => {
+      it('accepts empty value', () => {
+        const validator = new OptionalFloatOrFloatString(0, Number.MAX_SAFE_INTEGER, { optimize })
+        expect(validator.validate(null)).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float larger than 0', null)
+        ])
+        expect(validator.validate(undefined)).toStrictEqual([])
       })
-      expect(validator.validate(0)).toStrictEqual([])
-      expect(validator.validate(1)).toStrictEqual([])
-      expect(validator.validate(5)).toStrictEqual([])
-      expect(validator.validate(123)).toStrictEqual([])
-      expect(validator.validate('0')).toStrictEqual([])
-      expect(validator.validate('1')).toStrictEqual([])
-      expect(validator.validate('5')).toStrictEqual([])
-      expect(validator.validate('123')).toStrictEqual([])
-      expect(validator.validate('')).toStrictEqual([
-        new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer', '')
-      ])
-      expect(validator.validate('0.1')).toStrictEqual([
-        new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer', '0.1')
-      ])
-      expect(validator.validate(0.1)).toStrictEqual([
-        new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer', 0.1)
-      ])
-      expect(validator.validate('a')).toStrictEqual([
-        new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer', 'a')
-      ])
-      expect(validator.validate({})).toStrictEqual([
-        new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer', {})
-      ])
-      expect(validator.validate([])).toStrictEqual([
-        new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer', [])
-      ])
-      expect(validator.validate(true)).toStrictEqual([
-        new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer', true)
-      ])
-      expect(validator.validate(false)).toStrictEqual([
-        new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer', false)
-      ])
-    })
-
-    it('requires min value', () => {
-      const validator = new IntegerOrIntegerStringValidator(1, 500, { optimize })
-      expect(validator.validate(-1)).toStrictEqual([
-        new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer between 1 and 500', -1)
-      ])
-      expect(validator.validate(0)).toStrictEqual([
-        new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer between 1 and 500', 0)
-      ])
-      expect(validator.validate('5')).toStrictEqual([])
-      expect(validator.validate(6)).toStrictEqual([])
-      expect(validator.validate('123')).toStrictEqual([])
-
-      expect(validator.validate('-1')).toStrictEqual([
-        new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer between 1 and 500', '-1')
-      ])
-      expect(validator.validate('0')).toStrictEqual([
-        new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer between 1 and 500', '0')
-      ])
-      expect(validator.validate('1.5')).toStrictEqual([
-        new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer between 1 and 500', '1.5')
-      ])
-    })
-
-    it('requires value to be a integer larger than', () => {
-      const validator = new IntegerOrIntegerStringValidator(0, Number.MAX_SAFE_INTEGER, { optimize })
-      expect(validator.validate(-1)).toStrictEqual([
-        new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer larger than 0', -1)
-      ])
-      expect(validator.validate(1)).toStrictEqual([])
-    })
-
-    it('requires value to be a integer smaller than', () => {
-      const validator = new IntegerOrIntegerStringValidator(Number.MIN_SAFE_INTEGER, 10, { optimize })
-      expect(validator.validate(20)).toStrictEqual([
-        new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer smaller than 10', 20)
-      ])
-      expect(validator.validate(1)).toStrictEqual([])
-    })
-
-    it('requires max value', () => {
-      const validator = new IntegerOrIntegerStringValidator(-500, 1, { optimize })
-      expect(validator.validate(-1)).toStrictEqual([])
-      expect(validator.validate(0)).toStrictEqual([])
-      expect(validator.validate(2)).toStrictEqual([
-        new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer between -500 and 1', 2)
-      ])
-      expect(validator.validate('-1')).toStrictEqual([])
-      expect(validator.validate('0')).toStrictEqual([])
-      expect(validator.validate('2')).toStrictEqual([
-        new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer between -500 and 1', '2')
-      ])
     })
   })
 
-  describe('RequiredIntegerOrIntegerString', () => {
-    it('rejects empty value', () => {
-      const validator = new RequiredIntegerOrIntegerString(0, Number.MAX_SAFE_INTEGER, { optimize })
-      expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required', null)])
-      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
-    })
-  })
+  describe('IntegerOrIntegerString', () => {
+    describe('RequiredIntegerOrIntegerString', () => {
+      it('requires value to be a integer', () => {
+        const validator = new RequiredIntegerOrIntegerString(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, {
+          optimize
+        })
+        expect(validator.validate(0)).toStrictEqual([])
+        expect(validator.validate(1)).toStrictEqual([])
+        expect(validator.validate(5)).toStrictEqual([])
+        expect(validator.validate(123)).toStrictEqual([])
+        expect(validator.validate('0')).toStrictEqual([])
+        expect(validator.validate('1')).toStrictEqual([])
+        expect(validator.validate('5')).toStrictEqual([])
+        expect(validator.validate('123')).toStrictEqual([])
+        expect(validator.validate('')).toStrictEqual([
+          new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer', '')
+        ])
+        expect(validator.validate('0.1')).toStrictEqual([
+          new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer', '0.1')
+        ])
+        expect(validator.validate(0.1)).toStrictEqual([
+          new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer', 0.1)
+        ])
+        expect(validator.validate('a')).toStrictEqual([
+          new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer', 'a')
+        ])
+        expect(validator.validate({})).toStrictEqual([
+          new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer', {})
+        ])
+        expect(validator.validate([])).toStrictEqual([
+          new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer', [])
+        ])
+        expect(validator.validate(true)).toStrictEqual([
+          new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer', true)
+        ])
+        expect(validator.validate(false)).toStrictEqual([
+          new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer', false)
+        ])
+      })
 
-  describe('OptionalIntegerString', () => {
-    it('accepts empty value', () => {
-      const validator = new OptionalIntegerOrIntegerString(0, Number.MAX_SAFE_INTEGER, { optimize })
-      expect(validator.validate(null)).toStrictEqual([])
-      expect(validator.validate(undefined)).toStrictEqual([])
+      it('requires min value', () => {
+        const validator = new RequiredIntegerOrIntegerString(1, 500, { optimize })
+        expect(validator.validate(-1)).toStrictEqual([
+          new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer between 1 and 500', -1)
+        ])
+        expect(validator.validate(0)).toStrictEqual([
+          new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer between 1 and 500', 0)
+        ])
+        expect(validator.validate('5')).toStrictEqual([])
+        expect(validator.validate(6)).toStrictEqual([])
+        expect(validator.validate('123')).toStrictEqual([])
+
+        expect(validator.validate('-1')).toStrictEqual([
+          new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer between 1 and 500', '-1')
+        ])
+        expect(validator.validate('0')).toStrictEqual([
+          new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer between 1 and 500', '0')
+        ])
+        expect(validator.validate('1.5')).toStrictEqual([
+          new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer between 1 and 500', '1.5')
+        ])
+      })
+
+      it('requires value to be a integer larger than', () => {
+        const validator = new RequiredIntegerOrIntegerString(0, Number.MAX_SAFE_INTEGER, { optimize })
+        expect(validator.validate(-1)).toStrictEqual([
+          new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer larger than 0', -1)
+        ])
+        expect(validator.validate(1)).toStrictEqual([])
+      })
+
+      it('requires value to be a integer smaller than', () => {
+        const validator = new RequiredIntegerOrIntegerString(Number.MIN_SAFE_INTEGER, 10, { optimize })
+        expect(validator.validate(20)).toStrictEqual([
+          new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer smaller than 10', 20)
+        ])
+        expect(validator.validate(1)).toStrictEqual([])
+      })
+
+      it('requires max value', () => {
+        const validator = new RequiredIntegerOrIntegerString(-500, 1, { optimize })
+        expect(validator.validate(-1)).toStrictEqual([])
+        expect(validator.validate(0)).toStrictEqual([])
+        expect(validator.validate(2)).toStrictEqual([
+          new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer between -500 and 1', 2)
+        ])
+        expect(validator.validate('-1')).toStrictEqual([])
+        expect(validator.validate('0')).toStrictEqual([])
+        expect(validator.validate('2')).toStrictEqual([
+          new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer between -500 and 1', '2')
+        ])
+      })
+      it('rejects empty value', () => {
+        const validator = new RequiredIntegerOrIntegerString(0, Number.MAX_SAFE_INTEGER, { optimize })
+        expect(validator.validate(null)).toStrictEqual([
+          new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer larger than 0', null)
+        ])
+        expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
+      })
+    })
+
+    describe('OptionalIntegerString', () => {
+      it('accepts empty value', () => {
+        const validator = new OptionalIntegerOrIntegerString(0, Number.MAX_SAFE_INTEGER, { optimize })
+        expect(validator.validate(undefined)).toStrictEqual([])
+      })
     })
   })
 })

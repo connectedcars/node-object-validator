@@ -1,6 +1,6 @@
 import { AssertEqual } from '../common'
 import { NotDateFail, RequiredFail } from '../errors'
-import { DateValidator, isDate, OptionalDate, RequiredDate, validateDate } from './date'
+import { isDate, OptionalDate, RequiredDate, validateDate } from './date'
 
 describe('Date', () => {
   describe('validateDate', () => {
@@ -14,19 +14,35 @@ describe('Date', () => {
     it('should cast value to Date', () => {
       const value = new Date('2018-08-06T13:37:00Z') as unknown
       if (isDate(value)) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const itShouldCastNumberArray: AssertEqual<typeof value, Date> = true
+        expect(true as AssertEqual<typeof value, Date>).toEqual(true)
       } else {
         fail('did not validate but should')
       }
+    })
+    it('should fail validation', () => {
+      const value = 'string' as unknown
+      expect(isDate(value)).toEqual(false)
+    })
+  })
+
+  describe('RequiredDate', () => {
+    it('should return an function body', () => {
+      const validator = new RequiredDate({ optimize: false })
+      expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
+    })
+
+    it('should export types', () => {
+      const validator = new RequiredDate({ optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('Date')
     })
   })
 })
 
 describe.each([false, true])('Date (optimize: %s)', optimize => {
-  describe('DateValidator', () => {
+  describe('RequiredDate', () => {
     it('should generate validation code and give same result', () => {
-      const validator = new DateValidator({ optimize })
+      const validator = new RequiredDate({ optimize })
       if (optimize) {
         expect(validator['optimizedValidate']).not.toBeNull()
       } else {
@@ -37,56 +53,61 @@ describe.each([false, true])('Date (optimize: %s)', optimize => {
     })
 
     it('should export validator code with options', () => {
-      const validator = new DateValidator({ optimize })
+      const validator = new RequiredDate({ optimize })
       const code = validator.toString()
       if (optimize) {
-        expect(code).toEqual('new DateValidator()')
+        expect(code).toEqual('new RequiredDate()')
       } else {
-        expect(code).toEqual('new DateValidator({ optimize: false })')
+        expect(code).toEqual('new RequiredDate({ optimize: false })')
       }
     })
 
     it('should export types', () => {
-      const validator = new DateValidator({ optimize })
+      const validator = new RequiredDate({ optimize })
       const code = validator.toString({ types: true })
       expect(code).toEqual('Date')
     })
 
-    it('requires value to be a Date object', () => {
-      const validator = new DateValidator({ optimize })
+    it('accepts valid values', () => {
+      const validator = new RequiredDate({ optimize })
       expect(validator.validate(new Date('2018-08-06T13:37:00Z'))).toStrictEqual([])
       expect(validator.validate(new Date('2018-08-06'))).toStrictEqual([])
       expect(validator.validate(new Date('13:37:00'))).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, Date>).toEqual(true)
+    })
+
+    it('rejects invalid values', () => {
+      const validator = new RequiredDate({ optimize })
       expect(validator.validate(500)).toStrictEqual([new NotDateFail('Must be a Date object', 500)])
       expect(validator.validate('')).toStrictEqual([new NotDateFail('Must be a Date object', '')])
       expect(validator.validate(true)).toStrictEqual([new NotDateFail('Must be a Date object', true)])
       expect(validator.validate(false)).toStrictEqual([new NotDateFail('Must be a Date object', false)])
+      expect(validator.validate(null)).toStrictEqual([new NotDateFail('Must be a Date object', null)])
       expect(validator.validate('2018-08-06T13:37:00Z')).toStrictEqual([
         new NotDateFail('Must be a Date object', '2018-08-06T13:37:00Z')
       ])
+
+      expect(true as AssertEqual<typeof validator.tsType, Date>).toEqual(true)
+    })
+
+    it('rejects undefined', () => {
+      const validator = new RequiredDate({ optimize })
+      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
     })
 
     it('requires value to show correct context on error', () => {
-      const validator = new DateValidator({ optimize })
+      const validator = new RequiredDate({ optimize })
       expect(validator.validate('', 'myDate').map(e => e.toString())).toStrictEqual([
         `NotDateFail: Field 'myDate' must be a Date object (received "")`
       ])
     })
   })
 
-  describe('OptionalStringValue', () => {
-    it('rejects empty value', () => {
-      const validator = new RequiredDate({ optimize })
-      expect(validator.validate(null)).toEqual([new RequiredFail('Is required', null)])
-      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
-    })
-  })
-
-  describe('OptionalStringValue', () => {
+  describe('OptionalDate', () => {
     it('accepts empty value', () => {
       const validator = new OptionalDate({ optimize })
-      expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, Date | undefined>).toEqual(true)
     })
   })
 })
