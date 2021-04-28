@@ -203,7 +203,7 @@ if (isArray(new RequiredInteger(0, 10), [1, 10] 0, 2))  {
 
 ## Boolean
 
-Validators: RequiredBoolean, OptionalBoolean
+Validators: RequiredBoolean, OptionalBoolean, NullableBoolean, OptionalNullableBoolean
 
 Function: isBoolean
 
