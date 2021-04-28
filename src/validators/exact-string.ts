@@ -1,4 +1,4 @@
-import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
+import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotExactStringFail, RequiredFail, ValidationFailure } from '../errors'
 
 export function isExactString<T extends string>(value: unknown, expected: T, context?: string): value is T {
@@ -19,7 +19,7 @@ export function validateExactString(value: unknown, expected: string, context?: 
 export abstract class ExactStringValidator<T extends string = never, O = never> extends ValidatorBase<T | O> {
   public expected: T
 
-  public constructor(expected: T, options?: ValidatorOptions) {
+  public constructor(expected: T, options?: ValidatorBaseOptions) {
     super(options)
     this.expected = expected
     if (options?.optimize !== false) {

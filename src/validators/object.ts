@@ -1,4 +1,11 @@
-import { CodeGenResult, ValidateOptions, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
+import {
+  CodeGenResult,
+  ValidateOptions,
+  ValidatorBase,
+  ValidatorBaseOptions,
+  ValidatorExportOptions,
+  ValidatorOptions
+} from '../common'
 import { NotObjectFail, RequiredFail, ValidationFailure } from '../errors'
 
 export function isObject<T extends ObjectSchema>(
@@ -60,7 +67,7 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
 > {
   public schema: ObjectSchema
 
-  public constructor(schema: T, options?: ValidatorOptions) {
+  public constructor(schema: T, options?: ValidatorBaseOptions) {
     super(options)
     this.schema = schema
     if (options?.optimize !== false) {

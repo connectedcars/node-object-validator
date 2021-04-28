@@ -1,4 +1,4 @@
-import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
+import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotIntegerFail, OutOfRangeFail, RequiredFail, ValidationFailure } from '../errors'
 
 export function isInteger(
@@ -33,7 +33,7 @@ export abstract class IntegerValidator<O = never> extends ValidatorBase<number |
   private min: number
   private max: number
 
-  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorBaseOptions) {
     super(options)
     this.min = min
     this.max = max

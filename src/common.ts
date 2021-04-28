@@ -23,7 +23,7 @@ export type CodeGenResult = [{ [key: string]: unknown }, string[], string[]]
  * @typedef ValidatorOptions
  * @property {boolean} [optimize=true] Generate an optimized function for doing the validation (default: true)
  */
-export type ValidatorOptions = {
+export type ValidatorBaseOptions = {
   /**
    * Generate an optimized function for doing the validation (default: false)
    */
@@ -31,6 +31,11 @@ export type ValidatorOptions = {
   required?: boolean
   nullable?: boolean
   earlyFail?: boolean
+}
+
+export interface ValidatorOptions {
+  earlyFail?: boolean
+  optimize?: boolean
 }
 
 export interface ValidateOptions {
@@ -49,7 +54,7 @@ export function isValidator(value: unknown): value is ValidatorBase {
   return false
 }
 
-export function generateOptionsString(options: ValidatorOptions, defaults: Required<ValidatorOptions>): string {
+export function generateOptionsString(options: ValidatorBaseOptions, defaults: Required<ValidatorBaseOptions>): string {
   const selectedOptions: string[] = []
   if (options.required !== undefined && options.required !== defaults.required) {
     selectedOptions.push(`required: ${options.required}`)
@@ -76,7 +81,7 @@ export abstract class ValidatorBase<T = unknown> {
   protected optimizedValidate: ((value: unknown, context?: string) => ValidationFailure[]) | null
   protected optionsString: string
 
-  public constructor(options?: ValidatorOptions) {
+  public constructor(options?: ValidatorBaseOptions) {
     const defaults = { required: true, nullable: false, earlyFail: false, optimize: true }
     const mergedOptions = { ...defaults, ...options }
 

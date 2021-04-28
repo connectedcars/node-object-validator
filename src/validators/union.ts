@@ -10,7 +10,14 @@ import {
   RequiredInteger,
   RequiredIntegerString
 } from '..'
-import { CodeGenResult, ValidateOptions, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
+import {
+  CodeGenResult,
+  ValidateOptions,
+  ValidatorBase,
+  ValidatorBaseOptions,
+  ValidatorExportOptions,
+  ValidatorOptions
+} from '../common'
 import {
   NotDatetimeOrDateFail,
   NotFloatOrFloatStringFail,
@@ -117,7 +124,7 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
   public schema: T
   private every: boolean
 
-  public constructor(schema: T, options?: UnionValidatorOptions) {
+  public constructor(schema: T, options?: UnionValidatorOptions & ValidatorBaseOptions) {
     super(options)
     this.schema = schema
     this.every = options?.every ? true : false
@@ -276,7 +283,7 @@ export abstract class EnumValidator<T extends readonly string[], C = never> exte
   ExactStringValidator<T[number]>[],
   C
 > {
-  public constructor(schema: T, options?: ValidatorOptions) {
+  public constructor(schema: T, options?: ValidatorBaseOptions) {
     super(
       schema.map(v => new RequiredExactString(v)),
       options
@@ -297,7 +304,7 @@ export class OptionalEnum<T extends readonly string[]> extends EnumValidator<T, 
 }
 
 export abstract class DateTimeOrDateValidator<O = never> extends UnionValidator<ValidatorBase[], string | Date | O> {
-  public constructor(options?: ValidatorOptions) {
+  public constructor(options?: ValidatorBaseOptions) {
     super([new RequiredDateTime(), new RequiredDate()], options)
   }
 
@@ -334,7 +341,7 @@ export abstract class FloatOrFloatStringValidator<O = never> extends UnionValida
 > {
   private errStr: string
 
-  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorBaseOptions) {
     super([new RequiredFloat(min, max), new RequiredFloatString(min, max)], options)
     if (min === Number.MIN_SAFE_INTEGER && max !== Number.MAX_SAFE_INTEGER) {
       this.errStr = `Must be a float or a string formatted float smaller than ${max}`
@@ -374,7 +381,7 @@ export abstract class IntegerOrIntegerStringValidator<O = never> extends UnionVa
 > {
   private errStr: string
 
-  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER, options?: ValidatorBaseOptions) {
     super([new RequiredInteger(min, max), new RequiredIntegerString(min, max)], options)
     if (min === Number.MIN_SAFE_INTEGER && max !== Number.MAX_SAFE_INTEGER) {
       this.errStr = `Must be a integer or a string formatted integer smaller than ${max}`

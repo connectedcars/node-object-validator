@@ -1,5 +1,5 @@
 import { validateString } from '..'
-import { isValidType, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
+import { isValidType, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotFloatStringFail, OutOfRangeFail, ValidationFailure, WrongLengthFail } from '../errors'
 
 export function isFloatString(
@@ -42,7 +42,7 @@ export abstract class FloatStringValidator<O = never> extends ValidatorBase<stri
   private min: number
   private max: number
 
-  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorBaseOptions) {
     super(options)
     this.min = min
     this.max = max

@@ -1,4 +1,11 @@
-import { CodeGenResult, isValidType, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
+import {
+  CodeGenResult,
+  isValidType,
+  ValidatorBase,
+  ValidatorBaseOptions,
+  ValidatorExportOptions,
+  ValidatorOptions
+} from '../common'
 import { DoesNotMatchRegexFail, NotStringFail, RequiredFail, ValidationFailure, WrongLengthFail } from '../errors'
 import { validateString } from './string'
 
@@ -24,7 +31,7 @@ export function validateRegexMatch(value: unknown, regex: RegExp, context?: stri
 export abstract class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
   private regex: RegExp
 
-  public constructor(regex: RegExp, options?: ValidatorOptions) {
+  public constructor(regex: RegExp, options?: ValidatorBaseOptions) {
     super(options)
     this.regex = regex
     if (options?.optimize !== false) {

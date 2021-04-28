@@ -1,4 +1,11 @@
-import { CodeGenResult, isValidType, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
+import {
+  CodeGenResult,
+  isValidType,
+  ValidatorBase,
+  ValidatorBaseOptions,
+  ValidatorExportOptions,
+  ValidatorOptions
+} from '../common'
 import { NotRfc3339Fail, NotStringFail, RequiredFail, ValidationFailure, WrongLengthFail } from '../errors'
 import { validateString } from './string'
 
@@ -24,7 +31,7 @@ export function validateDateTime(value: unknown, context?: string): ValidationFa
 }
 
 export abstract class DateTimeValidator<O = never> extends ValidatorBase<string | O> {
-  public constructor(options?: ValidatorOptions) {
+  public constructor(options?: ValidatorBaseOptions) {
     super(options)
     if (options?.optimize !== false) {
       this.optimize()

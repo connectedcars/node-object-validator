@@ -47,9 +47,7 @@ Validation functions:
 
 Common options:
 
-* optimized: Create optimized function and use this for validation (default: true)
-* required: Is this validator required (default: true)
-* nullable: Allow value to be null (default: false)
+* optimize: Create optimized function and use this for validation (default: true)
 * earlyFail: Return on first error (default: false)
 
 # How to use

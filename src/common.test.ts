@@ -1,8 +1,8 @@
-import { ValidatorBase, ValidatorExportOptions, ValidatorOptions } from './common'
+import { ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions } from './common'
 import { RequiredFail, ValidationFailure } from './errors'
 
 class OneValidator extends ValidatorBase<number> {
-  public constructor(options?: ValidatorOptions) {
+  public constructor(options?: ValidatorBaseOptions) {
     super(options)
     if (options?.optimize !== false) {
       this.optimize()

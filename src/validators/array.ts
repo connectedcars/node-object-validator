@@ -1,4 +1,11 @@
-import { CodeGenResult, ValidateOptions, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
+import {
+  CodeGenResult,
+  ValidateOptions,
+  ValidatorBase,
+  ValidatorBaseOptions,
+  ValidatorExportOptions,
+  ValidatorOptions
+} from '../common'
 import { NotArrayFail, RequiredFail, ValidationFailure, WrongLengthFail } from '../errors'
 
 export function isArray<T extends ValidatorBase>(
@@ -55,7 +62,7 @@ export abstract class ArrayValidator<T extends ValidatorBase = never, O = never>
   private minLength: number
   private maxLength: number
 
-  public constructor(schema: T, minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+  public constructor(schema: T, minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorBaseOptions) {
     super(options)
     this.schema = schema
     this.minLength = minLength
@@ -134,7 +141,7 @@ export abstract class ArrayValidator<T extends ValidatorBase = never, O = never>
     return `new ${this.constructor.name}(${schemaStr}${minLengthStr}${maxLengthStr}${optionsStr})`
   }
 
-  protected validateValue(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
+  protected validateValue(value: unknown, context?: string, options?: ValidatorOptions): ValidationFailure[] {
     return validateArray(this.schema, value, this.minLength, this.maxLength, context, {
       earlyFail: this.earlyFail,
       ...options

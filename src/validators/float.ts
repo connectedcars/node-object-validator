@@ -1,4 +1,4 @@
-import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
+import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotFloatFail, OutOfRangeFail, RequiredFail, ValidationFailure } from '../errors'
 
 export function isFloat(
@@ -33,7 +33,7 @@ export abstract class FloatValidator<O = never> extends ValidatorBase<number | O
   private min: number
   private max: number
 
-  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorBaseOptions) {
     super(options)
     this.min = min
     this.max = max
