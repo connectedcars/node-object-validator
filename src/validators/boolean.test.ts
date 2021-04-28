@@ -1,6 +1,13 @@
 import { AssertEqual } from '../common'
 import { NotBooleanFail, RequiredFail } from '../errors'
-import { isBoolean, OptionalBoolean, RequiredBoolean, validateBoolean } from './boolean'
+import {
+  isBoolean,
+  NullableBoolean,
+  OptionalBoolean,
+  OptionalNullableBoolean,
+  RequiredBoolean,
+  validateBoolean
+} from './boolean'
 
 describe('Boolean', () => {
   describe('validateBoolean', () => {
@@ -94,10 +101,30 @@ describe.each([false, true])('Boolean (optimize: %s)', optimize => {
   })
 
   describe('OptionalBoolean', () => {
-    it('accepts empty value', () => {
+    it('accepts valid value', () => {
       const validator = new OptionalBoolean({ optimize })
+      expect(validator.validate(true)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, boolean | undefined>).toEqual(true)
+    })
+  })
+
+  describe('NullableBoolean', () => {
+    it('accepts valid values', () => {
+      const validator = new NullableBoolean({ optimize })
+      expect(validator.validate(true)).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, boolean | null>).toEqual(true)
+    })
+  })
+
+  describe('OptionalNullableBoolean', () => {
+    it('accepts valid values', () => {
+      const validator = new OptionalNullableBoolean({ optimize })
+      expect(validator.validate(true)).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, boolean | null | undefined>).toEqual(true)
     })
   })
 })

@@ -91,6 +91,6 @@ export class NullableBoolean extends BooleanValidator<null> {
 
 export class OptionalNullableBoolean extends BooleanValidator<undefined | null> {
   public constructor(options?: ValidatorOptions) {
-    super({ ...options, required: false })
+    super({ ...options, required: false, nullable: true })
   }
 }
