@@ -1,6 +1,13 @@
 import { AssertEqual } from '../common'
 import { DoesNotMatchRegexFail, NotStringFail, RequiredFail } from '../errors'
-import { isRegexMatch, OptionalRegexMatch, RequiredRegexMatch, validateRegexMatch } from './regex-match'
+import {
+  isRegexMatch,
+  NullableRegexMatch,
+  OptionalNullableRegexMatch,
+  OptionalRegexMatch,
+  RequiredRegexMatch,
+  validateRegexMatch
+} from './regex-match'
 
 describe.each([false, true])('Regex (optimize: %s)', () => {
   describe('validateRegexMatch', () => {
@@ -104,8 +111,28 @@ describe.each([false, true])('Regex (optimize: %s)', optimize => {
   describe('OptionalRegexMatch', () => {
     it('accepts empty value', () => {
       const validator = new OptionalRegexMatch(/^.*$/, { optimize })
+      expect(validator.validate('hello')).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, string | undefined>).toEqual(true)
+    })
+  })
+
+  describe('NullableRegexMatch', () => {
+    it('accepts empty value', () => {
+      const validator = new NullableRegexMatch(/^.*$/, { optimize })
+      expect(validator.validate('hello')).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, string | null>).toEqual(true)
+    })
+  })
+
+  describe('OptionalNullableRegexMatch', () => {
+    it('accepts empty value', () => {
+      const validator = new OptionalNullableRegexMatch(/^.*$/, { optimize })
+      expect(validator.validate('hello')).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, string | undefined | null>).toEqual(true)
     })
   })
 })

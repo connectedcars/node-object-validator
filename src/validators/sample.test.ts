@@ -8,7 +8,14 @@ import {
   RequiredFail,
   WrongLengthFail
 } from '../errors'
-import { isSample, OptionalSample, RequiredSample, validateSample } from './sample'
+import {
+  isSample,
+  NullableSample,
+  OptionalNullableSample,
+  OptionalSample,
+  RequiredSample,
+  validateSample
+} from './sample'
 
 describe('Sample', () => {
   describe('validateSample', () => {
@@ -302,9 +309,28 @@ describe.each([false, true])('Sample (optimize: %s)', optimize => {
 
   describe('OptionalSample', () => {
     it('accepts empty value', () => {
-      const validator = new OptionalSample(true, { optimize })
+      const validator = new OptionalSample(false, { optimize })
+      expect(validator.validate(true)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, boolean | undefined>).toEqual(true)
+    })
+  })
+
+  describe('NullableSample', () => {
+    it('accepts empty value', () => {
+      const validator = new NullableSample(false, { optimize })
+      expect(validator.validate(true)).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, boolean | null>).toEqual(true)
+    })
+  })
+
+  describe('OptionalNullableSample', () => {
+    it('accepts empty value', () => {
+      const validator = new OptionalNullableSample(false, { optimize })
+      expect(validator.validate(true)).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, boolean | null | undefined>).toEqual(true)
     })
   })
 })

@@ -28,7 +28,7 @@ export abstract class UndefinedValidator<O = never> extends ValidatorBase<undefi
     super({ ...options, required: false })
     this.optionsString = options
       ? generateOptionsString(options, {
-          required: true,
+          required: false,
           nullable: false,
           earlyFail: false,
           optimize: true
@@ -91,12 +91,19 @@ export abstract class UndefinedValidator<O = never> extends ValidatorBase<undefi
 
 export class RequiredUndefined extends UndefinedValidator {
   public constructor(options?: ValidatorOptions) {
-    super({ ...options, required: true })
+    super({ ...options, required: false })
   }
 }
 
-export class NullableUndefined extends UndefinedValidator {
+export class OptionalUndefined extends UndefinedValidator {
+  public required = false as const
   public constructor(options?: ValidatorOptions) {
-    super({ ...options, required: true, nullable: true })
+    super({ ...options, required: false })
+  }
+}
+
+export class NullableUndefined extends UndefinedValidator<null> {
+  public constructor(options?: ValidatorOptions) {
+    super({ ...options, required: false, nullable: true })
   }
 }

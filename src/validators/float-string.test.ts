@@ -1,6 +1,13 @@
 import { AssertEqual } from '../common'
 import { NotFloatStringFail, OutOfRangeFail, RequiredFail, WrongLengthFail } from '../errors'
-import { isFloatString, OptionalFloatString, RequiredFloatString, validateFloatString } from './float-string'
+import {
+  isFloatString,
+  NullableFloatString,
+  OptionalFloatString,
+  OptionalNullableFloatString,
+  RequiredFloatString,
+  validateFloatString
+} from './float-string'
 
 describe('FloatString', () => {
   describe('validateFloatString', () => {
@@ -139,8 +146,28 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
   describe('OptionalFloatString', () => {
     it('accepts empty value', () => {
       const validator = new OptionalFloatString(0, Number.MAX_SAFE_INTEGER, { optimize })
+      expect(validator.validate('1.0')).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, string | undefined>).toEqual(true)
+    })
+  })
+
+  describe('NullableFloatString', () => {
+    it('accepts empty value', () => {
+      const validator = new NullableFloatString(0, Number.MAX_SAFE_INTEGER, { optimize })
+      expect(validator.validate('1.0')).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, string | null>).toEqual(true)
+    })
+  })
+
+  describe('OptionalNullableFloatString', () => {
+    it('accepts empty value', () => {
+      const validator = new OptionalNullableFloatString(0, Number.MAX_SAFE_INTEGER, { optimize })
+      expect(validator.validate('1.0')).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, string | null | undefined>).toEqual(true)
     })
   })
 })

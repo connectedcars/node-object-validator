@@ -1,6 +1,6 @@
 import { AssertEqual } from '../common'
 import { NotDateFail, RequiredFail } from '../errors'
-import { isDate, OptionalDate, RequiredDate, validateDate } from './date'
+import { isDate, NullableDate, OptionalDate, OptionalNullableDate, RequiredDate, validateDate } from './date'
 
 describe('Date', () => {
   describe('validateDate', () => {
@@ -106,8 +106,28 @@ describe.each([false, true])('Date (optimize: %s)', optimize => {
   describe('OptionalDate', () => {
     it('accepts empty value', () => {
       const validator = new OptionalDate({ optimize })
+      expect(validator.validate(new Date())).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, Date | undefined>).toEqual(true)
+    })
+  })
+
+  describe('NullableDate', () => {
+    it('accepts empty value', () => {
+      const validator = new NullableDate({ optimize })
+      expect(validator.validate(new Date())).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, Date | null>).toEqual(true)
+    })
+  })
+
+  describe('OptionalNullableDate', () => {
+    it('accepts empty value', () => {
+      const validator = new OptionalNullableDate({ optimize })
+      expect(validator.validate(new Date())).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, Date | null | undefined>).toEqual(true)
     })
   })
 })

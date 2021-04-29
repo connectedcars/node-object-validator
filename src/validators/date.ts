@@ -73,12 +73,24 @@ export abstract class DateValidator<O = never> extends ValidatorBase<Date | O> {
 
 export class RequiredDate extends DateValidator {
   public constructor(options?: ValidatorOptions) {
-    super({ ...options, required: true })
+    super({ ...options })
   }
 }
 
 export class OptionalDate extends DateValidator<undefined> {
   public constructor(options?: ValidatorOptions) {
     super({ ...options, required: false })
+  }
+}
+
+export class NullableDate extends DateValidator<null> {
+  public constructor(options?: ValidatorOptions) {
+    super({ ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableDate extends DateValidator<undefined | null> {
+  public constructor(options?: ValidatorOptions) {
+    super({ ...options, required: false, nullable: true })
   }
 }

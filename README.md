@@ -1,10 +1,19 @@
 # Object-validator
 
-Validate input data based on a defined schema with detailed errors at the same performance as if you had done custom optimized code to do the validation. It's also has zero dependencies removing any reason to not always do validation on input.
+Validate input data based on a defined schema with automatic compile time type interference and excellent performance, removing any reason to not always do validation on input:
+
+Features:
+
+* Detailed validation errors
+* Precise validation with sub types for number like floats and integers with min/max value
+* Optimized code generation (Similar performance to hand optimized code)
+* Compile time type interference (Without using compiler plugins or parsers, just pure typescript)
+* Easy to implement own validators
+* Zero dependencies
 
 ## Purpose
 
-There exists a lot of validation libraries but most of them are slow, limit what you can validate, are tied to a specific build system, does not allow extension or has horrible syntax. ObjectValidate lets you construct simple schemas where you can validate input in detail, fx. limiting the size of a integer and give full feedback on what failed validation to the end user.
+There exists a lot of validation libraries but most of them are slow, limit what you can validate, are tied to a specific build system, does not allow extension or has horrible syntax. ObjectValidator lets you construct simple schemas where you can validate input in detail, fx. limiting the size of a integer and give full feedback on what failed validation to the end user. While doing this you also construct your typescript types without having to define separate interfaces or types for what you are validating.
 
 When running in optimized mode it generates a custom function that should give the fastest and least overhead validation that is possible often speeding up validating by more than 10 times.
 
@@ -186,7 +195,7 @@ let knownValue = objectValidator.cast(unknownValue)
 
 ## Array (validator, min, max, options)
 
-Validators: RequiredArray, OptionalArray
+Validators: RequiredArray, OptionalArray, NullableArray, OptionalNullableArray
 
 Function: isArray
 
@@ -220,7 +229,7 @@ if (isBoolean(true)) {
 
 ## Date
 
-Validators: RequiredDate, OptionalDate
+Validators: RequiredDate, OptionalDate, NullableDate, OptionalNullableDate
 
 Function: isDate
 
@@ -237,7 +246,7 @@ if (isDate(new Date())) {
 
 ## DateTime
 
-Validators: RequiredDateTime, OptionalDateTime
+Validators: RequiredDateTime, OptionalDateTime, NullableDateTime, OptionalNullableDateTime
 
 Function: isDateTime
 
@@ -254,7 +263,7 @@ if (isDateTime('2018-08-06T13:37:00Z')) {
 
 ## ExactString (expected)
 
-Validators: RequiredExactString, OptionalExactString
+Validators: RequiredExactString, OptionalExactString, NullableExactString, OptionalNullableExactString
 
 Function: isExactString
 
@@ -271,7 +280,7 @@ if (isExactString('mystring', 'mystring')) {
 
 ## FloatString (min, max)
 
-Validators: RequiredFloatString, OptionalFloatString
+Validators: RequiredFloatString, OptionalFloatString, NullableFloatString, OptionalNullableFloatString
 
 Function: isFloatString
 
@@ -288,7 +297,7 @@ if (isFloatString('1.1')) {
 
 ## Float (min, max)
 
-Validators: RequiredFloat, OptionalFloat
+Validators: RequiredFloat, OptionalFloat, NullableFloat, OptionalNullableFloat
 
 Function:
 
@@ -305,7 +314,7 @@ if (isFloat(1.1)) {
 
 ## IntegerString (min, max)
 
-Validators: RequiredIntegerString, OptionalIntegerString
+Validators: RequiredIntegerString, OptionalIntegerString, NullableIntegerString, OptionalNullableIntegerString
 
 Function: isIntegerString
 
@@ -322,7 +331,7 @@ if (isIntegerString('10')) {
 
 ## Integer (min, max)
 
-Validators: RequiredInteger, OptionalInteger
+Validators: RequiredInteger, OptionalInteger, NullableInteger, OptionalNullableInteger
 
 Function: isInteger
 
@@ -339,7 +348,7 @@ if (isInteger(10)) {
 
 ## Null
 
-Validators: RequiredNull, OptionalNull
+Validators: RequiredNull, OptionalNull, NullableNull, OptionalNullableNull
 
 Function: isNull
 
@@ -356,7 +365,7 @@ if (isNull(10)) {
 
 ## Object (schema)
 
-Validators: RequiredObject, OptionalObject
+Validators: RequiredObject, OptionalObject, NullableObject, OptionalNullableObject
 
 Function: isObject
 
@@ -377,7 +386,7 @@ if (isObject({ int: new RequiredInteger(0, 10) }, { int: 10 })) {
 
 ## RegexMatch (regex)
 
-Validators: RequiredRegexMatch, OptionalRegexMatch
+Validators: RequiredRegexMatch, OptionalRegexMatch, NullableRegexMatch, OptionalNullableRegexMatch
 
 Function: isRegexMatch
 
@@ -394,7 +403,7 @@ if (isRegexMatch(/hello/, 'hello')) {
 
 ## Sample (sample)
 
-Validators: RequiredSample, OptionalSample
+Validators: RequiredSample, OptionalSample, NullableSample, OptionalNullableSample
 
 Function: isSample
 
@@ -470,7 +479,7 @@ console.log(`let myTypeValidator = ${sampleValidator.toString()}`)
 
 ## String (min, max)
 
-Validators: RequiredString, OptionalString
+Validators: RequiredString, OptionalString, NullableString, OptionalNullableString
 
 Function: isString
 
@@ -487,7 +496,7 @@ if (isString('hello1234')) {
 
 ## Undefined
 
-Validators: RequiredUndefined, OptionalUndefined
+Validators: RequiredUndefined, OptionalUndefined, NullableUndefined
 
 Function: isUndefined
 
@@ -504,7 +513,7 @@ if (isUndefined(undefined)) {
 
 ## Union ([validator, ...])
 
-Validators: RequiredUnion, OptionalUnion
+Validators: RequiredUnion, OptionalUnion, NullableUnion, OptionalNullableUnion
 
 Function: isUnion
 
@@ -558,7 +567,7 @@ let errors = messageValidator.validate({ type: 'string', value: 'hello' })
 
 ## EnumValidator([string, ...])
 
-Alias: RequiredEnum, OptionalEnum
+Alias: RequiredEnum, OptionalEnum, NullableEnum, OptionalNullableEnum
 
 The enum validator is a short hand instance of the union validator:
 

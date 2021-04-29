@@ -1,6 +1,6 @@
 import { AssertEqual } from '../common'
 import { NotArrayFail, NotIntegerFail, RequiredFail } from '../errors'
-import { isArray, OptionalArray, RequiredArray, validateArray } from './array'
+import { isArray, NullableArray, OptionalArray, OptionalNullableArray, RequiredArray, validateArray } from './array'
 import { RequiredInteger } from './integer'
 import { RequiredObject } from './object'
 
@@ -113,8 +113,28 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
   describe('OptionalArray', () => {
     it('accepts empty value', () => {
       const validator = new OptionalArray(new RequiredObject({}), 0, Number.MAX_SAFE_INTEGER, { optimize })
+      expect(validator.validate([])).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, Record<string, any>[] | undefined>).toEqual(true)
+    })
+  })
+
+  describe('NullableArray', () => {
+    it('accepts valid values', () => {
+      const validator = new NullableArray(new RequiredObject({}), 0, Number.MAX_SAFE_INTEGER, { optimize })
+      expect(validator.validate([])).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, Record<string, any>[] | null>).toEqual(true)
+    })
+  })
+
+  describe('OptionalNullableArray', () => {
+    it('accepts valid values', () => {
+      const validator = new OptionalNullableArray(new RequiredObject({}), 0, Number.MAX_SAFE_INTEGER, { optimize })
+      expect(validator.validate([])).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, Record<string, any>[] | null | undefined>).toEqual(true)
     })
   })
 })

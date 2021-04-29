@@ -99,12 +99,24 @@ export abstract class IntegerValidator<O = never> extends ValidatorBase<number |
 
 export class RequiredInteger extends IntegerValidator {
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(min, max, { ...options, required: true })
+    super(min, max, { ...options })
   }
 }
 
 export class OptionalInteger extends IntegerValidator<undefined> {
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super(min, max, { ...options, required: false })
+  }
+}
+
+export class NullableInteger extends IntegerValidator<null> {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, { ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableInteger extends IntegerValidator<undefined | null> {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, { ...options, required: false, nullable: true })
   }
 }

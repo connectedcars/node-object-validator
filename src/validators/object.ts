@@ -54,10 +54,10 @@ export type IsUndefined<T, K> = undefined extends T ? K : never
 export type IsNotUndefined<T, K> = undefined extends T ? never : K
 export type UndefinedKeys<T> = { [K in keyof T]-?: IsUndefined<T[K], K> }[keyof T]
 export type NotUndefinedKeys<T> = { [K in keyof T]-?: IsNotUndefined<T[K], K> }[keyof T]
-export type IncludeNullableTypes<T extends Record<string, unknown>> = { [K in UndefinedKeys<T>]: T[K] }
-export type ExcludeNullableTypes<T extends Record<string, unknown>> = { [K in NotUndefinedKeys<T>]: T[K] }
-export type UndefinedToOptional<T extends Record<string, unknown>> = ExcludeNullableTypes<T> &
-  Partial<IncludeNullableTypes<T>>
+export type IncludeUndefinedTypes<T extends Record<string, unknown>> = { [K in UndefinedKeys<T>]: T[K] }
+export type ExcludeUndefinedTypes<T extends Record<string, unknown>> = { [K in NotUndefinedKeys<T>]: T[K] }
+export type UndefinedToOptional<T extends Record<string, unknown>> = ExcludeUndefinedTypes<T> &
+  Partial<IncludeUndefinedTypes<T>>
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ObjectWrap<T> = T extends Record<string, any> ? { [K in keyof T]: T[K] } : never
@@ -147,12 +147,24 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
 
 export class RequiredObject<T extends ObjectSchema> extends ObjectValidator<T> {
   public constructor(schema: T, options?: ValidatorOptions) {
-    super(schema, { ...options, required: true })
+    super(schema, { ...options })
   }
 }
 
 export class OptionalObject<T extends ObjectSchema> extends ObjectValidator<T, undefined> {
   public constructor(schema: T, options?: ValidatorOptions) {
     super(schema, { ...options, required: false })
+  }
+}
+
+export class NullableObject<T extends ObjectSchema> extends ObjectValidator<T, null> {
+  public constructor(schema: T, options?: ValidatorOptions) {
+    super(schema, { ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableObject<T extends ObjectSchema> extends ObjectValidator<T, undefined | null> {
+  public constructor(schema: T, options?: ValidatorOptions) {
+    super(schema, { ...options, required: false, nullable: true })
   }
 }

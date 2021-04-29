@@ -73,7 +73,7 @@ export abstract class BooleanValidator<O = never> extends ValidatorBase<boolean 
 
 export class RequiredBoolean extends BooleanValidator {
   public constructor(options?: ValidatorOptions) {
-    super({ ...options, required: true })
+    super({ ...options })
   }
 }
 
@@ -85,7 +85,7 @@ export class OptionalBoolean extends BooleanValidator<undefined> {
 
 export class NullableBoolean extends BooleanValidator<null> {
   public constructor(options?: ValidatorOptions) {
-    super({ ...options, required: false, nullable: true })
+    super({ ...options, nullable: true })
   }
 }
 

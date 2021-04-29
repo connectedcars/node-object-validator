@@ -98,12 +98,24 @@ export abstract class DateTimeValidator<O = never> extends ValidatorBase<string 
 
 export class RequiredDateTime extends DateTimeValidator {
   public constructor(options?: ValidatorOptions) {
-    super({ ...options, required: true })
+    super({ ...options })
   }
 }
 
 export class OptionalDateTime extends DateTimeValidator<undefined> {
   public constructor(options?: ValidatorOptions) {
     super({ ...options, required: false })
+  }
+}
+
+export class NullableDateTime extends DateTimeValidator<null> {
+  public constructor(options?: ValidatorOptions) {
+    super({ ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableDateTime extends DateTimeValidator<undefined | null> {
+  public constructor(options?: ValidatorOptions) {
+    super({ ...options, required: false, nullable: true })
   }
 }

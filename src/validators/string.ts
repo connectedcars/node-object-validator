@@ -108,3 +108,15 @@ export class OptionalString extends StringValidator<undefined> {
     super(minLength, maxLength, { ...options, required: false })
   }
 }
+
+export class NullableString extends StringValidator<null> {
+  public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(minLength, maxLength, { ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableString extends StringValidator<undefined | null> {
+  public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(minLength, maxLength, { ...options, required: false, nullable: true })
+  }
+}

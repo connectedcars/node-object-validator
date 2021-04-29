@@ -77,3 +77,15 @@ export class OptionalIntegerString extends IntegerStringValidator<undefined> {
     super(min, max, { ...options, required: false })
   }
 }
+
+export class NullableIntegerString extends IntegerStringValidator<null> {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, { ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableIntegerString extends IntegerStringValidator<null | undefined> {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, { ...options, required: false, nullable: true })
+  }
+}

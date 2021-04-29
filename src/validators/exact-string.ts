@@ -79,12 +79,24 @@ export abstract class ExactStringValidator<T extends string = never, O = never> 
 
 export class RequiredExactString<T extends string> extends ExactStringValidator<T> {
   public constructor(expected: T, options?: ValidatorOptions) {
-    super(expected, { ...options, required: true })
+    super(expected, { ...options })
   }
 }
 
 export class OptionalExactString<T extends string> extends ExactStringValidator<T, undefined> {
   public constructor(expected: T, options?: ValidatorOptions) {
     super(expected, { ...options, required: false })
+  }
+}
+
+export class NullableExactString<T extends string> extends ExactStringValidator<T, null> {
+  public constructor(expected: T, options?: ValidatorOptions) {
+    super(expected, { ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableExactString<T extends string> extends ExactStringValidator<T, undefined | null> {
+  public constructor(expected: T, options?: ValidatorOptions) {
+    super(expected, { ...options, required: false, nullable: true })
   }
 }

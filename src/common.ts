@@ -19,20 +19,18 @@ export function isValidType<T>(value: unknown, errors: ValidationFailure[]): val
 
 export type CodeGenResult = [{ [key: string]: unknown }, string[], string[]]
 
-/**
- * @typedef ValidatorOptions
- * @property {boolean} [optimize=true] Generate an optimized function for doing the validation (default: true)
- */
 export type ValidatorBaseOptions = {
-  /**
-   * Generate an optimized function for doing the validation (default: false)
-   */
   optimize?: boolean
   required?: boolean
   nullable?: boolean
   earlyFail?: boolean
 }
 
+/**
+ * @typedef ValidatorOptions
+ * @property {boolean} [earlyFail=false] Stop validation on first failure (default: false)
+ * @property {boolean} [optimize=true] Generate an optimized function for doing the validation (default: true)
+ */
 export interface ValidatorOptions {
   earlyFail?: boolean
   optimize?: boolean
@@ -155,7 +153,11 @@ export abstract class ValidatorBase<T = unknown> {
     ]
   }
 
-  protected nullCheckWrap(code: string[], valueRef: string, contextStr: string): string[] {
+  protected nullCheckWrap(code: string[], valueRef: string, contextStr: string, skip = false): string[] {
+    if (skip) {
+      return code
+    }
+
     const result: string[] = []
     if (this.required) {
       if (this.nullable) {

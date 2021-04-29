@@ -133,12 +133,24 @@ export abstract class SampleValidator<T extends Sample = never, O = never> exten
 
 export class RequiredSample<T extends Sample> extends SampleValidator<T> {
   public constructor(schema: T, options?: ValidatorOptions) {
-    super(schema, { ...options, required: true })
+    super(schema, { ...options })
   }
 }
 
 export class OptionalSample<T extends Sample> extends SampleValidator<T, undefined> {
   public constructor(schema: T, options?: ValidatorOptions) {
     super(schema, { ...options, required: false })
+  }
+}
+
+export class NullableSample<T extends Sample> extends SampleValidator<T, null> {
+  public constructor(schema: T, options?: ValidatorOptions) {
+    super(schema, { ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableSample<T extends Sample> extends SampleValidator<T, null | undefined> {
+  public constructor(schema: T, options?: ValidatorOptions) {
+    super(schema, { ...options, required: false, nullable: true })
   }
 }

@@ -4,7 +4,14 @@ import { OptionalArray, RequiredArray } from './array'
 import { OptionalDate } from './date'
 import { RequiredFloat } from './float'
 import { OptionalInteger, RequiredInteger } from './integer'
-import { isObject, OptionalObject, RequiredObject, validateObject } from './object'
+import {
+  isObject,
+  NullableObject,
+  OptionalNullableObject,
+  OptionalObject,
+  RequiredObject,
+  validateObject
+} from './object'
 import { RequiredRegexMatch } from './regex-match'
 
 describe('Object', () => {
@@ -393,9 +400,28 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
   describe('OptionalObject', () => {
     it('accepts empty value', () => {
       const validator = new OptionalObject({}, { optimize })
+      expect(validator.validate({})).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
-      const knownValue = validator.cast(undefined)
-      expect(true as AssertEqual<typeof knownValue, Record<string, any> | undefined>).toEqual(true)
+      expect(true as AssertEqual<typeof validator.tsType, Record<string, any> | undefined>).toEqual(true)
+    })
+  })
+
+  describe('NullableObject', () => {
+    it('accepts empty value', () => {
+      const validator = new NullableObject({}, { optimize })
+      expect(validator.validate({})).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, Record<string, any> | null>).toEqual(true)
+    })
+  })
+
+  describe('OptionalNullableObject', () => {
+    it('accepts empty value', () => {
+      const validator = new OptionalNullableObject({}, { optimize })
+      expect(validator.validate({})).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, Record<string, any> | null | undefined>).toEqual(true)
     })
   })
 })

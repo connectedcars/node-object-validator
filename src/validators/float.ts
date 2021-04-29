@@ -99,12 +99,24 @@ export abstract class FloatValidator<O = never> extends ValidatorBase<number | O
 
 export class RequiredFloat extends FloatValidator {
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(min, max, { ...options, required: true })
+    super(min, max, { ...options })
   }
 }
 
 export class OptionalFloat extends FloatValidator<undefined> {
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super(min, max, { ...options, required: false })
+  }
+}
+
+export class NullableFloat extends FloatValidator<null> {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, { ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableFloat extends FloatValidator<null | undefined> {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, { ...options, required: false, nullable: true })
   }
 }

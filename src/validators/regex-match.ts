@@ -101,12 +101,24 @@ export abstract class RegexMatchValidator<O = never> extends ValidatorBase<strin
 
 export class RequiredRegexMatch extends RegexMatchValidator<string> {
   public constructor(regex: RegExp, options?: ValidatorOptions) {
-    super(regex, { ...options, required: true })
+    super(regex, { ...options })
   }
 }
 
 export class OptionalRegexMatch extends RegexMatchValidator<undefined> {
   public constructor(regex: RegExp, options?: ValidatorOptions) {
     super(regex, { ...options, required: false })
+  }
+}
+
+export class NullableRegexMatch extends RegexMatchValidator<null> {
+  public constructor(regex: RegExp, options?: ValidatorOptions) {
+    super(regex, { ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableRegexMatch extends RegexMatchValidator<undefined | null> {
+  public constructor(regex: RegExp, options?: ValidatorOptions) {
+    super(regex, { ...options, required: false, nullable: true })
   }
 }

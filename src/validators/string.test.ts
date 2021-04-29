@@ -1,6 +1,13 @@
 import { AssertEqual } from '../common'
 import { NotStringFail, RequiredFail, WrongLengthFail } from '../errors'
-import { isString, OptionalString, RequiredString, validateString } from './string'
+import {
+  isString,
+  NullableString,
+  OptionalNullableString,
+  OptionalString,
+  RequiredString,
+  validateString
+} from './string'
 
 describe('String (optimize: %s)', () => {
   describe('validateString', () => {
@@ -136,8 +143,28 @@ describe.each([false, true])('String (optimize: %s)', optimize => {
   describe('OptionalString', () => {
     it('accepts empty value', () => {
       const validator = new OptionalString()
+      expect(validator.validate('')).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, string | undefined>).toEqual(true)
+    })
+  })
+
+  describe('NullableString', () => {
+    it('accepts empty value', () => {
+      const validator = new NullableString()
+      expect(validator.validate('')).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, string | null>).toEqual(true)
+    })
+  })
+
+  describe('OptionalNullableString', () => {
+    it('accepts empty value', () => {
+      const validator = new OptionalNullableString()
+      expect(validator.validate('')).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, string | null | undefined>).toEqual(true)
     })
   })
 })

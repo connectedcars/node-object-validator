@@ -1,6 +1,6 @@
 import { AssertEqual } from '../common'
 import { NotUndefinedFail } from '../errors'
-import { isUndefined, RequiredUndefined, validateUndefined } from './undefined'
+import { isUndefined, NullableUndefined, OptionalUndefined, RequiredUndefined, validateUndefined } from './undefined'
 
 describe('Undefined', () => {
   describe('validateUndefined', () => {
@@ -90,6 +90,23 @@ describe.each([false, true])('Undefined (optimize: %s)', optimize => {
       expect(validator.validate('', 'undef').map(e => e.toString())).toStrictEqual([
         `NotUndefinedFail: Field 'undef' must be an undefined (received "")`
       ])
+    })
+  })
+
+  describe('OptionalUndefined', () => {
+    it('accepts valid values', () => {
+      const validator = new OptionalUndefined({ optimize })
+      expect(validator.validate(undefined)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, undefined>).toEqual(true)
+    })
+  })
+
+  describe('NullableUndefined', () => {
+    it('accepts valid values', () => {
+      const validator = new NullableUndefined({ optimize })
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, null | undefined>).toEqual(true)
     })
   })
 })

@@ -269,13 +269,25 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
 
 export class RequiredUnion<T extends ValidatorBase[]> extends UnionValidator<T> {
   public constructor(schema: T, options?: UnionValidatorOptions) {
-    super(schema, { ...options, required: true })
+    super(schema, { ...options })
   }
 }
 
 export class OptionalUnion<T extends ValidatorBase[]> extends UnionValidator<T, undefined> {
   public constructor(schema: T, options?: UnionValidatorOptions) {
     super(schema, { ...options, required: false })
+  }
+}
+
+export class NullableUnion<T extends ValidatorBase[]> extends UnionValidator<T, null> {
+  public constructor(schema: T, options?: UnionValidatorOptions) {
+    super(schema, { ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableUnion<T extends ValidatorBase[]> extends UnionValidator<T, null | undefined> {
+  public constructor(schema: T, options?: UnionValidatorOptions) {
+    super(schema, { ...options, required: false, nullable: true })
   }
 }
 
@@ -293,7 +305,7 @@ export abstract class EnumValidator<T extends readonly string[], C = never> exte
 
 export class RequiredEnum<T extends readonly string[]> extends EnumValidator<T> {
   public constructor(schema: T, options?: ValidatorOptions) {
-    super(schema, { ...options, required: true })
+    super(schema, { ...options })
   }
 }
 
@@ -303,7 +315,22 @@ export class OptionalEnum<T extends readonly string[]> extends EnumValidator<T, 
   }
 }
 
-export abstract class DateTimeOrDateValidator<O = never> extends UnionValidator<ValidatorBase[], string | Date | O> {
+export class NullableEnum<T extends readonly string[]> extends EnumValidator<T, null> {
+  public constructor(schema: T, options?: ValidatorOptions) {
+    super(schema, { ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableEnum<T extends readonly string[]> extends EnumValidator<T, null | undefined> {
+  public constructor(schema: T, options?: ValidatorOptions) {
+    super(schema, { ...options, required: false, nullable: true })
+  }
+}
+
+export abstract class DateTimeOrDateValidator<O = never> extends UnionValidator<
+  Array<RequiredDateTime | RequiredDate>,
+  O
+> {
   public constructor(options?: ValidatorBaseOptions) {
     super([new RequiredDateTime(), new RequiredDate()], options)
   }
@@ -325,7 +352,7 @@ export abstract class DateTimeOrDateValidator<O = never> extends UnionValidator<
 
 export class RequiredDateTimeOrDate extends DateTimeOrDateValidator {
   public constructor(options?: ValidatorOptions) {
-    super({ ...options, required: true })
+    super({ ...options })
   }
 }
 
@@ -335,8 +362,20 @@ export class OptionalDateTimeOrDate extends DateTimeOrDateValidator<undefined> {
   }
 }
 
+export class NullableDateTimeOrDate extends DateTimeOrDateValidator<null> {
+  public constructor(options?: ValidatorOptions) {
+    super({ ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableDateTimeOrDate extends DateTimeOrDateValidator<null | undefined> {
+  public constructor(options?: ValidatorOptions) {
+    super({ ...options, required: false, nullable: true })
+  }
+}
+
 export abstract class FloatOrFloatStringValidator<O = never> extends UnionValidator<
-  ValidatorBase[],
+  Array<RequiredFloat | RequiredFloatString>,
   number | string | O
 > {
   private errStr: string
@@ -365,7 +404,7 @@ export abstract class FloatOrFloatStringValidator<O = never> extends UnionValida
 
 export class RequiredFloatOrFloatString extends FloatOrFloatStringValidator {
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(min, max, { ...options, required: true })
+    super(min, max, { ...options })
   }
 }
 
@@ -375,8 +414,20 @@ export class OptionalFloatOrFloatString extends FloatOrFloatStringValidator<unde
   }
 }
 
+export class NullableFloatOrFloatString extends FloatOrFloatStringValidator<null> {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, { ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableFloatOrFloatString extends FloatOrFloatStringValidator<null | undefined> {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, { ...options, required: false, nullable: true })
+  }
+}
+
 export abstract class IntegerOrIntegerStringValidator<O = never> extends UnionValidator<
-  ValidatorBase[],
+  Array<RequiredInteger | RequiredIntegerString>,
   number | string | O
 > {
   private errStr: string
@@ -412,5 +463,17 @@ export class RequiredIntegerOrIntegerString extends IntegerOrIntegerStringValida
 export class OptionalIntegerOrIntegerString extends IntegerOrIntegerStringValidator<undefined> {
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super(min, max, { ...options, required: false })
+  }
+}
+
+export class NullableIntegerOrIntegerString extends IntegerOrIntegerStringValidator<null> {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, { ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableIntegerOrIntegerString extends IntegerOrIntegerStringValidator<null | undefined> {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, { ...options, required: false, nullable: true })
   }
 }

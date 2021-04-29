@@ -1,6 +1,13 @@
 import { AssertEqual } from '../common'
 import { NotRfc3339Fail, NotStringFail, RequiredFail, WrongLengthFail } from '../errors'
-import { isDateTime, OptionalDateTime, RequiredDateTime, validateDateTime } from './datetime'
+import {
+  isDateTime,
+  NullableDateTime,
+  OptionalDateTime,
+  OptionalNullableDateTime,
+  RequiredDateTime,
+  validateDateTime
+} from './datetime'
 
 describe('DateTime (optimize: %s)', () => {
   describe('validateDateTime', () => {
@@ -105,8 +112,28 @@ describe.each([false, true])('DateTime (optimize: %s)', optimize => {
   describe('OptionalDateTime', () => {
     it('accepts empty value', () => {
       const validator = new OptionalDateTime({ optimize })
+      expect(validator.validate('2018-08-06T13:37:00Z')).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, string | undefined>).toEqual(true)
+    })
+  })
+
+  describe('NullableDateTime', () => {
+    it('accepts empty value', () => {
+      const validator = new NullableDateTime({ optimize })
+      expect(validator.validate('2018-08-06T13:37:00Z')).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, string | null>).toEqual(true)
+    })
+  })
+
+  describe('OptionalNullableDateTime', () => {
+    it('accepts empty value', () => {
+      const validator = new OptionalNullableDateTime({ optimize })
+      expect(validator.validate('2018-08-06T13:37:00Z')).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, string | null | undefined>).toEqual(true)
     })
   })
 })

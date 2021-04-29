@@ -1,6 +1,6 @@
 import { AssertEqual } from '../common'
 import { NotFloatFail, OutOfRangeFail, RequiredFail } from '../errors'
-import { isFloat, OptionalFloat, RequiredFloat, validateFloat } from './float'
+import { isFloat, NullableFloat, OptionalFloat, OptionalNullableFloat, RequiredFloat, validateFloat } from './float'
 
 describe('Float', () => {
   describe('validateFloat', () => {
@@ -130,8 +130,28 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
   describe('OptionalFloat', () => {
     it('accepts empty value', () => {
       const validator = new OptionalFloat(0, Number.MAX_SAFE_INTEGER, { optimize })
+      expect(validator.validate(1.0)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, number | undefined>).toEqual(true)
+    })
+  })
+
+  describe('NullableFloat', () => {
+    it('accepts empty value', () => {
+      const validator = new NullableFloat(0, Number.MAX_SAFE_INTEGER, { optimize })
+      expect(validator.validate(1.0)).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, number | null>).toEqual(true)
+    })
+  })
+
+  describe('OptionalNullableFloat', () => {
+    it('accepts empty value', () => {
+      const validator = new OptionalNullableFloat(0, Number.MAX_SAFE_INTEGER, { optimize })
+      expect(validator.validate(1.0)).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, number | null | undefined>).toEqual(true)
     })
   })
 })

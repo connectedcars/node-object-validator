@@ -151,12 +151,24 @@ export abstract class ArrayValidator<T extends ValidatorBase = never, O = never>
 
 export class RequiredArray<T extends ValidatorBase> extends ArrayValidator<T> {
   public constructor(schema: T, minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(schema, minLength, maxLength, { ...options, required: true })
+    super(schema, minLength, maxLength, { ...options })
   }
 }
 
 export class OptionalArray<T extends ValidatorBase> extends ArrayValidator<T, undefined> {
   public constructor(schema: T, minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super(schema, minLength, maxLength, { ...options, required: false })
+  }
+}
+
+export class NullableArray<T extends ValidatorBase> extends ArrayValidator<T, null> {
+  public constructor(schema: T, minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(schema, minLength, maxLength, { ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableArray<T extends ValidatorBase> extends ArrayValidator<T, undefined | null> {
+  public constructor(schema: T, minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(schema, minLength, maxLength, { ...options, required: false, nullable: true })
   }
 }

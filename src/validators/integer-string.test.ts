@@ -1,6 +1,13 @@
 import { AssertEqual } from '../common'
 import { NotIntegerStringFail, OutOfRangeFail, RequiredFail, WrongLengthFail } from '../errors'
-import { isIntegerString, OptionalIntegerString, RequiredIntegerString, validateIntegerString } from './integer-string'
+import {
+  isIntegerString,
+  NullableIntegerString,
+  OptionalIntegerString,
+  OptionalNullableIntegerString,
+  RequiredIntegerString,
+  validateIntegerString
+} from './integer-string'
 
 describe('IntegerString', () => {
   describe('validateIntegerString', () => {
@@ -134,8 +141,30 @@ describe.each([false, true])('IntegerString (optimize: %s)', optimize => {
   describe('OptionalIntegerString', () => {
     it('accepts empty value', () => {
       const validator = new OptionalIntegerString(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, { optimize })
+      expect(validator.validate('10')).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, string | undefined>).toEqual(true)
+    })
+  })
+
+  describe('NullableIntegerString', () => {
+    it('accepts empty value', () => {
+      const validator = new NullableIntegerString(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, { optimize })
+      expect(validator.validate('10')).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, string | null>).toEqual(true)
+    })
+  })
+
+  describe('OptionalNullableIntegerString', () => {
+    it('accepts empty value', () => {
+      const validator = new OptionalNullableIntegerString(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, {
+        optimize
+      })
+      expect(validator.validate('10')).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, string | null | undefined>).toEqual(true)
     })
   })
 })

@@ -68,12 +68,24 @@ export abstract class FloatStringValidator<O = never> extends ValidatorBase<stri
 
 export class RequiredFloatString extends FloatStringValidator {
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(min, max, { ...options, required: true })
+    super(min, max, { ...options })
   }
 }
 
 export class OptionalFloatString extends FloatStringValidator<undefined> {
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super(min, max, { ...options, required: false })
+  }
+}
+
+export class NullableFloatString extends FloatStringValidator<null> {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, { ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableFloatString extends FloatStringValidator<null | undefined> {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, { ...options, required: false, nullable: true })
   }
 }
