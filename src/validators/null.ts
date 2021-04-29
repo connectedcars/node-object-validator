@@ -86,9 +86,6 @@ export abstract class NullValidator<O = never> extends ValidatorBase<null | O> {
   }
 
   protected validateValue(value: unknown, context?: string): ValidationFailure[] {
-    if (value === undefined) {
-      return this.required ? [new RequiredFail(`Is required`, value, context)] : []
-    }
     return validateNull(value, context)
   }
 }

@@ -1,13 +1,16 @@
 import { AssertEqual } from '../common'
 import {
   DoesNotMatchRegexFail,
+  NotArrayFail,
   NotDateFail,
   NotFloatFail,
   NotIntegerFail,
+  NotNullFail,
   NotStringFail,
   RequiredFail,
   WrongLengthFail
 } from '../errors'
+import { RequiredInteger } from './integer'
 import {
   isSample,
   NullableSample,
@@ -80,6 +83,26 @@ describe('Sample', () => {
     it('should validate string sample', () => {
       expect(validateSample('', '')).toEqual([])
       expect(validateSample('', 2)).toEqual([new NotStringFail('Must be a string', 2)])
+    })
+
+    it('should validate null sample', () => {
+      expect(validateSample(null, null)).toEqual([])
+      expect(validateSample(null, 2)).toEqual([new NotNullFail('Must be an null', 2)])
+    })
+
+    it('should validate undefined sample', () => {
+      expect(validateSample(undefined, undefined)).toEqual([])
+      expect(validateSample(undefined, 2)).toEqual([])
+    })
+
+    it('should validate with validator sample', () => {
+      expect(validateSample(new RequiredInteger(), 10)).toEqual([])
+      expect(validateSample(new RequiredInteger(), '')).toEqual([new NotIntegerFail('Must be an integer', '')])
+    })
+
+    it('should validate with array validator sample', () => {
+      expect(validateSample([new RequiredInteger()], [10])).toEqual([])
+      expect(validateSample([new RequiredInteger()], '')).toEqual([new NotArrayFail('Must be an array', '')])
     })
   })
 
