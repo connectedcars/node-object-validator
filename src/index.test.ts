@@ -325,7 +325,7 @@ describe.each([false, true])('Complex objects with unions using full syntax (opt
   })
 
   // Validate that type and interface match
-  expect(true as AssertEqual<typeof checkRunAnnotationValidator.tsType, CheckRunAnnotations>).toEqual(true)
+  checkRunAnnotationValidator.AssertType<CheckRunAnnotations, true>()
 
   interface CheckoutImages {
     alt: string
@@ -350,7 +350,7 @@ describe.each([false, true])('Complex objects with unions using full syntax (opt
   })
 
   // Validate that type and interface match
-  expect(true as AssertEqual<typeof checkRunImagesValidator.tsType, CheckoutImages>).toEqual(true)
+  checkRunImagesValidator.AssertType<CheckoutImages, true>()
 
   interface CheckRunOutput {
     title: string
@@ -369,7 +369,7 @@ describe.each([false, true])('Complex objects with unions using full syntax (opt
   })
 
   // Validate that type and interface match
-  expect(true as AssertEqual<typeof checkRunOutputValidator.tsType, CheckRunOutput | undefined>).toEqual(true)
+  checkRunOutputValidator.AssertType<CheckRunOutput | undefined, true>()
 
   interface CheckRunStarted {
     name: string
@@ -393,6 +393,7 @@ describe.each([false, true])('Complex objects with unions using full syntax (opt
 
   // Validate that type and interface match
   expect(true as AssertEqual<typeof checkRunStartedValidator.tsType, CheckRunStarted>).toEqual(true)
+  checkRunStartedValidator.AssertType<CheckRunStarted, true>()
 
   type CheckRunConclusion =
     | 'success'
@@ -414,7 +415,7 @@ describe.each([false, true])('Complex objects with unions using full syntax (opt
   ] as const)
 
   // Validate that type and interface match
-  expect(true as AssertEqual<typeof checkConclusionValidator.tsType, CheckRunConclusion>).toEqual(true)
+  checkConclusionValidator.AssertType<CheckRunConclusion, true>()
 
   interface CheckRunCompleted {
     name: string
@@ -442,6 +443,7 @@ describe.each([false, true])('Complex objects with unions using full syntax (opt
 
   // Validate that type and interface match
   expect(true as AssertEqual<typeof checkRunCompletedValidator.tsType, CheckRunCompleted>).toEqual(true)
+  checkRunCompletedValidator.AssertType<CheckRunCompleted, true>()
 
   type CheckRun = CheckRunStarted | CheckRunCompleted
 

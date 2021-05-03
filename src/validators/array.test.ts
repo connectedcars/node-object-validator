@@ -70,7 +70,7 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
       expect(validator.validate([0, 1, 2, 3])).toEqual([])
       expect(validator.validate([0])).toEqual([])
       expect(validator.validate([0, 1, 2, 3, 4])).toEqual([])
-      expect(true as AssertEqual<typeof validator.tsType, number[]>).toEqual(true)
+      validator.AssertType<number[], true>()
     })
 
     it('rejects invalid values', () => {
@@ -86,7 +86,7 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
         new NotIntegerFail('Must be an integer', { hello: 'stuff' }, '[0]'),
         new NotIntegerFail('Must be an integer', { hello: 'more' }, '[1]')
       ])
-      expect(true as AssertEqual<typeof validator.tsType, number[]>).toEqual(true)
+      validator.AssertType<number[], true>()
     })
 
     it('should fail early validation of array of objects', () => {
@@ -99,7 +99,7 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
     it('rejects undefined', () => {
       const validator = new RequiredArray(new RequiredObject({}), 0, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
-      expect(true as AssertEqual<typeof validator.tsType, Record<string, any>[]>).toEqual(true)
+      validator.AssertType<Record<string, any>[], true>()
     })
 
     it('requires value to show correct context on error', () => {
@@ -115,7 +115,7 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
       const validator = new OptionalArray(new RequiredObject({}), 0, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate([])).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
-      expect(true as AssertEqual<typeof validator.tsType, Record<string, any>[] | undefined>).toEqual(true)
+      validator.AssertType<Record<string, any>[] | undefined, true>()
     })
   })
 
@@ -124,7 +124,7 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
       const validator = new NullableArray(new RequiredObject({}), 0, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate([])).toStrictEqual([])
       expect(validator.validate(null)).toStrictEqual([])
-      expect(true as AssertEqual<typeof validator.tsType, Record<string, any>[] | null>).toEqual(true)
+      validator.AssertType<Record<string, any>[] | null, true>()
     })
   })
 
@@ -134,7 +134,7 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
       expect(validator.validate([])).toStrictEqual([])
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
-      expect(true as AssertEqual<typeof validator.tsType, Record<string, any>[] | null | undefined>).toEqual(true)
+      validator.AssertType<Record<string, any>[] | null | undefined, true>()
     })
   })
 })

@@ -53,6 +53,7 @@ Validation functions:
 * .isValid(value) : Type guard for the type
 * .cast(value) : Returns type or throws ValidationError
 * .toString() : Return validator code or TypeScript interface for the validator
+* .AssertType<OwnType, true | false> : No op function to validate custom types match a validator
 
 Common options:
 
@@ -189,6 +190,31 @@ if(objectValidator.isValid(unknownValue)) {
 let knownValue = objectValidator.cast(unknownValue)
   console.log(knownValue.positions.length()) // unknownValue.unitId has been type cast to array
 }
+
+interface Trip {
+  type: 'trip',
+  unitId: string,
+  recordedAt: string,
+  tripId: number,
+  value: number,
+  position?: {
+    latitude: number,
+    longitude: number,
+    accuracy: number
+  },
+  positions: [
+    {
+      latitude: number,
+      longitude: number,
+      accuracy: number
+    }
+  ]
+}
+// Throws compile error if type does not match validator
+objectValidator.AssertType<Trip, true>
+
+// Throws compile error if type matches validator
+objectValidator.AssertType<Trip, false>
 ```
 
 # Validators
