@@ -1,46 +1,45 @@
-import { CodeGenResult, ValidatorBase, ValidatorOptions } from '../common'
-import { NotStringFail, RequiredFail, ValidationErrorContext, ValidationFailure, WrongLengthFail } from '../errors'
+import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
+import { NotStringFail, RequiredFail, ValidationFailure, WrongLengthFail } from '../errors'
+
+export function isString(
+  value: unknown,
+  minLength = 0,
+  maxLength: number = Number.MAX_SAFE_INTEGER,
+  context?: string
+): value is string {
+  const errors = validateString(value, minLength, maxLength, context)
+  if (errors.length === 0) {
+    return true
+  }
+  return false
+}
 
 export function validateString(
   value: unknown,
   minLength = 0,
   maxLength: number = Number.MAX_SAFE_INTEGER,
-  context?: ValidationErrorContext
+  context?: string
 ): ValidationFailure[] {
   if (typeof value !== 'string') {
-    return [new NotStringFail(`Must be a string (received "${value}")`, context)]
+    return [new NotStringFail(`Must be a string`, value, context)]
   }
   if ((minLength !== 0 && value.length < minLength) || value.length > maxLength) {
-    return [
-      new WrongLengthFail(
-        `Must contain between ${minLength} and ${maxLength} characters (received "${value}")`,
-        context
-      )
-    ]
+    return [new WrongLengthFail(`Must contain between ${minLength} and ${maxLength} characters`, value, context)]
   }
   return []
 }
 
-export class StringValidator<O = never> extends ValidatorBase<string | O> {
+export abstract class StringValidator<O = never> extends ValidatorBase<string | O> {
   private minLength: number
   private maxLength: number
-  private required: boolean
 
-  public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions, required = true) {
-    super()
+  public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorBaseOptions) {
+    super(options)
     this.minLength = minLength
     this.maxLength = maxLength
-    this.required = required
-    if (options?.optimize) {
-      this.validate = this.optimize()
+    if (options?.optimize !== false) {
+      this.optimize()
     }
-  }
-
-  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
-    if (value == null) {
-      return this.required ? [new RequiredFail(`Is required`, context)] : []
-    }
-    return validateString(value, this.minLength, this.maxLength, context)
   }
 
   public codeGen(
@@ -49,61 +48,75 @@ export class StringValidator<O = never> extends ValidatorBase<string | O> {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext
+    context?: string,
+    earlyFail?: boolean
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
+    const contextStr = context ? `, \`${context}\`` : ', context'
     const localValueRef = `value${id()}`
     const declarations: string[] = []
     // prettier-ignore
     const code: string[] = [
       `const ${localValueRef} = ${valueRef}`,
-      `if (${localValueRef} != null) {`,
+      ...this.nullCheckWrap([
       `  if (typeof ${localValueRef} === 'string') {`,
       `    if (${this.minLength ? `${localValueRef}.length < ${this.minLength} || ` : '' }${localValueRef}.length > ${this.maxLength}) {`,
-      `      errors.push(new WrongLengthFail(\`Must contain between ${this.minLength} and ${this.maxLength} characters (received "\${${localValueRef}}")\`${contextStr}))`,
+      `      errors.push(new WrongLengthFail(\`Must contain between ${this.minLength} and ${this.maxLength} characters\`, ${localValueRef}${contextStr}))`,
       `    }`,
       `  } else {`,
-      `    errors.push(new NotStringFail(\`Must be a string (received "\${${localValueRef}}")\`${contextStr}))`,
+      `    errors.push(new NotStringFail(\`Must be a string\`, ${localValueRef}${contextStr}))`,
       `  }`,
-      ...(this.required ? [
-        `} else {`,
-        `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
-        '}'
+      ], localValueRef, contextStr),
+      ...(earlyFail ? [
+      `if (errors.length > 0) {`,
+      `  return errors`,
+      `}`] : [])
     ]
     return [
       {
         WrongLengthFail: WrongLengthFail,
         NotStringFail: NotStringFail,
-        RequiredError: RequiredFail
+        RequiredFail: RequiredFail
       },
       declarations,
       code
     ]
   }
+
+  public toString(options?: ValidatorExportOptions): string {
+    if (options?.types) {
+      return 'string'
+    }
+    const minLengthStr = this.minLength !== 0 || this.maxLength !== Number.MAX_SAFE_INTEGER ? `${this.minLength}` : ''
+    const maxLengthStr = this.maxLength !== Number.MAX_SAFE_INTEGER ? `, ${this.maxLength}` : ''
+    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+    return `new ${this.constructor.name}(${minLengthStr}${maxLengthStr}${optionsStr})`
+  }
+
+  protected validateValue(value: unknown, context?: string): ValidationFailure[] {
+    return validateString(value, this.minLength, this.maxLength, context)
+  }
 }
 
 export class RequiredString extends StringValidator {
-  private validatorType: 'RequiredString' = 'RequiredString'
-
   public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(minLength, maxLength, options)
+    super(minLength, maxLength, { ...options, required: true })
   }
 }
 
-export class OptionalString extends StringValidator<undefined | null> {
-  private validatorType: 'OptionalString' = 'OptionalString'
-
+export class OptionalString extends StringValidator<undefined> {
   public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(minLength, maxLength, options, false)
+    super(minLength, maxLength, { ...options, required: false })
   }
 }
 
-export function StringValue(minLength: number, maxLength: number, required: false): OptionalString
-export function StringValue(minLength: number, maxLength: number, required?: true): RequiredString
-export function StringValue(
-  minLength = 0,
-  maxLength = Number.MAX_SAFE_INTEGER,
-  required = true
-): OptionalString | RequiredString {
-  return required ? new RequiredString(minLength, maxLength) : new OptionalString(minLength, maxLength)
+export class NullableString extends StringValidator<null> {
+  public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(minLength, maxLength, { ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableString extends StringValidator<undefined | null> {
+  public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(minLength, maxLength, { ...options, required: false, nullable: true })
+  }
 }

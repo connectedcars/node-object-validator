@@ -1,0 +1,21 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Boolean RequiredBoolean should return an function body 1`] = `
+Array [
+  Object {
+    "NotBooleanFail": [Function],
+    "RequiredFail": [Function],
+  },
+  Array [],
+  Array [
+    "const value1 = value1",
+    "if (value1 !== undefined) {",
+    "  if (typeof value1 !== 'boolean') {",
+    "    errors.push(new NotBooleanFail(\`Must be an boolean\`, value1, context))",
+    "  }",
+    "} else {",
+    "  errors.push(new RequiredFail(\`Is required\`, value1, context))",
+    "}",
+  ],
+]
+`;

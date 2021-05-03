@@ -1,0 +1,38 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Object RequiredInteger should return an function body 1`] = `
+Array [
+  Object {
+    "NotIntegerFail": [Function],
+    "NotObjectFail": [Function],
+    "OutOfRangeFail": [Function],
+    "RequiredFail": [Function],
+  },
+  Array [
+    "const scheme2 = validator1.schema",
+  ],
+  Array [
+    "const objValue1 = value1",
+    "if (objValue1 !== undefined) {",
+    "  if (typeof objValue1 === 'object' && objValue1 !== null && !Array.isArray(objValue1)) {",
+    "    const value3 = objValue1['int']",
+    "    if (value3 !== undefined) {",
+    "      if (typeof value3 === 'number' && Number.isInteger(value3)) {",
+    "        if (value3 < 1 || value3 > 2) {",
+    "          errors.push(new OutOfRangeFail(\`Must be between 1 and 2\`, value3, \`int\`))",
+    "        }",
+    "      } else {",
+    "        errors.push(new NotIntegerFail(\`Must be an integer\`, value3, \`int\`))",
+    "      }",
+    "    } else {",
+    "      errors.push(new RequiredFail(\`Is required\`, value3, \`int\`))",
+    "    }",
+    "  } else {",
+    "    errors.push(new NotObjectFail(\`Must be an object\`, objValue1, context))",
+    "  }",
+    "} else {",
+    "  errors.push(new RequiredFail(\`Is required\`, objValue1, context))",
+    "}",
+  ],
+]
+`;

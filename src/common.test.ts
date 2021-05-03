@@ -1,16 +1,24 @@
-import { ValidatorBase, ValidatorOptions } from './common'
-import { ValidationErrorContext, ValidationFailure } from './errors'
+import { ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions } from './common'
+import { RequiredFail, ValidationFailure } from './errors'
 
 class OneValidator extends ValidatorBase<number> {
-  public constructor(options?: ValidatorOptions) {
-    super()
-    if (options?.optimize) {
-      this.validate = this.optimize()
+  public constructor(options?: ValidatorBaseOptions) {
+    super(options)
+    if (options?.optimize !== false) {
+      this.optimize()
     }
   }
-  public validate(value: unknown, context?: ValidationErrorContext | undefined): ValidationFailure[] {
+
+  public toString(options?: ValidatorExportOptions): string {
+    if (options?.types) {
+      return '1'
+    }
+    return `new ${this.constructor.name}(${this.optionsString})`
+  }
+
+  protected validateValue(value: unknown, context?: string | undefined): ValidationFailure[] {
     if (value !== 1) {
-      return [new ValidationFailure(`value is not 1`, context)]
+      return [new ValidationFailure(`value is not 1`, value, context)]
     }
     return []
   }
@@ -18,11 +26,17 @@ class OneValidator extends ValidatorBase<number> {
 
 describe.each([false, true])('Common (optimize: %s)', optimize => {
   describe('ValidatorBase', () => {
-    describe('codeGen', () => {
-      it(`should validate with the default codeGen implementation`, () => {
-        const validator = new OneValidator({ optimize })
-        expect(validator.validate(1)).toStrictEqual([])
-      })
+    it(`should validate with the default codeGen implementation with optimize ${optimize}`, () => {
+      const validator = new OneValidator({ optimize: optimize })
+      if (optimize) {
+        expect(validator['optimizedValidate']).not.toBeNull()
+      } else {
+        expect(validator['optimizedValidate']).toBeNull()
+      }
+      expect(validator.validate(1)).toStrictEqual([])
+      expect(validator.validate(2)).toStrictEqual([new ValidationFailure(`value is not 1`, 2)])
+      expect(validator.validate(null)).toStrictEqual([new ValidationFailure(`value is not 1`, null)])
+      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail(`Is required`, undefined)])
     })
   })
 })

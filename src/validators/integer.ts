@@ -1,46 +1,45 @@
-import { CodeGenResult, ValidatorBase, ValidatorOptions } from '../common'
-import { NotIntegerFail, OutOfRangeFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
+import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
+import { NotIntegerFail, OutOfRangeFail, RequiredFail, ValidationFailure } from '../errors'
+
+export function isInteger(
+  value: unknown,
+  min: number = Number.MIN_SAFE_INTEGER,
+  max: number = Number.MAX_SAFE_INTEGER,
+  context?: string
+): value is number {
+  const errors = validateInteger(value, min, max, context)
+  if (errors.length === 0) {
+    return true
+  }
+  return false
+}
 
 export function validateInteger(
   value: unknown,
-  min: number,
-  max: number,
-  context?: ValidationErrorContext
+  min: number = Number.MIN_SAFE_INTEGER,
+  max: number = Number.MAX_SAFE_INTEGER,
+  context?: string
 ): ValidationFailure[] {
   if (typeof value !== 'number' || !Number.isInteger(value)) {
-    return [new NotIntegerFail(`Must be an integer (received "${value}")`, context)]
+    return [new NotIntegerFail(`Must be an integer`, value, context)]
   }
   if (value < min || value > max) {
-    return [new OutOfRangeFail(`Must be between ${min} and ${max} (received "${value}")`, context)]
+    return [new OutOfRangeFail(`Must be between ${min} and ${max}`, value, context)]
   }
   return []
 }
 
-export class IntegerValidator<O = never> extends ValidatorBase<number | O> {
+export abstract class IntegerValidator<O = never> extends ValidatorBase<number | O> {
   private min: number
   private max: number
-  private required: boolean
 
-  public constructor(
-    min = Number.MIN_SAFE_INTEGER,
-    max = Number.MAX_SAFE_INTEGER,
-    options?: ValidatorOptions,
-    required = true
-  ) {
-    super()
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorBaseOptions) {
+    super(options)
     this.min = min
     this.max = max
-    this.required = required
-    if (options?.optimize) {
-      this.validate = this.optimize()
+    if (options?.optimize !== false) {
+      this.optimize()
     }
-  }
-
-  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
-    if (value == null) {
-      return this.required ? [new RequiredFail(`Is required`, context)] : []
-    }
-    return validateInteger(value, this.min, this.max, context)
   }
 
   public codeGen(
@@ -49,61 +48,75 @@ export class IntegerValidator<O = never> extends ValidatorBase<number | O> {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext
+    context?: string,
+    earlyFail?: boolean
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
+    const contextStr = context ? `, \`${context}\`` : ', context'
     const localValueRef = `value${id()}`
     const declarations: string[] = []
     // prettier-ignore
     const code: string[] = [
       `const ${localValueRef} = ${valueRef}`,
-      `if (${localValueRef} != null) {`,
+      ...this.nullCheckWrap([
       `  if (typeof ${localValueRef} === 'number' && Number.isInteger(${localValueRef})) {`,
       `    if (${localValueRef} < ${this.min} || ${localValueRef} > ${this.max}) {`,
-      `      errors.push(new OutOfRangeFail(\`Must be between ${this.min} and ${this.max} (received "\${${localValueRef}}")\`${contextStr}))`,
+      `      errors.push(new OutOfRangeFail(\`Must be between ${this.min} and ${this.max}\`, ${localValueRef}${contextStr}))`,
       `    }`,
       `  } else {`,
-      `    errors.push(new NotIntegerFail(\`Must be an integer (received "\${${localValueRef}}")\`${contextStr}))`,
+      `    errors.push(new NotIntegerFail(\`Must be an integer\`, ${localValueRef}${contextStr}))`,
       `  }`,
-      ...(this.required ? [
-        `} else {`,
-        `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
-        '}'
+      ], localValueRef, contextStr),
+      ...(earlyFail ? [
+      `if (errors.length > 0) {`,
+      `  return errors`,
+      `}`] : []),
     ]
     return [
       {
         OutOfRangeFail: OutOfRangeFail,
         NotIntegerFail: NotIntegerFail,
-        RequiredError: RequiredFail
+        RequiredFail: RequiredFail
       },
       declarations,
       code
     ]
   }
+
+  public toString(options?: ValidatorExportOptions): string {
+    if (options?.types) {
+      return 'number'
+    }
+    const minStr = this.min !== Number.MIN_SAFE_INTEGER || this.max !== Number.MAX_SAFE_INTEGER ? `${this.min}` : ''
+    const maxStr = this.max !== Number.MAX_SAFE_INTEGER ? `, ${this.max}` : ''
+    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+    return `new ${this.constructor.name}(${minStr}${maxStr}${optionsStr})`
+  }
+
+  protected validateValue(value: unknown, context?: string): ValidationFailure[] {
+    return validateInteger(value, this.min, this.max, context)
+  }
 }
 
 export class RequiredInteger extends IntegerValidator {
-  private validatorType: 'RequiredInteger' = 'RequiredInteger'
-
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(min, max, options)
+    super(min, max, { ...options })
   }
 }
 
-export class OptionalInteger extends IntegerValidator<undefined | null> {
-  private validatorType: 'OptionalInteger' = 'OptionalInteger'
-
+export class OptionalInteger extends IntegerValidator<undefined> {
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(min, max, options, false)
+    super(min, max, { ...options, required: false })
   }
 }
 
-export function Integer(min: number, max: number, required: false): OptionalInteger
-export function Integer(min: number, max: number, required?: true): RequiredInteger
-export function Integer(
-  min = Number.MIN_SAFE_INTEGER,
-  max = Number.MAX_SAFE_INTEGER,
-  required = true
-): OptionalInteger | RequiredInteger {
-  return required ? new RequiredInteger(min, max) : new OptionalInteger(min, max)
+export class NullableInteger extends IntegerValidator<null> {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, { ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableInteger extends IntegerValidator<undefined | null> {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, { ...options, required: false, nullable: true })
+  }
 }

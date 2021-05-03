@@ -1,35 +1,30 @@
-import { CodeGenResult, ValidatorBase, ValidatorOptions } from '../common'
-import { NotExactStringFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
+import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
+import { NotExactStringFail, RequiredFail, ValidationFailure } from '../errors'
 
-export function validateExactString(
-  value: unknown,
-  expected: string,
-  context?: ValidationErrorContext
-): ValidationFailure[] {
+export function isExactString<T extends string>(value: unknown, expected: T, context?: string): value is T {
+  const errors = validateExactString(value, expected, context)
+  if (errors.length === 0) {
+    return true
+  }
+  return false
+}
+
+export function validateExactString(value: unknown, expected: string, context?: string): ValidationFailure[] {
   if (value !== expected) {
-    return [new NotExactStringFail(`Must strictly equal "${expected}" (received "${value}")`, context)]
+    return [new NotExactStringFail(`Must strictly equal "${expected}"`, value, context)]
   }
   return []
 }
 
-export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
-  private expected: string
-  private required: boolean
+export abstract class ExactStringValidator<T extends string = never, O = never> extends ValidatorBase<T | O> {
+  public expected: T
 
-  public constructor(expected: string, options?: ValidatorOptions, required = true) {
-    super()
+  public constructor(expected: T, options?: ValidatorBaseOptions) {
+    super(options)
     this.expected = expected
-    this.required = required
-    if (options?.optimize) {
-      this.validate = this.optimize()
+    if (options?.optimize !== false) {
+      this.optimize(expected)
     }
-  }
-
-  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
-    if (value == null) {
-      return this.required ? [new RequiredFail(`Is required`, context)] : []
-    }
-    return validateExactString(value, this.expected, context)
   }
 
   public codeGen(
@@ -38,53 +33,70 @@ export class ExactStringValidator<O = never> extends ValidatorBase<string | O> {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext
+    context?: string,
+    earlyFail?: boolean
   ): CodeGenResult {
     const expectedStr = JSON.stringify(this.expected)
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
+    const contextStr = context ? `, \`${context}\`` : ', context'
     const localValueRef = `value${id()}`
     const declarations: string[] = []
     // prettier-ignore
     const code = [
       `const ${localValueRef} = ${valueRef}`,
-      `if (${localValueRef} != null) {`,
+      ...this.nullCheckWrap([
       `  if (${localValueRef} !== ${expectedStr}) {`,
-      `    errors.push(new NotExactStringError(\`Must strictly equal ${expectedStr} (received "\${${localValueRef}}")\`${contextStr}))`,
+      `    errors.push(new NotExactStringFail(\`Must strictly equal ${expectedStr}\`, ${localValueRef}${contextStr}))`,
       `  }`,
-      ...(this.required ? [
-      `} else {`,
-      `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
-      '}'
+      ], localValueRef, contextStr),
+      ...(earlyFail ? [
+      `if (errors.length > 0) {`,
+      `  return errors`,
+      `}`] : []),
     ]
     return [
       {
-        NotExactStringError: NotExactStringFail,
-        RequiredError: RequiredFail
+        NotExactStringFail: NotExactStringFail,
+        RequiredFail: RequiredFail
       },
       declarations,
       code
     ]
   }
-}
 
-export class RequiredExactString extends ExactStringValidator {
-  private validatorType: 'RequiredExactString' = 'RequiredExactString'
+  public toString(options?: ValidatorExportOptions): string {
+    const expectedStr = `'${this.expected.replace(/'/g, "\\'")}'`
+    if (options?.types) {
+      return expectedStr
+    }
+    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+    return `new ${this.constructor.name}(${expectedStr}${optionsStr})`
+  }
 
-  public constructor(expected: string, options?: ValidatorOptions) {
-    super(expected, options)
+  protected validateValue(value: unknown, context?: string): ValidationFailure[] {
+    return validateExactString(value, this.expected, context)
   }
 }
 
-export class OptionalExactString extends ExactStringValidator<undefined | null> {
-  private validatorType: 'OptionalExactString' = 'OptionalExactString'
-
-  public constructor(expected: string, options?: ValidatorOptions) {
-    super(expected, options, false)
+export class RequiredExactString<T extends string> extends ExactStringValidator<T> {
+  public constructor(expected: T, options?: ValidatorOptions) {
+    super(expected, { ...options })
   }
 }
 
-export function ExactString(expectedStr: string, required: false): OptionalExactString
-export function ExactString(expectedStr: string, required?: true): RequiredExactString
-export function ExactString(expectedStr: string, required = true): OptionalExactString | RequiredExactString {
-  return required ? new RequiredExactString(expectedStr) : new OptionalExactString(expectedStr)
+export class OptionalExactString<T extends string> extends ExactStringValidator<T, undefined> {
+  public constructor(expected: T, options?: ValidatorOptions) {
+    super(expected, { ...options, required: false })
+  }
+}
+
+export class NullableExactString<T extends string> extends ExactStringValidator<T, null> {
+  public constructor(expected: T, options?: ValidatorOptions) {
+    super(expected, { ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableExactString<T extends string> extends ExactStringValidator<T, undefined | null> {
+  public constructor(expected: T, options?: ValidatorOptions) {
+    super(expected, { ...options, required: false, nullable: true })
+  }
 }

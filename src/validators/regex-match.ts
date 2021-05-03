@@ -1,47 +1,42 @@
-import { CodeGenResult, isValidType, ValidatorBase, ValidatorOptions } from '../common'
 import {
-  DoesNotMatchRegexFail,
-  NotStringFail,
-  RequiredFail,
-  ValidationErrorContext,
-  ValidationFailure,
-  WrongLengthFail
-} from '../errors'
+  CodeGenResult,
+  isValidType,
+  ValidatorBase,
+  ValidatorBaseOptions,
+  ValidatorExportOptions,
+  ValidatorOptions
+} from '../common'
+import { DoesNotMatchRegexFail, NotStringFail, RequiredFail, ValidationFailure, WrongLengthFail } from '../errors'
 import { validateString } from './string'
 
-export function validateRegexMatch(
-  value: unknown,
-  regex: RegExp,
-  context?: ValidationErrorContext
-): ValidationFailure[] {
+export function isRegexMatch<T extends string = string>(value: unknown, regex: RegExp, context?: string): value is T {
+  const errors = validateRegexMatch(value, regex, context)
+  if (errors.length === 0) {
+    return true
+  }
+  return false
+}
+
+export function validateRegexMatch(value: unknown, regex: RegExp, context?: string): ValidationFailure[] {
   const stringError = validateString(value, 0, Number.MAX_SAFE_INTEGER, context)
   if (!isValidType<string>(value, stringError)) {
     return stringError
   }
   if (!regex.test(value)) {
-    return [new DoesNotMatchRegexFail(`Did not match '${regex}' (received "${value}")`, context)]
+    return [new DoesNotMatchRegexFail(`Did not match '${regex}'`, value, context)]
   }
   return []
 }
 
-export class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
+export abstract class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
   private regex: RegExp
-  private required: boolean
 
-  public constructor(regex: RegExp, options?: ValidatorOptions, required = true) {
-    super()
+  public constructor(regex: RegExp, options?: ValidatorBaseOptions) {
+    super(options)
     this.regex = regex
-    this.required = required
-    if (options?.optimize) {
-      this.validate = this.optimize()
+    if (options?.optimize !== false) {
+      this.optimize(regex)
     }
-  }
-
-  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
-    if (value == null) {
-      return this.required ? [new RequiredFail(`Is required`, context)] : []
-    }
-    return validateRegexMatch(value, this.regex, context)
   }
 
   public codeGen(
@@ -50,9 +45,10 @@ export class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext
+    context?: string,
+    earlyFail?: boolean
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
+    const contextStr = context ? `, \`${context}\`` : ', context'
     const localRegexRef = `regex${id()}`
     const localValueRef = `value${id()}`
     // prettier-ignore
@@ -62,50 +58,67 @@ export class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
     // prettier-ignore
     const code: string[] = [
       `const ${localValueRef} = ${valueRef}`,
-      `if (${localValueRef} != null) {`,
+      ...this.nullCheckWrap([
       `  if (typeof ${localValueRef} === 'string') {`,
       `    if (!${localRegexRef}.test(${localValueRef})) {`,
-      `      errors.push(new DoesNotMatchRegexFail(\`Did not match '${this.regex}' (received "\${${localValueRef}}")\`${contextStr}))`,
+      `      errors.push(new DoesNotMatchRegexFail(\`Did not match '${this.regex}'\`, ${localValueRef}${contextStr}))`,
       `    }`,
       `  } else {`,
-      `    errors.push(new NotStringFail(\`Must be a string (received "\${${localValueRef}}")\`${contextStr}))`,
+      `    errors.push(new NotStringFail(\`Must be a string\`, ${localValueRef}${contextStr}))`,
       `  }`,
-      ...(this.required ? [
-        `} else {`,
-        `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
-        '}'
+      ], localValueRef, contextStr),
+      ...(earlyFail ? [
+      `if (errors.length > 0) {`,
+      `  return errors`,
+      `}`] : []),
+
     ]
     return [
       {
         DoesNotMatchRegexFail: DoesNotMatchRegexFail,
         WrongLengthFail: WrongLengthFail,
         NotStringFail: NotStringFail,
-        RequiredError: RequiredFail
+        RequiredFail: RequiredFail
       },
       declarations,
       code
     ]
   }
+
+  public toString(options?: ValidatorExportOptions): string {
+    if (options?.types) {
+      return 'string'
+    }
+    const regexStr = `/${this.regex.source}/${this.regex.flags}`
+    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+    return `new ${this.constructor.name}(${regexStr}${optionsStr})`
+  }
+
+  protected validateValue(value: unknown, context?: string): ValidationFailure[] {
+    return validateRegexMatch(value, this.regex, context)
+  }
 }
 
 export class RequiredRegexMatch extends RegexMatchValidator<string> {
-  private validatorType: 'RequiredRegex' = 'RequiredRegex'
-
   public constructor(regex: RegExp, options?: ValidatorOptions) {
-    super(regex, options)
+    super(regex, { ...options })
   }
 }
 
-export class OptionalRegexMatch extends RegexMatchValidator<undefined | null> {
-  private validatorType: 'OptionalRegex' = 'OptionalRegex'
-
+export class OptionalRegexMatch extends RegexMatchValidator<undefined> {
   public constructor(regex: RegExp, options?: ValidatorOptions) {
-    super(regex, options, false)
+    super(regex, { ...options, required: false })
   }
 }
 
-export function RegexMatch(regex: RegExp, required: false): OptionalRegexMatch
-export function RegexMatch(regex: RegExp, required?: true): RequiredRegexMatch
-export function RegexMatch(regex: RegExp, required = true): OptionalRegexMatch | RequiredRegexMatch {
-  return required ? new RequiredRegexMatch(regex) : new OptionalRegexMatch(regex)
+export class NullableRegexMatch extends RegexMatchValidator<null> {
+  public constructor(regex: RegExp, options?: ValidatorOptions) {
+    super(regex, { ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableRegexMatch extends RegexMatchValidator<undefined | null> {
+  public constructor(regex: RegExp, options?: ValidatorOptions) {
+    super(regex, { ...options, required: false, nullable: true })
+  }
 }

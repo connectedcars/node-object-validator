@@ -1,0 +1,45 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Array RequiredArray should return an function body 1`] = `
+Array [
+  Object {
+    "NotArrayFail": [Function],
+    "NotIntegerFail": [Function],
+    "OutOfRangeFail": [Function],
+    "RequiredFail": [Function],
+    "WrongLengthFail": [Function],
+  },
+  Array [
+    "const scheme4 = validator1.schema",
+  ],
+  Array [
+    "const arrayValue1 = value1",
+    "if (arrayValue1 !== undefined) {",
+    "  if (Array.isArray(arrayValue1)){",
+    "    if (arrayValue1.length <= 10) {",
+    "      for (const [i2, item3] of arrayValue1.entries()) {",
+    "        const value5 = item3",
+    "        if (value5 !== undefined) {",
+    "          if (typeof value5 === 'number' && Number.isInteger(value5)) {",
+    "            if (value5 < -9007199254740991 || value5 > 9007199254740991) {",
+    "              errors.push(new OutOfRangeFail(\`Must be between -9007199254740991 and 9007199254740991\`, value5, \`[\${i2}]\`))",
+    "            }",
+    "          } else {",
+    "            errors.push(new NotIntegerFail(\`Must be an integer\`, value5, \`[\${i2}]\`))",
+    "          }",
+    "        } else {",
+    "          errors.push(new RequiredFail(\`Is required\`, value5, \`[\${i2}]\`))",
+    "        }",
+    "      }",
+    "    } else {",
+    "      errors.push(new WrongLengthFail(\`Must contain between 0 and 10 entries (found \${arrayValue1.length})\`, arrayValue1, context))",
+    "    }",
+    "  } else {",
+    "    errors.push(new NotArrayFail(\`Must be an array\`, arrayValue1, context))",
+    "  }",
+    "} else {",
+    "  errors.push(new RequiredFail(\`Is required\`, arrayValue1, context))",
+    "}",
+  ],
+]
+`;

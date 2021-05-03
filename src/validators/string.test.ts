@@ -1,53 +1,112 @@
+import { AssertEqual } from '../common'
 import { NotStringFail, RequiredFail, WrongLengthFail } from '../errors'
-import { OptionalString, RequiredString, StringValidator, StringValue, validateString } from './string'
+import {
+  isString,
+  NullableString,
+  OptionalNullableString,
+  OptionalString,
+  RequiredString,
+  validateString
+} from './string'
 
-describe.each([false, true])('String (optimize: %s)', optimize => {
+describe('String (optimize: %s)', () => {
   describe('validateString', () => {
     it('requires value to be a string', () => {
       expect(validateString('foo')).toStrictEqual([])
     })
   })
+  describe('isString', () => {
+    it('requires value to be a string', () => {
+      const value = 'foo' as unknown
+      if (isString(value)) {
+        expect(true as AssertEqual<typeof value, string>).toEqual(true)
+      } else {
+        fail('did not validate but should')
+      }
+    })
 
+    it('should fail validation', () => {
+      const value = 10 as unknown
+      expect(isString(value)).toEqual(false)
+    })
+  })
+
+  describe('RequiredString', () => {
+    it('should return an function body', () => {
+      const validator = new RequiredString(0, 10, { optimize: false })
+      expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
+    })
+
+    it('should export types', () => {
+      const validator = new RequiredString(0, 10, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('string')
+    })
+  })
+})
+
+describe.each([false, true])('String (optimize: %s)', optimize => {
   describe('StringValidator', () => {
     it('should generate validation code and give same result', () => {
-      const validator = new StringValidator(1, 30, { optimize })
-      const str = validator.validate.toString()
+      const validator = new RequiredString(1, 30, { optimize })
       if (optimize) {
-        expect(str).toMatch(/generatedFunction = true/)
+        expect(validator['optimizedValidate']).not.toBeNull()
       } else {
-        expect(str).not.toMatch(/generatedFunction = true/)
+        expect(validator['optimizedValidate']).toBeNull()
       }
       const errors = validator.validate('MyString')
       expect(errors).toEqual([])
     })
 
-    it('requires value to be a string', () => {
-      const validator = new StringValidator(0, Number.MAX_SAFE_INTEGER, { optimize })
+    it('should export validator code with options', () => {
+      const validator = new RequiredString(1, 30, { optimize })
+      const code = validator.toString()
+      if (optimize) {
+        expect(code).toEqual('new RequiredString(1, 30)')
+      } else {
+        expect(code).toEqual('new RequiredString(1, 30, { optimize: false })')
+      }
+    })
+
+    it('accepts valid values', () => {
+      const validator = new RequiredString(0, Number.MAX_SAFE_INTEGER, { optimize })
       expect(validator.validate('foo')).toStrictEqual([])
       expect(validator.validate('')).toStrictEqual([])
-      expect(validator.validate(1)).toStrictEqual([new NotStringFail('Must be a string (received "1")')])
-      expect(validator.validate({})).toStrictEqual([new NotStringFail('Must be a string (received "[object Object]")')])
-      expect(validator.validate([])).toStrictEqual([new NotStringFail('Must be a string (received "")')])
-      expect(validator.validate(true)).toStrictEqual([new NotStringFail('Must be a string (received "true")')])
-      expect(validator.validate(false)).toStrictEqual([new NotStringFail('Must be a string (received "false")')])
+      expect(true as AssertEqual<typeof validator.tsType, string>).toEqual(true)
+    })
+
+    it('rejects invalid values', () => {
+      const validator = new RequiredString(0, Number.MAX_SAFE_INTEGER, { optimize })
+      expect(validator.validate(1)).toStrictEqual([new NotStringFail('Must be a string', 1)])
+      expect(validator.validate({})).toStrictEqual([new NotStringFail('Must be a string', {})])
+      expect(validator.validate([])).toStrictEqual([new NotStringFail('Must be a string', [])])
+      expect(validator.validate(true)).toStrictEqual([new NotStringFail('Must be a string', true)])
+      expect(validator.validate(false)).toStrictEqual([new NotStringFail('Must be a string', false)])
+      expect(validator.validate(null)).toStrictEqual([new NotStringFail('Must be a string', null)])
+      expect(true as AssertEqual<typeof validator.tsType, string>).toEqual(true)
+    })
+
+    it('rejects undefined', () => {
+      const validator = new RequiredString(0, Number.MAX_SAFE_INTEGER, { optimize })
+      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
     })
 
     it('requires min value length', () => {
-      const validator = new StringValidator(5, 500, { optimize })
+      const validator = new RequiredString(5, 500, { optimize })
       expect(validator.validate('')).toStrictEqual([
-        new WrongLengthFail('Must contain between 5 and 500 characters (received "")')
+        new WrongLengthFail('Must contain between 5 and 500 characters', '')
       ])
       expect(validator.validate('a')).toStrictEqual([
-        new WrongLengthFail('Must contain between 5 and 500 characters (received "a")')
+        new WrongLengthFail('Must contain between 5 and 500 characters', 'a')
       ])
       expect(validator.validate('ab')).toStrictEqual([
-        new WrongLengthFail('Must contain between 5 and 500 characters (received "ab")')
+        new WrongLengthFail('Must contain between 5 and 500 characters', 'ab')
       ])
       expect(validator.validate('abc')).toStrictEqual([
-        new WrongLengthFail('Must contain between 5 and 500 characters (received "abc")')
+        new WrongLengthFail('Must contain between 5 and 500 characters', 'abc')
       ])
       expect(validator.validate('abcd')).toStrictEqual([
-        new WrongLengthFail('Must contain between 5 and 500 characters (received "abcd")')
+        new WrongLengthFail('Must contain between 5 and 500 characters', 'abcd')
       ])
       expect(validator.validate('abcde')).toStrictEqual([])
       expect(validator.validate('abcdef')).toStrictEqual([])
@@ -55,7 +114,7 @@ describe.each([false, true])('String (optimize: %s)', optimize => {
     })
 
     it('requires max value length', () => {
-      const validator = new StringValidator(0, 5, { optimize })
+      const validator = new RequiredString(0, 5, { optimize })
       expect(validator.validate('')).toStrictEqual([])
       expect(validator.validate('a')).toStrictEqual([])
       expect(validator.validate('ab')).toStrictEqual([])
@@ -63,44 +122,49 @@ describe.each([false, true])('String (optimize: %s)', optimize => {
       expect(validator.validate('abcd')).toStrictEqual([])
       expect(validator.validate('abcde')).toStrictEqual([])
       expect(validator.validate('abcdef')).toStrictEqual([
-        new WrongLengthFail('Must contain between 0 and 5 characters (received "abcdef")')
+        new WrongLengthFail('Must contain between 0 and 5 characters', 'abcdef')
       ])
       expect(validator.validate('abcdefg')).toStrictEqual([
-        new WrongLengthFail('Must contain between 0 and 5 characters (received "abcdefg")')
+        new WrongLengthFail('Must contain between 0 and 5 characters', 'abcdefg')
       ])
       expect(validator.validate('this is a long string')).toStrictEqual([
-        new WrongLengthFail('Must contain between 0 and 5 characters (received "this is a long string")')
+        new WrongLengthFail('Must contain between 0 and 5 characters', 'this is a long string')
       ])
     })
-  })
 
-  describe('RequiredString', () => {
-    it('requires empty value', () => {
-      const validator = new RequiredString()
-      expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
-      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])
+    it('requires value to show correct context on error', () => {
+      const validator = new RequiredString(0, 10, { optimize })
+      expect(validator.validate(10, 'str').map(e => e.toString())).toStrictEqual([
+        `NotStringFail: Field 'str' must be a string (received "10")`
+      ])
     })
   })
 
   describe('OptionalString', () => {
-    it('requires empty value', () => {
+    it('accepts empty value', () => {
       const validator = new OptionalString()
+      expect(validator.validate('')).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
-      expect(validator.validate(undefined)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, string | undefined>).toEqual(true)
     })
   })
 
-  describe('StringValue', () => {
+  describe('NullableString', () => {
     it('accepts empty value', () => {
-      const validator = StringValue(0, 10, false)
+      const validator = new NullableString()
+      expect(validator.validate('')).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, string | null>).toEqual(true)
+    })
+  })
+
+  describe('OptionalNullableString', () => {
+    it('accepts empty value', () => {
+      const validator = new OptionalNullableString()
+      expect(validator.validate('')).toStrictEqual([])
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
-    })
-
-    it('rejects empty value', () => {
-      const validator = StringValue(0, 10)
-      expect(validator.validate(null).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
-      expect(validator.validate(undefined).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
+      expect(true as AssertEqual<typeof validator.tsType, string | null | undefined>).toEqual(true)
     })
   })
 })

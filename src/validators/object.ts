@@ -1,51 +1,78 @@
-import { CodeGenResult, ValidatorBase, ValidatorOptions } from '../common'
-import { NotObjectFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
-import { ObjectSchema, SchemaToType } from '../types'
+import {
+  CodeGenResult,
+  ValidateOptions,
+  ValidatorBase,
+  ValidatorBaseOptions,
+  ValidatorExportOptions,
+  ValidatorOptions
+} from '../common'
+import { NotObjectFail, RequiredFail, ValidationFailure } from '../errors'
 
-// TODO: Fail on empty object if the scheme has one required property
+export function isObject<T extends ObjectSchema>(
+  schema: T,
+  value: unknown,
+  context?: string
+): value is ObjectWrap<UndefinedToOptional<{ [K in keyof T]: T[K]['tsType'] }>> {
+  const errors = validateObject(schema, value, context, { earlyFail: true })
+  if (errors.length === 0) {
+    return true
+  }
+  return false
+}
 
-export function isObject(value: unknown): value is { [key: string]: unknown } {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isPlainObject(value: unknown): value is Record<string | number | symbol, any> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
-export function validateObject<T extends ObjectSchema = ObjectSchema, O = never>(
-  schema: RequiredObject<T> | OptionalObject<T> | ObjectValidator<T, O>,
+export function validateObject(
+  schema: Record<string, ValidatorBase>,
   value: unknown,
-  context?: ValidationErrorContext
+  context?: string,
+  options?: ValidateOptions
 ): ValidationFailure[] {
   const errors: ValidationFailure[] = []
-  if (!isObject(value)) {
-    errors.push(new NotObjectFail(`Must be an object (received "${value}")`, context))
+  if (!isPlainObject(value)) {
+    errors.push(new NotObjectFail(`Must be an object`, value, context))
     return errors
   }
-  for (const key of Object.keys(schema.schema)) {
-    const validator = schema.schema[key]
-    const keyName = context?.key ? `${context.key}['${key}']` : key
-    errors.push(...validator.validate(value[key], { key: keyName }))
+  for (const key of Object.keys(schema)) {
+    const validator = schema[key]
+    const keyName = context ? `${context}['${key}']` : key
+    errors.push(...validator.validate(value[key], keyName, { optimized: false, earlyFail: false, ...options }))
+    if (options?.earlyFail && errors.length > 0) {
+      return errors
+    }
   }
   return errors
 }
 
-export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> extends ValidatorBase<
-  SchemaToType<T> | O
+export type ObjectSchema = Record<string, ValidatorBase>
+
+// https://github.com/Microsoft/TypeScript/issues/26705
+export type IsUndefined<T, K> = undefined extends T ? K : never
+export type IsNotUndefined<T, K> = undefined extends T ? never : K
+export type UndefinedKeys<T> = { [K in keyof T]-?: IsUndefined<T[K], K> }[keyof T]
+export type NotUndefinedKeys<T> = { [K in keyof T]-?: IsNotUndefined<T[K], K> }[keyof T]
+export type IncludeUndefinedTypes<T extends Record<string, unknown>> = { [K in UndefinedKeys<T>]: T[K] }
+export type ExcludeUndefinedTypes<T extends Record<string, unknown>> = { [K in NotUndefinedKeys<T>]: T[K] }
+export type UndefinedToOptional<T extends Record<string, unknown>> = ExcludeUndefinedTypes<T> &
+  Partial<IncludeUndefinedTypes<T>>
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ObjectWrap<T> = T extends Record<string, any> ? { [K in keyof T]: T[K] } : never
+
+export abstract class ObjectValidator<T extends ObjectSchema = never, O = never> extends ValidatorBase<
+  ObjectWrap<UndefinedToOptional<{ [K in keyof T]: T[K]['tsType'] }>> | O
 > {
-  public schema: T
-  private required: boolean
+  public schema: ObjectSchema
 
-  public constructor(schema: T, options?: ValidatorOptions, required = true) {
-    super()
+  public constructor(schema: T, options?: ValidatorBaseOptions) {
+    super(options)
     this.schema = schema
-    this.required = required
-    if (options?.optimize) {
-      this.validate = this.optimize()
+    if (options?.optimize !== false) {
+      this.optimize(schema)
     }
-  }
-
-  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
-    if (value == null) {
-      return this.required ? [new RequiredFail(`Is required`, context)] : []
-    }
-    return validateObject(this, value, context)
   }
 
   public codeGen(
@@ -54,78 +81,90 @@ export class ObjectValidator<T extends ObjectSchema = ObjectSchema, O = never> e
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext
+    context?: string,
+    earlyFail?: boolean
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
+    const contextStr = context ? `, \`${context}\`` : ', context'
     const objValueRef = `objValue${id()}`
     const schemaRef = `scheme${id()}`
     let imports: { [key: string]: unknown } = {
-      NotObjectError: NotObjectFail,
-      RequiredError: RequiredFail
+      NotObjectFail: NotObjectFail,
+      RequiredFail: RequiredFail
     }
     const declarations = [`const ${schemaRef} = ${validatorRef}.schema`]
 
-    // prettier-ignore
-    const code = [
-      `const ${objValueRef} = ${valueRef}`,
-      `if (${objValueRef} != null) {`,
-      `  if (typeof ${objValueRef} === 'object' && !Array.isArray(${objValueRef})){`
-    ]
+    const propValidationCode: string[] = []
     for (const key of Object.keys(this.schema)) {
       const validator = this.schema[key]
-      const propName = context?.key ? `${context.key}['${key}']` : key
+      const propName = context ? `${context}['${key}']` : key
       const [propImports, propDeclarations, propCode] = validator.codeGen(
         `${objValueRef}['${key}']`,
         `${schemaRef}['${key}']`,
         id,
-        {
-          key: propName
-        }
+        propName,
+        earlyFail
       )
       imports = { ...imports, ...propImports }
       declarations.push(...propDeclarations)
-      code.push(...propCode.map(l => `    ${l}`))
+      propValidationCode.push(...propCode)
     }
+
     // prettier-ignore
-    code.push(
+    const code = [
+      `const ${objValueRef} = ${valueRef}`,
+      ...this.nullCheckWrap([
+      `  if (typeof ${objValueRef} === 'object' ${!this.nullable ? `&& ${objValueRef} !== null ` : ''}&& !Array.isArray(${objValueRef})) {`,
+      ...propValidationCode.map(l => `    ${l}`),
       `  } else {`,
-      `    errors.push(new NotObjectError(\`Must be an object (received "\${${valueRef}}")\`${contextStr}))`,
+      `    errors.push(new NotObjectFail(\`Must be an object\`, ${objValueRef}${contextStr}))`,
       `  }`,
-      ...(this.required ? [
-      `} else {`,
-      `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
-      '}'
-    )
+      ], objValueRef, contextStr),
+      ...(earlyFail ? [
+      `if (errors.length > 0) {`,
+      `  return errors`,
+      `}`] : []),
+    ]
 
     return [imports, declarations, code]
   }
-}
 
-export class RequiredObject<T extends ObjectSchema = ObjectSchema> extends ObjectValidator<T> {
-  private validatorType: 'RequiredObject' = 'RequiredObject'
-  public constructor(schema: T, options?: ValidatorOptions) {
-    super(schema, options)
+  public toString(options?: ValidatorExportOptions): string {
+    const lines = Object.keys(this.schema).map(k =>
+      `'${k}': ${this.schema[k].toString(options)}`.replace(/(^|\n)/g, '$1  ')
+    )
+    if (options?.types) {
+      return `{\n${lines.join('\n')}\n}`
+    }
+    const schemaStr = `{\n${lines.join(',\n')}\n}`
+    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+    return `new ${this.constructor.name}(${schemaStr}${optionsStr})`
+  }
+
+  protected validateValue(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
+    return validateObject(this.schema, value, context, { earlyFail: this.earlyFail, ...options })
   }
 }
 
-export class OptionalObject<T extends ObjectSchema = ObjectSchema> extends ObjectValidator<T, null | undefined> {
-  private validatorType: 'OptionalObject' = 'OptionalObject'
+export class RequiredObject<T extends ObjectSchema> extends ObjectValidator<T> {
   public constructor(schema: T, options?: ValidatorOptions) {
-    super(schema, options, false)
+    super(schema, { ...options })
   }
 }
 
-export function TypedObject<T extends ObjectSchema = ObjectSchema>(
-  schema: ObjectSchema,
-  required: false
-): OptionalObject<T>
-export function TypedObject<T extends ObjectSchema = ObjectSchema>(
-  schema: ObjectSchema,
-  required?: true
-): RequiredObject<T>
-export function TypedObject<T extends ObjectSchema = ObjectSchema>(
-  schema: T,
-  required = true
-): OptionalObject<T> | RequiredObject<T> {
-  return required ? new RequiredObject(schema) : new OptionalObject(schema)
+export class OptionalObject<T extends ObjectSchema> extends ObjectValidator<T, undefined> {
+  public constructor(schema: T, options?: ValidatorOptions) {
+    super(schema, { ...options, required: false })
+  }
+}
+
+export class NullableObject<T extends ObjectSchema> extends ObjectValidator<T, null> {
+  public constructor(schema: T, options?: ValidatorOptions) {
+    super(schema, { ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableObject<T extends ObjectSchema> extends ObjectValidator<T, undefined | null> {
+  public constructor(schema: T, options?: ValidatorOptions) {
+    super(schema, { ...options, required: false, nullable: true })
+  }
 }

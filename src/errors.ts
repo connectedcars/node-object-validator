@@ -1,19 +1,19 @@
-export interface ValidationErrorContext {
-  key: string
-}
-
 export class ValidationFailure {
-  public key?: string
+  public context?: string
+  public value: unknown
   public get message(): string {
-    return this.key
-      ? `Field '${this.key}' ${this._message.charAt(0).toLowerCase() + this._message.slice(1)}`
-      : this._message
+    return (
+      (this.context
+        ? `Field '${this.context}' ${this._message.charAt(0).toLowerCase() + this._message.slice(1)}`
+        : this._message) + (this.value === undefined ? '' : ` (received "${this.value}")`)
+    )
   }
   private _message: string
 
-  public constructor(message: string, context?: ValidationErrorContext) {
+  public constructor(message: string, value: unknown, context?: string) {
     this._message = message
-    this.key = context?.key
+    this.value = value
+    this.context = context
   }
 
   public toString(): string {
@@ -26,6 +26,7 @@ export class ValidationsError extends Error {
   public constructor(message: string, errors: ValidationFailure[]) {
     super(message)
     this.errors = errors
+    this.name = this.constructor.name
   }
 }
 
@@ -46,3 +47,13 @@ export class NotStringFail extends ValidationFailure {}
 export class OutOfRangeFail extends ValidationFailure {}
 export class RequiredFail extends ValidationFailure {}
 export class WrongLengthFail extends ValidationFailure {}
+export class UnionFail extends ValidationFailure {
+  public errors: ValidationFailure[]
+  public constructor(message: string, errors: ValidationFailure[], value: unknown, context?: string) {
+    super(message, value, context)
+    this.errors = errors
+  }
+}
+export class NotBooleanFail extends ValidationFailure {}
+export class NotNullFail extends ValidationFailure {}
+export class NotUndefinedFail extends ValidationFailure {}

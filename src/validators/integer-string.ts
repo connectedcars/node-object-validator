@@ -1,82 +1,91 @@
-import { isValidType, ValidatorBase, ValidatorOptions } from '../common'
-import {
-  NotIntegerStringFail,
-  RequiredFail,
-  ValidationErrorContext,
-  ValidationFailure,
-  WrongLengthFail
-} from '../errors'
-import { validateInteger } from './integer'
+import { isValidType, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
+import { NotIntegerStringFail, OutOfRangeFail, ValidationFailure, WrongLengthFail } from '../errors'
 import { validateString } from './string'
+
+export function isIntegerString(
+  value: unknown,
+  min = Number.MIN_SAFE_INTEGER,
+  max = Number.MAX_SAFE_INTEGER,
+  context?: string
+): value is string {
+  const errors = validateIntegerString(value, min, max, context)
+  if (errors.length === 0) {
+    return true
+  }
+  return false
+}
 
 export function validateIntegerString(
   value: unknown,
-  min: number,
-  max: number,
-  context?: ValidationErrorContext
+  min = Number.MIN_SAFE_INTEGER,
+  max = Number.MAX_SAFE_INTEGER,
+  context?: string
 ): ValidationFailure[] {
   const stringError = validateString(value, 0, Number.MAX_SAFE_INTEGER, context)
   if (!isValidType<string>(value, stringError)) {
-    return [new NotIntegerStringFail(`Must be a string with an integer (received "${value}")`)]
+    return [new NotIntegerStringFail(`Must be a string with an integer`, value, context)]
   }
   if (value.length === 0) {
-    return [new WrongLengthFail(`Must be a string with an integer (received "")`)]
+    return [new WrongLengthFail(`Must be a string with an integer`, value, context)]
   }
   const int = parseFloat(value)
-  if (int % 1 !== 0) {
-    return [new NotIntegerStringFail(`Must be a string with an integer (received "${value}")`)]
+  if (!Number.isInteger(int)) {
+    return [new NotIntegerStringFail(`Must be a string with an integer`, value, context)]
   }
-  if (isNaN(int)) {
-    return [new NotIntegerStringFail(`Must be a string with an integer (received "${value}")`)]
+  if (int < min || int > max) {
+    return [new OutOfRangeFail(`Must be between ${min} and ${max}`, value, context)]
   }
-  return validateInteger(int, min, max, context)
+  return []
 }
 
-export class IntegerStringValidator<O = never> extends ValidatorBase<string | O> {
+export abstract class IntegerStringValidator<O = never> extends ValidatorBase<string | O> {
   private min: number
   private max: number
-  private required: boolean
 
-  public constructor(
-    min = Number.MIN_SAFE_INTEGER,
-    max = Number.MAX_SAFE_INTEGER,
-    options?: ValidatorOptions,
-    required = true
-  ) {
-    super()
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorBaseOptions) {
+    super(options)
     this.min = min
     this.max = max
-    this.required = required
+    if (options?.optimize !== false) {
+      this.optimize()
+    }
   }
 
-  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
-    if (value == null) {
-      return this.required ? [new RequiredFail(`Is required`, context)] : []
+  public toString(options?: ValidatorExportOptions): string {
+    if (options?.types) {
+      return 'string'
     }
+    const minStr = this.min !== Number.MIN_SAFE_INTEGER || this.max !== Number.MAX_SAFE_INTEGER ? `${this.min}` : ''
+    const maxStr = this.max !== Number.MAX_SAFE_INTEGER ? `, ${this.max}` : ''
+    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+    return `new ${this.constructor.name}(${minStr}${maxStr}${optionsStr})`
+  }
+
+  protected validateValue(value: unknown, context?: string): ValidationFailure[] {
     return validateIntegerString(value, this.min, this.max, context)
   }
 }
 
 export class RequiredIntegerString extends IntegerStringValidator {
-  private validatorType: 'RequiredIntegerString' = 'RequiredIntegerString'
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(min, max, options)
+    super(min, max, { ...options, required: true })
   }
 }
 
-export class OptionalIntegerString extends IntegerStringValidator<undefined | null> {
-  private validatorType: 'OptionalIntegerString' = 'OptionalIntegerString'
+export class OptionalIntegerString extends IntegerStringValidator<undefined> {
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(min, max, options, false)
+    super(min, max, { ...options, required: false })
   }
 }
 
-export function IntegerString(min: number, max: number, required: false): OptionalIntegerString
-export function IntegerString(min: number, max: number, required?: true): RequiredIntegerString
-export function IntegerString(
-  min = Number.MIN_SAFE_INTEGER,
-  max = Number.MAX_SAFE_INTEGER,
-  required = true
-): OptionalIntegerString | RequiredIntegerString {
-  return required ? new RequiredIntegerString(min, max) : new OptionalIntegerString(min, max)
+export class NullableIntegerString extends IntegerStringValidator<null> {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, { ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableIntegerString extends IntegerStringValidator<null | undefined> {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, { ...options, required: false, nullable: true })
+  }
 }

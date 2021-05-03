@@ -1,22 +1,22 @@
 import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
-import { NotDateFail, RequiredFail, ValidationFailure } from '../errors'
+import { NotBooleanFail, RequiredFail, ValidationFailure } from '../errors'
 
-export function isDate(value: unknown, context?: string): value is Date {
-  const errors = validateDate(value, context)
+export function isBoolean(value: unknown, context?: string): value is boolean {
+  const errors = validateBoolean(value, context)
   if (errors.length === 0) {
     return true
   }
   return false
 }
 
-export function validateDate(value: unknown, context?: string): ValidationFailure[] {
-  if (!(value instanceof Date)) {
-    return [new NotDateFail(`Must be a Date object`, value, context)]
+export function validateBoolean(value: unknown, context?: string): ValidationFailure[] {
+  if (typeof value !== 'boolean') {
+    return [new NotBooleanFail(`Must be an boolean`, value, context)]
   }
   return []
 }
 
-export abstract class DateValidator<O = never> extends ValidatorBase<Date | O> {
+export abstract class BooleanValidator<O = never> extends ValidatorBase<boolean | O> {
   public constructor(options?: ValidatorBaseOptions) {
     super(options)
     if (options?.optimize !== false) {
@@ -39,9 +39,9 @@ export abstract class DateValidator<O = never> extends ValidatorBase<Date | O> {
     // prettier-ignore
     const code: string[] = [
       `const ${localValueRef} = ${valueRef}`,
-     ...this.nullCheckWrap([
-      `  if (!(${localValueRef} instanceof Date)) {`,
-      `    errors.push(new NotDateFail(\`Must be a Date object\`, ${localValueRef}${contextStr}))`,
+      ...this.nullCheckWrap([
+      `  if (typeof ${localValueRef} !== 'boolean') {`,
+      `    errors.push(new NotBooleanFail(\`Must be an boolean\`, ${localValueRef}${contextStr}))`,
       `  }`,
       ], localValueRef, contextStr),
       ...(earlyFail ? [
@@ -51,7 +51,7 @@ export abstract class DateValidator<O = never> extends ValidatorBase<Date | O> {
     ]
     return [
       {
-        NotDateFail: NotDateFail,
+        NotBooleanFail: NotBooleanFail,
         RequiredFail: RequiredFail
       },
       declarations,
@@ -61,35 +61,35 @@ export abstract class DateValidator<O = never> extends ValidatorBase<Date | O> {
 
   public toString(options?: ValidatorExportOptions): string {
     if (options?.types) {
-      return 'Date'
+      return 'boolean'
     }
     return `new ${this.constructor.name}(${this.optionsString})`
   }
 
   protected validateValue(value: unknown, context?: string): ValidationFailure[] {
-    return validateDate(value, context)
+    return validateBoolean(value, context)
   }
 }
 
-export class RequiredDate extends DateValidator {
+export class RequiredBoolean extends BooleanValidator {
   public constructor(options?: ValidatorOptions) {
     super({ ...options })
   }
 }
 
-export class OptionalDate extends DateValidator<undefined> {
+export class OptionalBoolean extends BooleanValidator<undefined> {
   public constructor(options?: ValidatorOptions) {
     super({ ...options, required: false })
   }
 }
 
-export class NullableDate extends DateValidator<null> {
+export class NullableBoolean extends BooleanValidator<null> {
   public constructor(options?: ValidatorOptions) {
     super({ ...options, nullable: true })
   }
 }
 
-export class OptionalNullableDate extends DateValidator<undefined | null> {
+export class OptionalNullableBoolean extends BooleanValidator<undefined | null> {
   public constructor(options?: ValidatorOptions) {
     super({ ...options, required: false, nullable: true })
   }

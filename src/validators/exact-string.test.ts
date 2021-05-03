@@ -1,92 +1,130 @@
+import { AssertEqual } from '../common'
 import { NotExactStringFail, RequiredFail } from '../errors'
 import {
-  ExactString,
-  ExactStringValidator,
+  isExactString,
+  NullableExactString,
   OptionalExactString,
+  OptionalNullableExactString,
   RequiredExactString,
   validateExactString
 } from './exact-string'
 
-describe.each([false, true])('validateExactString (optimize: %s)', optimize => {
+describe('validateExactString (optimize: %s)', () => {
   describe('validateExactString', () => {
     it('requires value to be exact string', () => {
-      expect(validateExactString('MyString', 'MyString')).toStrictEqual([])
+      const value = 'MyString' as unknown
+      expect(validateExactString(value, 'MyString')).toStrictEqual([])
     })
   })
 
+  describe('isExactString', () => {
+    it('should cast value to string', () => {
+      const value = 'MyString' as unknown
+      if (isExactString(value, 'MyString')) {
+        expect(true as AssertEqual<typeof value, 'MyString'>).toEqual(true)
+      } else {
+        fail('did not validate but should')
+      }
+    })
+    it('should fail validation', () => {
+      const value = 'string' as unknown
+      expect(isExactString(value, 'MyString')).toEqual(false)
+    })
+  })
+
+  describe('RequiredExactString', () => {
+    it('should return an function body', () => {
+      const validator = new RequiredExactString('MyString', { optimize: false })
+      expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
+    })
+
+    it('should export types', () => {
+      const validator = new RequiredExactString('MyString', { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual("'MyString'")
+    })
+  })
+})
+
+describe.each([false, true])('validateExactString (optimize: %s)', optimize => {
   describe('ExactStringValidator', () => {
     it('should generate code for validation and give same result', () => {
-      const validator = new ExactStringValidator('MyString', { optimize })
-      const str = validator.validate.toString()
+      const validator = new RequiredExactString('MyString', { optimize })
       if (optimize) {
-        expect(str).toMatch(/generatedFunction = true/)
+        expect(validator['optimizedValidate']).not.toBeNull()
       } else {
-        expect(str).not.toMatch(/generatedFunction = true/)
+        expect(validator['optimizedValidate']).toBeNull()
       }
       const errors = validator.validate('MyString')
       expect(errors).toEqual([])
     })
 
-    it('requires value to be exact string', () => {
-      const validator = new ExactStringValidator('MyString', { optimize })
+    it('should export validator code with options', () => {
+      const validator = new RequiredExactString('MyString', { optimize })
+      const code = validator.toString()
+      if (optimize) {
+        expect(code).toEqual(`new RequiredExactString('MyString')`)
+      } else {
+        expect(code).toEqual(`new RequiredExactString('MyString', { optimize: false })`)
+      }
+    })
+
+    it('accepts values', () => {
+      const validator = new RequiredExactString('MyString', { optimize })
       expect(validator.validate('MyString')).toStrictEqual([])
-      expect(validator.validate('')).toStrictEqual([
-        new NotExactStringFail('Must strictly equal "MyString" (received "")')
-      ])
+      expect(true as AssertEqual<typeof validator.tsType, 'MyString'>).toEqual(true)
+    })
+
+    it('rejects invalid values', () => {
+      const validator = new RequiredExactString('MyString', { optimize })
+      expect(validator.validate('')).toStrictEqual([new NotExactStringFail('Must strictly equal "MyString"', '')])
       expect(validator.validate('mystring')).toStrictEqual([
-        new NotExactStringFail('Must strictly equal "MyString" (received "mystring")')
+        new NotExactStringFail('Must strictly equal "MyString"', 'mystring')
       ])
       expect(validator.validate('MyString ')).toStrictEqual([
-        new NotExactStringFail('Must strictly equal "MyString" (received "MyString ")')
+        new NotExactStringFail('Must strictly equal "MyString"', 'MyString ')
       ])
       expect(validator.validate(' MyString')).toStrictEqual([
-        new NotExactStringFail('Must strictly equal "MyString" (received " MyString")')
+        new NotExactStringFail('Must strictly equal "MyString"', ' MyString')
       ])
       expect(validator.validate('bogus')).toStrictEqual([
-        new NotExactStringFail('Must strictly equal "MyString" (received "bogus")')
+        new NotExactStringFail('Must strictly equal "MyString"', 'bogus')
       ])
+      expect(validator.validate(null)).toStrictEqual([new NotExactStringFail('Must strictly equal "MyString"', null)])
+      expect(true as AssertEqual<typeof validator.tsType, 'MyString'>).toEqual(true)
     })
 
-    it('requires value to be same type (boolean)', () => {
-      const validator = new ExactStringValidator('true', { optimize })
-      expect(validator.validate(true)).toStrictEqual([
-        new NotExactStringFail('Must strictly equal "true" (received "true")')
-      ])
-    })
-
-    it('requires value to be same type (integer)', () => {
-      const validator = new ExactStringValidator('0', { optimize })
-      expect(validator.validate(0)).toStrictEqual([new NotExactStringFail('Must strictly equal "0" (received "0")')])
-    })
-  })
-
-  describe('RequiredExactString', () => {
-    it('requires empty value', () => {
+    it('rejects undefined', () => {
       const validator = new RequiredExactString('MyString', { optimize })
-      expect(validator.validate(null)).toStrictEqual([new RequiredFail('Is required')])
-      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required')])
+      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
     })
   })
 
   describe('OptionalExactString', () => {
-    it('requires empty value', () => {
+    it('accepts empty value', () => {
       const validator = new OptionalExactString('MyString', { optimize })
+      expect(validator.validate('MyString')).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
-      expect(validator.validate(undefined)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, 'MyString' | undefined>).toEqual(true)
     })
   })
 
-  describe('ExactString', () => {
+  describe('NullableExactString', () => {
     it('accepts empty value', () => {
-      const validator = ExactString('MyString', false)
+      const validator = new NullableExactString('MyString', { optimize })
+      expect(validator.validate('MyString')).toStrictEqual([])
       expect(validator.validate(null)).toStrictEqual([])
-      expect(validator.validate(undefined)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, 'MyString' | null>).toEqual(true)
     })
+  })
 
-    it('rejects empty value', () => {
-      const validator = ExactString('MyString')
-      expect(validator.validate(null).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
-      expect(validator.validate(undefined).map(e => e.toString())).toStrictEqual(['RequiredFail: Is required'])
+  describe('OptionalNullableExactString', () => {
+    it('accepts empty value', () => {
+      const validator = new OptionalNullableExactString('MyString', { optimize })
+      expect(validator.validate('MyString')).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(true as AssertEqual<typeof validator.tsType, 'MyString' | undefined | null>).toEqual(true)
     })
   })
 })

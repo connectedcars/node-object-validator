@@ -1,41 +1,45 @@
-import { CodeGenResult, ValidatorBase, ValidatorOptions } from '../common'
-import { NotFloatFail, OutOfRangeFail, RequiredFail, ValidationErrorContext, ValidationFailure } from '../errors'
+import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
+import { NotFloatFail, OutOfRangeFail, RequiredFail, ValidationFailure } from '../errors'
+
+export function isFloat(
+  value: unknown,
+  min = Number.MIN_SAFE_INTEGER,
+  max = Number.MAX_SAFE_INTEGER,
+  context?: string
+): value is number {
+  const errors = validateFloat(value, min, max, context)
+  if (errors.length === 0) {
+    return true
+  }
+  return false
+}
 
 export function validateFloat(
   value: unknown,
   min = Number.MIN_SAFE_INTEGER,
   max = Number.MAX_SAFE_INTEGER,
-  context?: ValidationErrorContext
+  context?: string
 ): ValidationFailure[] {
   if (typeof value !== 'number' || isNaN(value) || !isFinite(value)) {
-    return [new NotFloatFail(`Must be a float (received "${value}")`, context)]
+    return [new NotFloatFail(`Must be a float`, value, context)]
   }
   if (value < min || value > max) {
-    return [new OutOfRangeFail(`Must be between ${min} and ${max} (received "${value}")`, context)]
+    return [new OutOfRangeFail(`Must be between ${min} and ${max}`, value, context)]
   }
   return []
 }
 
-export class FloatValidator<O = never> extends ValidatorBase<number | O> {
+export abstract class FloatValidator<O = never> extends ValidatorBase<number | O> {
   private min: number
   private max: number
-  private required: boolean
 
-  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions, required = true) {
-    super()
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorBaseOptions) {
+    super(options)
     this.min = min
     this.max = max
-    this.required = required
-    if (options?.optimize) {
-      this.validate = this.optimize()
+    if (options?.optimize !== false) {
+      this.optimize()
     }
-  }
-
-  public validate(value: unknown, context?: ValidationErrorContext): ValidationFailure[] {
-    if (value == null) {
-      return this.required ? [new RequiredFail(`Is required`, context)] : []
-    }
-    return validateFloat(value, this.min, this.max, context)
   }
 
   public codeGen(
@@ -44,61 +48,75 @@ export class FloatValidator<O = never> extends ValidatorBase<number | O> {
     id = () => {
       return this.codeGenId++
     },
-    context?: ValidationErrorContext
+    context?: string,
+    earlyFail?: boolean
   ): CodeGenResult {
-    const contextStr = context ? `, { key: \`${context.key}\` }` : ', context'
+    const contextStr = context ? `, \`${context}\`` : ', context'
     const localValueRef = `value${id()}`
     const declarations: string[] = []
     // prettier-ignore
     const code: string[] = [
       `const ${localValueRef} = ${valueRef}`,
-      `if (${localValueRef} != null) {`,
+      ...this.nullCheckWrap([
       `  if (typeof ${localValueRef} === 'number' && !isNaN(${localValueRef} ) && isFinite(${localValueRef})) {`,
       `    if (${localValueRef} < ${this.min} || ${localValueRef} > ${this.max}) {`,
-      `      errors.push(new OutOfRangeFail(\`Must be between ${this.min} and ${this.max} (received "\${${localValueRef}}")\`${contextStr}))`,
+      `      errors.push(new OutOfRangeFail(\`Must be between ${this.min} and ${this.max}\`, ${localValueRef}${contextStr}))`,
       `    }`,
       `  } else {`,
-      `    errors.push(new NotFloatFail(\`Must be a float (received "\${${localValueRef}}")\`${contextStr}))`,
+      `    errors.push(new NotFloatFail(\`Must be a float\`, ${localValueRef}${contextStr}))`,
       `  }`,
-      ...(this.required ? [
-        `} else {`,
-        `  errors.push(new RequiredError(\`Is required\`${contextStr}))`] : []),
-        '}'
+      ], localValueRef, contextStr),
+      ...(earlyFail ? [
+      `if (errors.length > 0) {`,
+      `  return errors`,
+      `}`] : []),
     ]
     return [
       {
         OutOfRangeFail: OutOfRangeFail,
         NotFloatFail: NotFloatFail,
-        RequiredError: RequiredFail
+        RequiredFail: RequiredFail
       },
       declarations,
       code
     ]
   }
+
+  public toString(options?: ValidatorExportOptions): string {
+    if (options?.types) {
+      return 'number'
+    }
+    const minStr = this.min !== Number.MIN_SAFE_INTEGER || this.max !== Number.MAX_SAFE_INTEGER ? `${this.min}` : ''
+    const maxStr = this.max !== Number.MAX_SAFE_INTEGER ? `, ${this.max}` : ''
+    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+    return `new ${this.constructor.name}(${minStr}${maxStr}${optionsStr})`
+  }
+
+  protected validateValue(value: unknown, context?: string): ValidationFailure[] {
+    return validateFloat(value, this.min, this.max, context)
+  }
 }
 
 export class RequiredFloat extends FloatValidator {
-  private validatorType: 'RequiredFloat' = 'RequiredFloat'
-
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(min, max, options)
+    super(min, max, { ...options })
   }
 }
 
-export class OptionalFloat extends FloatValidator<undefined | null> {
-  private validatorType: 'OptionalFloat' = 'OptionalFloat'
-
+export class OptionalFloat extends FloatValidator<undefined> {
   public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
-    super(min, max, options, false)
+    super(min, max, { ...options, required: false })
   }
 }
 
-export function Float(min: number, max: number, required: false): OptionalFloat
-export function Float(min: number, max: number, required?: true): RequiredFloat
-export function Float(
-  min = Number.MIN_SAFE_INTEGER,
-  max = Number.MAX_SAFE_INTEGER,
-  required = true
-): OptionalFloat | RequiredFloat {
-  return required ? new RequiredFloat(min, max) : new OptionalFloat(min, max)
+export class NullableFloat extends FloatValidator<null> {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, { ...options, nullable: true })
+  }
+}
+
+export class OptionalNullableFloat extends FloatValidator<null | undefined> {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
+    super(min, max, { ...options, required: false, nullable: true })
+  }
 }
