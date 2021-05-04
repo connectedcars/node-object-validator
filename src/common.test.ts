@@ -1,7 +1,7 @@
-import { ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions } from './common'
+import { ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from './common'
 import { RequiredFail, ValidationFailure } from './errors'
 
-class OneValidator extends ValidatorBase<number> {
+abstract class OneValidator<C = never> extends ValidatorBase<number | C> {
   public constructor(options?: ValidatorBaseOptions) {
     super(options)
     if (options?.optimize !== false) {
@@ -24,10 +24,28 @@ class OneValidator extends ValidatorBase<number> {
   }
 }
 
+class RequiredOne extends OneValidator {
+  public constructor(options: ValidatorOptions) {
+    super({ ...options })
+  }
+}
+
+class OptionalOne extends OneValidator<undefined> {
+  public constructor(options: ValidatorOptions) {
+    super({ ...options, required: false })
+  }
+}
+
+class NullableOne extends OneValidator<null> {
+  public constructor(options: ValidatorOptions) {
+    super({ ...options, nullable: true })
+  }
+}
+
 describe.each([false, true])('Common (optimize: %s)', optimize => {
   describe('ValidatorBase', () => {
-    it(`should validate with the default codeGen implementation with optimize ${optimize}`, () => {
-      const validator = new OneValidator({ optimize: optimize })
+    it(`should validate required with the default codeGen implementation with optimize ${optimize}`, () => {
+      const validator = new RequiredOne({ optimize: optimize })
       if (optimize) {
         expect(validator['optimizedValidate']).not.toBeNull()
       } else {
@@ -37,6 +55,37 @@ describe.each([false, true])('Common (optimize: %s)', optimize => {
       expect(validator.validate(2)).toStrictEqual([new ValidationFailure(`value is not 1`, 2)])
       expect(validator.validate(null)).toStrictEqual([new ValidationFailure(`value is not 1`, null)])
       expect(validator.validate(undefined)).toStrictEqual([new RequiredFail(`Is required`, undefined)])
+      validator.AssertType<number, true>()
+    })
+
+    it(`should validate optional with the default codeGen implementation with optimize ${optimize}`, () => {
+      const validator = new OptionalOne({ optimize: optimize })
+      if (optimize) {
+        expect(validator['optimizedValidate']).not.toBeNull()
+      } else {
+        expect(validator['optimizedValidate']).toBeNull()
+      }
+      expect(validator.validate(1)).toStrictEqual([])
+      expect(validator.validate(undefined)).toStrictEqual([])
+      expect(validator.validate(2)).toStrictEqual([new ValidationFailure(`value is not 1`, 2)])
+      expect(validator.validate(null)).toStrictEqual([new ValidationFailure(`value is not 1`, null)])
+      validator.AssertType<number | undefined, true>()
+      validator.AssertType<number, false>()
+    })
+
+    it(`should validate optional with the default codeGen implementation with optimize ${optimize}`, () => {
+      const validator = new NullableOne({ optimize: optimize })
+      if (optimize) {
+        expect(validator['optimizedValidate']).not.toBeNull()
+      } else {
+        expect(validator['optimizedValidate']).toBeNull()
+      }
+      expect(validator.validate(1)).toStrictEqual([])
+      expect(validator.validate(null)).toStrictEqual([])
+      expect(validator.validate(2)).toStrictEqual([new ValidationFailure(`value is not 1`, 2)])
+      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail(`Is required`, undefined)])
+      validator.AssertType<number | null, true>()
+      validator.AssertType<number, false>()
     })
   })
 })

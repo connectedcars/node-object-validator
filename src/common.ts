@@ -3,8 +3,7 @@ import { RequiredFail, ValidationFailure, ValidationsError } from './errors'
 // https://stackoverflow.com/questions/51651499/typescript-what-is-a-naked-type-parameter
 // https://2ality.com/2019/07/testing-static-types.html
 // Wrapping the types in an tuple force a specific type instead of allow any in the union
-export class AssertEqualError extends Error {}
-export type AssertEqual<T, Expected> = [T, Expected] extends [Expected, T] ? true : AssertEqualError
+export type AssertEqual<T, Expected> = [T, Expected] extends [Expected, T] ? true : false
 
 export type ReturnEqual<T, C> = [T, C] extends [C, T] ? C : never
 
@@ -89,6 +88,11 @@ export abstract class ValidatorBase<T = unknown> {
     this.earlyFail = mergedOptions.earlyFail
     this.nullable = mergedOptions.nullable
     this.optimizedValidate = null
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public AssertType<C extends T, X extends AssertEqual<T, C>>(): void {
+    // Only used for type assertions
   }
 
   public isValid<C extends T>(obj: unknown): obj is ReturnEqual<T, C> {
