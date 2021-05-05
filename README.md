@@ -211,10 +211,10 @@ interface Trip {
   ]
 }
 // Throws compile error if type does not match validator
-objectValidator.AssertType<Trip, true>
+objectValidator.AssertType<Trip, true>()
 
 // Throws compile error if type matches validator
-objectValidator.AssertType<Trip, false>
+objectValidator.AssertType<Trip, false>()
 ```
 
 # Validators
