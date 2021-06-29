@@ -1,4 +1,5 @@
 export * from './validators/array'
+export * from './validators/boolean'
 export * from './validators/date'
 export * from './validators/datetime'
 export * from './validators/exact-string'
