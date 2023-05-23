@@ -57,3 +57,4 @@ export class UnionFail extends ValidationFailure {
 export class NotBooleanFail extends ValidationFailure {}
 export class NotNullFail extends ValidationFailure {}
 export class NotUndefinedFail extends ValidationFailure {}
+export class NotBufferFail extends ValidationFailure {}
