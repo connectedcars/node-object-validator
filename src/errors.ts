@@ -1,19 +1,20 @@
 export class ValidationFailure {
   public context?: string
   public value: unknown
-  public get message(): string {
-    return (
-      (this.context
-        ? `Field '${this.context}' ${this._message.charAt(0).toLowerCase() + this._message.slice(1)}`
-        : this._message) + (this.value === undefined ? '' : ` (received "${this.value}")`)
-    )
-  }
   private _message: string
 
   public constructor(message: string, value: unknown, context?: string) {
     this._message = message
     this.value = value
     this.context = context
+  }
+
+  public get message(): string {
+    return (
+      (this.context
+        ? `Field '${this.context}' ${this._message.charAt(0).toLowerCase() + this._message.slice(1)}`
+        : this._message) + (this.value === undefined ? '' : ` (received "${this.value}")`)
+    )
   }
 
   public toString(): string {
