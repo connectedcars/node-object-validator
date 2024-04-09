@@ -60,10 +60,24 @@ export abstract class BooleanValidator<O = never> extends ValidatorBase<boolean 
   }
 
   public toString(options?: ValidatorExportOptions): string {
-    if (options?.types) {
-      return 'boolean'
+    const language = options?.language ?? 'typescript'
+    switch (language) {
+      case 'typescript': {
+        if (options?.types) {
+          return 'boolean'
+        }
+        return `new ${this.constructor.name}(${this.optionsString})`
+      }
+      case 'rust': {
+        if (options?.types) {
+          return 'bool'
+        }
+        throw new Error(`Language '${language}' not supported`)
+      }
+      default: {
+        throw new Error(`Unknown language '${language}'`)
+      }
     }
-    return `new ${this.constructor.name}(${this.optionsString})`
   }
 
   protected validateValue(value: unknown, context?: string): ValidationFailure[] {

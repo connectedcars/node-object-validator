@@ -131,14 +131,37 @@ export abstract class ArrayValidator<T extends ValidatorBase = never, O = never>
   }
 
   public toString(options?: ValidatorExportOptions): string {
-    if (options?.types) {
-      return `Array<${this.schema.toString(options)}>`
+    const language = options?.language ?? 'typescript'
+    switch (language) {
+      case 'typescript': {
+        if (options?.types) {
+          if (this.schema.required) {
+            return `Array<${this.schema.toString(options)}>`
+          } else {
+            return `Array<${this.schema.toString(options)} | undefined>`
+          }
+        }
+        const schemaStr = this.schema.toString(options)
+        const minLengthStr =
+          this.minLength !== 0 || this.maxLength !== Number.MAX_SAFE_INTEGER ? `, ${this.minLength}` : ''
+        const maxLengthStr = this.maxLength !== Number.MAX_SAFE_INTEGER ? `, ${this.maxLength}` : ''
+        const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+        return `new ${this.constructor.name}(${schemaStr}${minLengthStr}${maxLengthStr}${optionsStr})`
+      }
+      case 'rust': {
+        if (options?.types) {
+          if (this.schema.required) {
+            return `Vec<${this.schema.toString(options)}>`
+          } else {
+            return `Vec<Option<${this.schema.toString(options)}>>`
+          }
+        }
+        throw new Error(`Language '${language}' not supported`)
+      }
+      default: {
+        throw new Error(`Unknown language '${language}'`)
+      }
     }
-    const schemaStr = this.schema.toString(options)
-    const minLengthStr = this.minLength !== 0 || this.maxLength !== Number.MAX_SAFE_INTEGER ? `, ${this.minLength}` : ''
-    const maxLengthStr = this.maxLength !== Number.MAX_SAFE_INTEGER ? `, ${this.maxLength}` : ''
-    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
-    return `new ${this.constructor.name}(${schemaStr}${minLengthStr}${maxLengthStr}${optionsStr})`
   }
 
   protected validateValue(value: unknown, context?: string, options?: ValidatorOptions): ValidationFailure[] {
