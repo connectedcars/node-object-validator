@@ -183,9 +183,9 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
       let entryCode = propCode.map(l => `  ${l}`)
 
       if (unionKey) {
-        const expectedString = ((validator as ObjectValidator).schema[
-          unionKey
-        ] as ExactStringValidator<''>).expected.replace(/'/g, "\\'")
+        const expectedString = (
+          (validator as ObjectValidator).schema[unionKey] as ExactStringValidator<''>
+        ).expected.replace(/'/g, "\\'")
 
         // prettier-ignore
         entryCode = [
