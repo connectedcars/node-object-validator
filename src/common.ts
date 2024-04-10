@@ -41,7 +41,9 @@ export interface ValidateOptions {
 }
 
 export interface ValidatorExportOptions {
+  language?: string
   types?: boolean
+  jsonSafeTypes?: boolean
 }
 
 export function isValidator(value: unknown): value is ValidatorBase {

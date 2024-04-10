@@ -36,11 +36,76 @@ describe('Integer', () => {
       const validator = new RequiredInteger(0, 10, { optimize: false })
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
+  })
 
+  describe('toString(types: true, language: typescript)', () => {
     it('should export types', () => {
       const validator = new RequiredInteger(0, 10, { optimize: false })
       const code = validator.toString({ types: true })
       expect(code).toEqual('number')
+    })
+  })
+
+  describe('toString(types: true, language: rust)', () => {
+    it('should export Rust i64 type with default min/max', () => {
+      const validator = new RequiredInteger()
+      const tsTypes = validator.toString({ types: true, language: 'rust' })
+      expect(tsTypes).toEqual(`i64`)
+    })
+
+    it('should throw when using jsonSafeTypes with Rust and default min/max', () => {
+      const validator = new RequiredInteger()
+      expect(() => {
+        validator.toString({ types: true, language: 'rust', jsonSafeTypes: true })
+      }).toThrow()
+    })
+
+    it('should export Rust u8 type for integer', () => {
+      const validator = new RequiredInteger(0, 10)
+      const tsTypes = validator.toString({ types: true, language: 'rust' })
+      expect(tsTypes).toEqual(`u8`)
+    })
+
+    it('should export Rust u16 type for integer', () => {
+      const validator = new RequiredInteger(0, 0xffff - 1)
+      const tsTypes = validator.toString({ types: true, language: 'rust' })
+      expect(tsTypes).toEqual(`u16`)
+    })
+
+    it('should export Rust u32 type for integer', () => {
+      const validator = new RequiredInteger(0, 0xff_ff_ff_ff - 1)
+      const tsTypes = validator.toString({ types: true, language: 'rust' })
+      expect(tsTypes).toEqual(`u32`)
+    })
+
+    it('should export Rust u64 type for integer', () => {
+      const validator = new RequiredInteger(0, 0xff_ff_ff_ff_ff)
+      const tsTypes = validator.toString({ types: true, language: 'rust' })
+      expect(tsTypes).toEqual(`u64`)
+    })
+
+    it('should export Rust i8 type for integer', () => {
+      const validator = new RequiredInteger(-0x7f, 0x7f - 1)
+      const tsTypes = validator.toString({ types: true, language: 'rust' })
+      expect(tsTypes).toEqual(`i8`)
+    })
+
+    it('should export Rust i16 type for integer', () => {
+      const validator = new RequiredInteger(-0x7f_ff, 0x7f_ff - 1)
+      const tsTypes = validator.toString({ types: true, language: 'rust' })
+      expect(tsTypes).toEqual(`i16`)
+    })
+
+    it('should export Rust i32 type for integer', () => {
+      const validator = new RequiredInteger(-0x7f_ff_ff_ff, 0x7f_ff_ff_ff - 1)
+      const tsTypes = validator.toString({ types: true, language: 'rust' })
+      expect(tsTypes).toEqual(`i32`)
+    })
+
+    it('should export Rust i64 type for integer', () => {
+      const validator = new RequiredInteger(-0x7f_ff_ff_ff, 0x7f_ff_ff_ff)
+      const tsTypes = validator.toString({ types: true, language: 'rust' })
+      expect(tsTypes).toEqual(`i64`)
     })
   })
 })

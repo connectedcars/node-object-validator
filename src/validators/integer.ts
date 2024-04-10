@@ -83,13 +83,57 @@ export abstract class IntegerValidator<O = never> extends ValidatorBase<number |
   }
 
   public toString(options?: ValidatorExportOptions): string {
-    if (options?.types) {
-      return 'number'
+    const language = options?.language ?? 'typescript'
+    switch (language) {
+      case 'typescript': {
+        if (options?.types) {
+          return 'number'
+        }
+        const minStr = this.min !== Number.MIN_SAFE_INTEGER || this.max !== Number.MAX_SAFE_INTEGER ? `${this.min}` : ''
+        const maxStr = this.max !== Number.MAX_SAFE_INTEGER ? `, ${this.max}` : ''
+        const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+        return `new ${this.constructor.name}(${minStr}${maxStr}${optionsStr})`
+      }
+      case 'rust': {
+        if (options?.types) {
+          if (this.min >= 0) {
+            if (this.max < 0xff) {
+              return 'u8'
+            } else if (this.max < 0xff_ff) {
+              return 'u16'
+            } else if (this.max < 0xff_ff_ff_ff) {
+              return 'u32'
+            } else {
+              if (options.jsonSafeTypes) {
+                throw new Error(
+                  `Javascript numbers are limited to 53 bits so max 32bit for compatible types in rust, min: ${this.min} max: ${this.max}`
+                )
+              }
+              return 'u64'
+            }
+          } else {
+            if (this.max < 0x7f && this.min >= -0x7f) {
+              return 'i8'
+            } else if (this.max < 0x7f_ff && this.min >= -0x7f_ff) {
+              return 'i16'
+            } else if (this.max < 0x7f_ff_ff_ff && this.min >= -0x7f_ff_ff_ff) {
+              return 'i32'
+            } else {
+              if (options.jsonSafeTypes) {
+                throw new Error(
+                  `Javascript numbers are limited to 53 bits so max 32bit for compatible types in rust, min: ${this.min} max: ${this.max}`
+                )
+              }
+              return 'i64'
+            }
+          }
+        }
+        throw new Error(`Language '${language}' not supported`)
+      }
+      default: {
+        throw new Error(`Unknown language '${language}'`)
+      }
     }
-    const minStr = this.min !== Number.MIN_SAFE_INTEGER || this.max !== Number.MAX_SAFE_INTEGER ? `${this.min}` : ''
-    const maxStr = this.max !== Number.MAX_SAFE_INTEGER ? `, ${this.max}` : ''
-    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
-    return `new ${this.constructor.name}(${minStr}${maxStr}${optionsStr})`
   }
 
   protected validateValue(value: unknown, context?: string): ValidationFailure[] {
