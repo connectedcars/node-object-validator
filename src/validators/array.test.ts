@@ -117,6 +117,33 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toStrictEqual([])
       validator.AssertType<Record<string, any>[] | undefined, true>()
     })
+
+    it('toString', () => {
+      const validator = new OptionalArray(new RequiredObject({}), 0, Number.MAX_SAFE_INTEGER, { optimize })
+      const res = validator.toString()
+
+      if (optimize) {
+        const expected = `new OptionalArray(new RequiredObject({
+
+}), { required: false })`
+        expect(res).toEqual(expected)
+      } else {
+        const expected = `new OptionalArray(new RequiredObject({
+
+}), { required: false, optimize: false })`
+        expect(res).toEqual(expected)
+      }
+    })
+
+    it('toString, typescript', () => {
+      const validator = new OptionalArray(new RequiredObject({}), 0, Number.MAX_SAFE_INTEGER, { optimize })
+      const res = validator.toString({ types: true })
+
+      const expected = `Array<{
+
+}> | undefined`
+      expect(res).toEqual(expected)
+    })
   })
 
   describe('NullableArray', () => {
@@ -125,6 +152,33 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
       expect(validator.validate([])).toStrictEqual([])
       expect(validator.validate(null)).toStrictEqual([])
       validator.AssertType<Record<string, any>[] | null, true>()
+    })
+
+    it('toString, constructor', () => {
+      const validator = new NullableArray(new RequiredObject({}), 0, Number.MAX_SAFE_INTEGER, { optimize })
+      const res = validator.toString()
+
+      if (optimize) {
+        const expected = `new NullableArray(new RequiredObject({
+
+}), { nullable: true })`
+        expect(res).toEqual(expected)
+      } else {
+        const expected = `new NullableArray(new RequiredObject({
+
+}), { nullable: true, optimize: false })`
+        expect(res).toEqual(expected)
+      }
+    })
+
+    it('toString, typescript', () => {
+      const validator = new NullableArray(new RequiredObject({}), 0, Number.MAX_SAFE_INTEGER, { optimize })
+      const res = validator.toString({ types: true })
+
+      const expected = `Array<{
+
+}> | null`
+      expect(res).toEqual(expected)
     })
   })
 
@@ -135,6 +189,33 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
       validator.AssertType<Record<string, any>[] | null | undefined, true>()
+    })
+
+    it('toString, constructor', () => {
+      const validator = new OptionalNullableArray(new RequiredObject({}), 0, Number.MAX_SAFE_INTEGER, { optimize })
+      const res = validator.toString()
+
+      if (optimize) {
+        const expected = `new OptionalNullableArray(new RequiredObject({
+
+}), { required: false, nullable: true })`
+        expect(res).toEqual(expected)
+      } else {
+        const expected = `new OptionalNullableArray(new RequiredObject({
+
+}), { required: false, nullable: true, optimize: false })`
+        expect(res).toEqual(expected)
+      }
+    })
+
+    it('toString, typescript', () => {
+      const validator = new NullableArray(new RequiredObject({}), 0, Number.MAX_SAFE_INTEGER, { optimize })
+      const res = validator.toString({ types: true })
+
+      const expected = `Array<{
+
+}> | null`
+      expect(res).toEqual(expected)
     })
   })
 })

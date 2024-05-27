@@ -71,7 +71,7 @@ describe('Tuple', () => {
       ])
     })
 
-    it('toString', () => {
+    it('toString, constructor', () => {
       const res = validator.toString()
       const expected = `new RequiredTuple([new RequiredUnion([
   new RequiredExactString('TP2'),
@@ -84,10 +84,9 @@ describe('Tuple', () => {
       expect(res).toEqual(expected)
     })
 
-    it('toString, type', () => {
-      // TODO: last element should be optional array? (Array<blabla> | undefined)
+    it('toString, typescript', () => {
       const res = validator.toString({ types: true })
-      const expected = `['TP2' | 'ISOTP', string, Array<'CAN0' | 'CAN1' | 'CAN85'>]`
+      const expected = `['TP2' | 'ISOTP', string, Array<'CAN0' | 'CAN1' | 'CAN85'> | undefined]`
       expect(res).toEqual(expected)
     })
   })
@@ -115,16 +114,15 @@ describe('Tuple', () => {
       expect(validator.validate(value)).toEqual([new NotArrayFail('Must be an array', null)])
     })
 
-    it('toString', () => {
+    it('toString, constructor', () => {
       const res = validator.toString()
       const expected = `new OptionalTuple([new RequiredInteger(), new RequiredInteger()], { required: false })`
       expect(res).toEqual(expected)
     })
 
-    it('toString, type', () => {
+    it('toString, typescript', () => {
       const res = validator.toString({ types: true })
-      // TODO: is wrong, should be [number, number] | undefined
-      const expected = `[number, number]`
+      const expected = `[number, number] | undefined`
       expect(res).toEqual(expected)
     })
   })
@@ -151,16 +149,15 @@ describe('Tuple', () => {
       expect(validator.validate(value)).toEqual([new RequiredFail('Is required', value)])
     })
 
-    it('toString', () => {
+    it('toString, constructor', () => {
       const res = validator.toString()
       const expected = `new NullableTuple([new RequiredInteger(), new RequiredInteger()], { nullable: true })`
       expect(res).toEqual(expected)
     })
 
-    it('toString, type', () => {
+    it('toString, typescript', () => {
       const res = validator.toString({ types: true })
-      // TODO: is wrong, should be [number, number] | null
-      const expected = `[number, number]`
+      const expected = `[number, number] | null`
       expect(res).toEqual(expected)
     })
   })
@@ -187,16 +184,15 @@ describe('Tuple', () => {
       expect(validator.validate(value)).toEqual([])
     })
 
-    it('toString', () => {
+    it('toString, constructor', () => {
       const res = validator.toString()
       const expected = `new OptionalNullableTuple([new RequiredInteger(), new RequiredInteger()], { required: false, nullable: true })`
       expect(res).toEqual(expected)
     })
 
-    it('toString, type', () => {
+    it('toString, typescript', () => {
       const res = validator.toString({ types: true })
-      // TODO: is wrong, should be [number, number] | null | null or something
-      const expected = `[number, number]`
+      const expected = `[number, number] | undefined | null`
       expect(res).toEqual(expected)
     })
   })

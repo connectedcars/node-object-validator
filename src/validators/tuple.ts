@@ -51,13 +51,11 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
   }
 
   public toString(options?: ValidatorExportOptions): string {
-    const schemaStr = `[${this.schema.map(e => e.toString(options)).join(', ')}]`
-    if (options?.types) {
-      return schemaStr
+    if (options?.types === true) {
+      return this.typeString(options)
+    } else {
+      return this.constructorString()
     }
-
-    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
-    return `new ${this.constructor.name}(${schemaStr}${optionsStr})`
   }
 
   protected validateValue(value: unknown, context?: string, options?: ValidatorOptions): ValidationFailure[] {
@@ -65,6 +63,36 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
       earlyFail: this.earlyFail,
       ...options
     })
+  }
+
+  private typeString(options?: ValidatorExportOptions): string {
+    const language = options?.language ?? 'typescript'
+    switch (language) {
+      case 'typescript': {
+        let typeStr = `[${this.schema.map(e => e.toString(options)).join(', ')}]`
+
+        if (this.required === false) {
+          typeStr += ` | undefined`
+        }
+        if (this.nullable === true) {
+          typeStr += ` | null`
+        }
+
+        return typeStr
+      }
+      case 'rust': {
+        throw new Error('Rust not supported yet')
+      }
+      default: {
+        throw new Error(`Language: '{}' unknown`)
+      }
+    }
+  }
+
+  private constructorString(options?: ValidatorExportOptions): string {
+    const schemaStr = `[${this.schema.map(e => e.toString(options)).join(', ')}]`
+    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+    return `new ${this.constructor.name}(${schemaStr}${optionsStr})`
   }
 }
 
