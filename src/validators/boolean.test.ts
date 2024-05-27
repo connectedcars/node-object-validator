@@ -107,6 +107,28 @@ describe.each([false, true])('Boolean (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, boolean | undefined>).toEqual(true)
     })
+
+    it('toString, constructor', () => {
+      const validator = new OptionalBoolean({ optimize })
+      const res = validator.toString()
+      let expected = ``
+
+      if (optimize) {
+        expected = `new OptionalBoolean({ required: false })`
+      } else {
+        expected = `new OptionalBoolean({ required: false, optimize: false })`
+      }
+
+      expect(res).toEqual(expected)
+    })
+
+    it('toString, typescript', () => {
+      const validator = new OptionalBoolean({ optimize })
+      const res = validator.toString({ types: true })
+      const expected = `boolean | undefined`
+
+      expect(res).toEqual(expected)
+    })
   })
 
   describe('NullableBoolean', () => {
@@ -115,6 +137,28 @@ describe.each([false, true])('Boolean (optimize: %s)', optimize => {
       expect(validator.validate(true)).toStrictEqual([])
       expect(validator.validate(null)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, boolean | null>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      const validator = new NullableBoolean({ optimize })
+      const res = validator.toString()
+      let expected = ``
+
+      if (optimize) {
+        expected = `new NullableBoolean({ nullable: true })`
+      } else {
+        expected = `new NullableBoolean({ nullable: true, optimize: false })`
+      }
+
+      expect(res).toEqual(expected)
+    })
+
+    it('toString, typescript', () => {
+      const validator = new NullableBoolean({ optimize })
+      const res = validator.toString({ types: true })
+      const expected = `boolean | null`
+
+      expect(res).toEqual(expected)
     })
   })
 
@@ -125,6 +169,28 @@ describe.each([false, true])('Boolean (optimize: %s)', optimize => {
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, boolean | null | undefined>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      const validator = new OptionalNullableBoolean({ optimize })
+      const res = validator.toString()
+      let expected = ``
+
+      if (optimize) {
+        expected = `new OptionalNullableBoolean({ required: false, nullable: true })`
+      } else {
+        expected = `new OptionalNullableBoolean({ required: false, nullable: true, optimize: false })`
+      }
+
+      expect(res).toEqual(expected)
+    })
+
+    it('toString, typescript', () => {
+      const validator = new OptionalNullableBoolean({ optimize })
+      const res = validator.toString({ types: true })
+      const expected = `boolean | undefined | null`
+
+      expect(res).toEqual(expected)
     })
   })
 })
