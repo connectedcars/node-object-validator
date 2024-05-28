@@ -92,16 +92,23 @@ describe('Object', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
-
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new RequiredObject(
+        {
+          int: new RequiredInteger(1, 2),
+          float: new RequiredFloat(1, 2)
+        },
+        { optimize: false }
+      )
+      const code = validator.toString()
+      const expected = `new RequiredObject({
+  'int': new RequiredInteger(1, 2),
+  'float': new RequiredFloat(1, 2)
+}, { optimize: false })`
+      expect(code).toEqual(expected)
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
-    })
-
-    it('should export types', () => {
       const validator = new RequiredObject(
         {
           int: new RequiredInteger(1, 2),
@@ -415,11 +422,31 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
     })
 
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new OptionalObject(
+        {
+          int: new RequiredInteger(1, 2),
+          float: new RequiredFloat(1, 2)
+        },
+        { optimize: false }
+      )
+      const code = validator.toString()
+      const expected = `new OptionalObject({
+  'int': new RequiredInteger(1, 2),
+  'float': new RequiredFloat(1, 2)
+}, { required: false, optimize: false })`
+      expect(code).toEqual(expected)
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
+      const validator = new OptionalObject(
+        {
+          int: new RequiredInteger(1, 2),
+          float: new RequiredFloat(1, 2)
+        },
+        { optimize: false }
+      )
+      const code = validator.toString({ types: true })
+      expect(code).toEqual(`{\n  'int': number\n  'float': number\n} | undefined`)
     })
   })
 
@@ -432,11 +459,31 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
     })
 
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new NullableObject(
+        {
+          int: new RequiredInteger(1, 2),
+          float: new RequiredFloat(1, 2)
+        },
+        { optimize: false }
+      )
+      const code = validator.toString()
+      const expected = `new NullableObject({
+  'int': new RequiredInteger(1, 2),
+  'float': new RequiredFloat(1, 2)
+}, { nullable: true, optimize: false })`
+      expect(code).toEqual(expected)
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
+      const validator = new NullableObject(
+        {
+          int: new RequiredInteger(1, 2),
+          float: new RequiredFloat(1, 2)
+        },
+        { optimize: false }
+      )
+      const code = validator.toString({ types: true })
+      expect(code).toEqual(`{\n  'int': number\n  'float': number\n} | null`)
     })
   })
 
@@ -450,11 +497,31 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
     })
 
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new OptionalNullableObject(
+        {
+          int: new RequiredInteger(1, 2),
+          float: new RequiredFloat(1, 2)
+        },
+        { optimize: false }
+      )
+      const code = validator.toString()
+      const expected = `new OptionalNullableObject({
+  'int': new RequiredInteger(1, 2),
+  'float': new RequiredFloat(1, 2)
+}, { required: false, nullable: true, optimize: false })`
+      expect(code).toEqual(expected)
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
+      const validator = new OptionalNullableObject(
+        {
+          int: new RequiredInteger(1, 2),
+          float: new RequiredFloat(1, 2)
+        },
+        { optimize: false }
+      )
+      const code = validator.toString({ types: true })
+      expect(code).toEqual(`{\n  'int': number\n  'float': number\n} | undefined | null`)
     })
   })
 })

@@ -30,16 +30,13 @@ describe('Float', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
-
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new RequiredFloat(0, 10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new RequiredFloat(0, 10, { optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
-    })
-
-    it('should export types', () => {
       const validator = new RequiredFloat(0, 10, { optimize: false })
       const code = validator.toString({ types: true })
       expect(code).toEqual('number')
@@ -145,11 +142,15 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
     })
 
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new OptionalFloat(0, 10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new OptionalFloat(0, 10, { required: false, optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
+      const validator = new OptionalFloat(0, 10, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('number | undefined')
     })
   })
 
@@ -162,11 +163,15 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
     })
 
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new NullableFloat(0, 10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new NullableFloat(0, 10, { nullable: true, optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
+      const validator = new NullableFloat(0, 10, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('number | null')
     })
   })
 
@@ -180,11 +185,15 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
     })
 
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new OptionalNullableFloat(0, 10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new OptionalNullableFloat(0, 10, { required: false, nullable: true, optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
+      const validator = new OptionalNullableFloat(0, 10, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('number | undefined | null')
     })
   })
 })

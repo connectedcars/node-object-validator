@@ -37,16 +37,13 @@ describe('Integer', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
-
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new RequiredInteger(0, 10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new RequiredInteger(0, 10, { optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
-    })
-
-    it('should export types', () => {
       const validator = new RequiredInteger(0, 10, { optimize: false })
       const code = validator.toString({ types: true })
       expect(code).toEqual('number')
@@ -156,11 +153,15 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
     })
 
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new OptionalInteger(0, 10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new OptionalInteger(0, 10, { required: false, optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
+      const validator = new OptionalInteger(0, 10, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('number | undefined')
     })
   })
 
@@ -173,11 +174,15 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
     })
 
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new NullableInteger(0, 10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new NullableInteger(0, 10, { nullable: true, optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
+      const validator = new NullableInteger(0, 10, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('number | null')
     })
   })
 
@@ -191,11 +196,15 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
     })
 
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new OptionalNullableInteger(0, 10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new OptionalNullableInteger(0, 10, { required: false, nullable: true, optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
+      const validator = new OptionalNullableInteger(0, 10, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('number | undefined | null')
     })
   })
 })
