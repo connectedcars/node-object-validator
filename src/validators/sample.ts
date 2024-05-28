@@ -126,7 +126,7 @@ export abstract class SampleValidator<T extends Sample = never, O = never> exten
     if (options?.types === true) {
       return this.typeString(options)
     } else {
-      return this.constructorString()
+      return this.constructorString(options)
     }
   }
 
@@ -158,8 +158,8 @@ export abstract class SampleValidator<T extends Sample = never, O = never> exten
     }
   }
 
-  private constructorString(): string {
-    return `new ${this.constructor.name}(${this.optionsString})`
+  private constructorString(options?: ValidatorExportOptions): string {
+    return this.validator.toString(options)
   }
 }
 

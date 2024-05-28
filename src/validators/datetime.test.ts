@@ -34,16 +34,13 @@ describe('DateTime (optimize: %s)', () => {
       expect(booleanValidator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
-
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new RequiredDateTime({ optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new RequiredDateTime({ optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
-    })
-
-    it('should export types', () => {
       const validator = new RequiredDateTime({ optimize: false })
       const code = validator.toString({ types: true })
       expect(code).toEqual('string')
@@ -127,11 +124,15 @@ describe.each([false, true])('DateTime (optimize: %s)', optimize => {
     })
 
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new OptionalDateTime({ optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new OptionalDateTime({ required: false, optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
+      const validator = new OptionalDateTime({ optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('string | undefined')
     })
   })
 
@@ -144,11 +145,15 @@ describe.each([false, true])('DateTime (optimize: %s)', optimize => {
     })
 
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new NullableDateTime({ optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new NullableDateTime({ nullable: true, optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
+      const validator = new NullableDateTime({ optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('string | null')
     })
   })
 
@@ -162,11 +167,15 @@ describe.each([false, true])('DateTime (optimize: %s)', optimize => {
     })
 
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new OptionalNullableDateTime({ optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new OptionalNullableDateTime({ required: false, nullable: true, optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
+      const validator = new OptionalNullableDateTime({ optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('string | undefined | null')
     })
   })
 })
