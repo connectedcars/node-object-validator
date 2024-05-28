@@ -52,17 +52,46 @@ export abstract class FloatStringValidator<O = never> extends ValidatorBase<stri
   }
 
   public toString(options?: ValidatorExportOptions): string {
-    if (options?.types) {
-      return 'string'
+    if (options?.types === true) {
+      return this.typeString(options)
+    } else {
+      return this.constructorString()
     }
-    const minStr = this.min !== Number.MIN_SAFE_INTEGER || this.max !== Number.MAX_SAFE_INTEGER ? `${this.min}` : ''
-    const maxStr = this.max !== Number.MAX_SAFE_INTEGER ? `, ${this.max}` : ''
-    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
-    return `new ${this.constructor.name}(${minStr}${maxStr}${optionsStr})`
   }
 
   protected validateValue(value: unknown, context?: string): ValidationFailure[] {
     return validateFloatString(value, this.min, this.max, context)
+  }
+
+  private typeString(options?: ValidatorExportOptions): string {
+    const language = options?.language ?? 'typescript'
+    switch (language) {
+      case 'typescript': {
+        let typeStr = `string`
+
+        if (this.required === false) {
+          typeStr += ` | undefined`
+        }
+        if (this.nullable === true) {
+          typeStr += ` | null`
+        }
+
+        return typeStr
+      }
+      case 'rust': {
+        throw new Error('Rust not supported yet')
+      }
+      default: {
+        throw new Error(`Language: '{}' unknown`)
+      }
+    }
+  }
+
+  private constructorString(): string {
+    const minStr = this.min !== Number.MIN_SAFE_INTEGER || this.max !== Number.MAX_SAFE_INTEGER ? `${this.min}` : ''
+    const maxStr = this.max !== Number.MAX_SAFE_INTEGER ? `, ${this.max}` : ''
+    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+    return `new ${this.constructor.name}(${minStr}${maxStr}${optionsStr})`
   }
 }
 

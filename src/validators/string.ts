@@ -83,17 +83,46 @@ export abstract class StringValidator<O = never> extends ValidatorBase<string | 
   }
 
   public toString(options?: ValidatorExportOptions): string {
-    if (options?.types) {
-      return 'string'
+    if (options?.types === true) {
+      return this.typeString(options)
+    } else {
+      return this.constructorString()
     }
-    const minLengthStr = this.minLength !== 0 || this.maxLength !== Number.MAX_SAFE_INTEGER ? `${this.minLength}` : ''
-    const maxLengthStr = this.maxLength !== Number.MAX_SAFE_INTEGER ? `, ${this.maxLength}` : ''
-    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
-    return `new ${this.constructor.name}(${minLengthStr}${maxLengthStr}${optionsStr})`
   }
 
   protected validateValue(value: unknown, context?: string): ValidationFailure[] {
     return validateString(value, this.minLength, this.maxLength, context)
+  }
+
+  private typeString(options?: ValidatorExportOptions): string {
+    const language = options?.language ?? 'typescript'
+    switch (language) {
+      case 'typescript': {
+        let typeStr = `string`
+
+        if (this.required === false) {
+          typeStr += ` | undefined`
+        }
+        if (this.nullable === true) {
+          typeStr += ` | null`
+        }
+
+        return typeStr
+      }
+      case 'rust': {
+        throw new Error('Rust not supported yet')
+      }
+      default: {
+        throw new Error(`Language: '{}' unknown`)
+      }
+    }
+  }
+
+  private constructorString(): string {
+    const minLengthStr = this.minLength !== 0 || this.maxLength !== Number.MAX_SAFE_INTEGER ? `${this.minLength}` : ''
+    const maxLengthStr = this.maxLength !== Number.MAX_SAFE_INTEGER ? `, ${this.maxLength}` : ''
+    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+    return `new ${this.constructor.name}(${minLengthStr}${maxLengthStr}${optionsStr})`
   }
 }
 

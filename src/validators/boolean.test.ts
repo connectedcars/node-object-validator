@@ -38,16 +38,13 @@ describe('Boolean', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
-
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new RequiredBoolean({ optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new RequiredBoolean({ optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
-    })
-
-    it('should export types', () => {
       const validator = new RequiredBoolean({ optimize: false })
       const code = validator.toString({ types: true })
       expect(code).toEqual('boolean')

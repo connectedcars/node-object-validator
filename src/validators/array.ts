@@ -134,7 +134,7 @@ export abstract class ArrayValidator<T extends ValidatorBase = never, O = never>
     if (options?.types === true) {
       return this.typeString(options)
     } else {
-      return this.constructorString()
+      return this.constructorString(options)
     }
   }
 

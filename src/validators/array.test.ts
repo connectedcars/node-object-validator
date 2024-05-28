@@ -34,16 +34,13 @@ describe('Array', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
-
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new RequiredArray(new RequiredInteger(), 0, 10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new RequiredArray(new RequiredInteger(), 0, 10, { optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
-    })
-
-    it('should export types', () => {
       const validator = new RequiredArray(new RequiredInteger(), 0, 10, { optimize: false })
       const code = validator.toString({ types: true })
       expect(code).toEqual('Array<number>')

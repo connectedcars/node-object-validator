@@ -64,15 +64,44 @@ export abstract class RecordValidator<T extends ValidatorBase = never, O = never
   }
 
   public toString(options?: ValidatorExportOptions): string {
-    if (options?.types) {
-      return `Record<string, ${this.schema.toString(options)}>`
+    if (options?.types === true) {
+      return this.typeString(options)
+    } else {
+      return this.constructorString(options)
     }
-    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
-    return `new ${this.constructor.name}(${this.schema.toString(options)}${optionsStr})`
   }
 
   protected validateValue(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
     return validateRecord(this.schema, value, context, { earlyFail: this.earlyFail, ...options })
+  }
+
+  private typeString(options?: ValidatorExportOptions): string {
+    const language = options?.language ?? 'typescript'
+    switch (language) {
+      case 'typescript': {
+        let typeStr = `Record<string, ${this.schema.toString(options)}>`
+
+        if (this.required === false) {
+          typeStr += ` | undefined`
+        }
+        if (this.nullable === true) {
+          typeStr += ` | null`
+        }
+
+        return typeStr
+      }
+      case 'rust': {
+        throw new Error('Rust not supported yet')
+      }
+      default: {
+        throw new Error(`Language: '{}' unknown`)
+      }
+    }
+  }
+
+  private constructorString(options?: ValidatorExportOptions): string {
+    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+    return `new ${this.constructor.name}(${this.schema.toString(options)}${optionsStr})`
   }
 }
 

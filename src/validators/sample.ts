@@ -123,11 +123,43 @@ export abstract class SampleValidator<T extends Sample = never, O = never> exten
   }
 
   public toString(options?: ValidatorExportOptions): string {
-    return this.validator.toString(options)
+    if (options?.types === true) {
+      return this.typeString(options)
+    } else {
+      return this.constructorString()
+    }
   }
 
   protected validateValue(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
     return this.validator.validate(value, context, { earlyFail: this.earlyFail, ...options })
+  }
+
+  private typeString(options?: ValidatorExportOptions): string {
+    const language = options?.language ?? 'typescript'
+    switch (language) {
+      case 'typescript': {
+        let typeStr = this.validator.toString(options)
+
+        if (this.required === false) {
+          typeStr += ` | undefined`
+        }
+        if (this.nullable === true) {
+          typeStr += ` | null`
+        }
+
+        return typeStr
+      }
+      case 'rust': {
+        throw new Error('Rust not supported yet')
+      }
+      default: {
+        throw new Error(`Language: '{}' unknown`)
+      }
+    }
+  }
+
+  private constructorString(): string {
+    return `new ${this.constructor.name}(${this.optionsString})`
   }
 }
 

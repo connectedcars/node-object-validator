@@ -254,16 +254,45 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
   }
 
   public toString(options?: ValidatorExportOptions): string {
-    if (options?.types) {
-      return `${this.schema.map(v => v.toString(options)).join(' | ')}`
+    if (options?.types === true) {
+      return this.typeString(options)
+    } else {
+      return this.constructorString(options)
     }
-    const schemaStr = `[\n${this.schema.map(v => `${v.toString(options).replace(/(^|\n)/g, '$1  ')}`).join(',\n')}\n]`
-    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
-    return `new ${this.constructor.name}(${schemaStr}${optionsStr})`
   }
 
   protected validateValue(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
     return validateUnion(this.schema, value, context, { earlyFail: this.earlyFail, every: this.every, ...options })
+  }
+
+  private typeString(options?: ValidatorExportOptions): string {
+    const language = options?.language ?? 'typescript'
+    switch (language) {
+      case 'typescript': {
+        let typeStr = `${this.schema.map(v => v.toString(options)).join(' | ')}`
+
+        if (this.required === false) {
+          typeStr += ` | undefined`
+        }
+        if (this.nullable === true) {
+          typeStr += ` | null`
+        }
+
+        return typeStr
+      }
+      case 'rust': {
+        throw new Error('Rust not supported yet')
+      }
+      default: {
+        throw new Error(`Language: '{}' unknown`)
+      }
+    }
+  }
+
+  private constructorString(options?: ValidatorExportOptions): string {
+    const schemaStr = `[\n${this.schema.map(v => `${v.toString(options).replace(/(^|\n)/g, '$1  ')}`).join(',\n')}\n]`
+    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+    return `new ${this.constructor.name}(${schemaStr}${optionsStr})`
   }
 }
 

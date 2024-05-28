@@ -45,10 +45,11 @@ export abstract class UnknownValidator<O = never> extends ValidatorBase<unknown 
   }
 
   public toString(options?: ValidatorExportOptions): string {
-    if (options?.types) {
-      return 'unknown'
+    if (options?.types === true) {
+      return this.typeString(options)
+    } else {
+      return this.constructorString()
     }
-    return `new ${this.constructor.name}(${this.optionsString})`
   }
 
   protected validateValue(value: unknown, context?: string): ValidationFailure[] {
@@ -56,6 +57,34 @@ export abstract class UnknownValidator<O = never> extends ValidatorBase<unknown 
       return this.required ? [new RequiredFail(`Is required`, value, context)] : []
     }
     return []
+  }
+
+  private typeString(options?: ValidatorExportOptions): string {
+    const language = options?.language ?? 'typescript'
+    switch (language) {
+      case 'typescript': {
+        let typeStr = `unknown`
+
+        if (this.required === false) {
+          typeStr += ` | undefined`
+        }
+        if (this.nullable === true) {
+          typeStr += ` | null`
+        }
+
+        return typeStr
+      }
+      case 'rust': {
+        throw new Error('Rust not supported yet')
+      }
+      default: {
+        throw new Error(`Language: '{}' unknown`)
+      }
+    }
+  }
+
+  private constructorString(): string {
+    return `new ${this.constructor.name}(${this.optionsString})`
   }
 }
 

@@ -33,16 +33,13 @@ describe('Buffer', () => {
   })
 
   describe('RequiredBuffer', () => {
-
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new RequiredBuffer({ optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new RequiredBuffer({ optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
-    })
-
-    it('should export types', () => {
       const validator = new RequiredBuffer({ optimize: false })
       const code = validator.toString({ types: true })
       expect(code).toEqual('Buffer')
@@ -113,11 +110,15 @@ describe.each([false, true])('Buffer (optimize: %s)', optimize => {
     })
 
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new OptionalBuffer({ optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new OptionalBuffer({ required: false, optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
+      const validator = new OptionalBuffer({ optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('Buffer | undefined')
     })
   })
 
@@ -130,11 +131,15 @@ describe.each([false, true])('Buffer (optimize: %s)', optimize => {
     })
 
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new NullableBuffer({ optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new NullableBuffer({ nullable: true, optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
+      const validator = new NullableBuffer({ optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('Buffer | null')
     })
   })
 
@@ -148,11 +153,15 @@ describe.each([false, true])('Buffer (optimize: %s)', optimize => {
     })
 
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new OptionalNullableBuffer({ optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new OptionalNullableBuffer({ required: false, nullable: true, optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
+      const validator = new OptionalNullableBuffer({ optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('Buffer | undefined | null')
     })
   })
 })

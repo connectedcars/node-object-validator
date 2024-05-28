@@ -64,16 +64,46 @@ export abstract class ExactStringValidator<T extends string = never, O = never> 
   }
 
   public toString(options?: ValidatorExportOptions): string {
-    const expectedStr = `'${this.expected.replace(/'/g, "\\'")}'`
-    if (options?.types) {
-      return expectedStr
+    if (options?.types === true) {
+      return this.typeString(options)
+    } else {
+      return this.constructorString()
     }
-    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
-    return `new ${this.constructor.name}(${expectedStr}${optionsStr})`
   }
 
   protected validateValue(value: unknown, context?: string): ValidationFailure[] {
     return validateExactString(value, this.expected, context)
+  }
+
+  private typeString(options?: ValidatorExportOptions): string {
+    const language = options?.language ?? 'typescript'
+    switch (language) {
+      case 'typescript': {
+        const expectedStr = `'${this.expected.replace(/'/g, "\\'")}'`
+        let typeStr = `${expectedStr}`
+
+        if (this.required === false) {
+          typeStr += ` | undefined`
+        }
+        if (this.nullable === true) {
+          typeStr += ` | null`
+        }
+
+        return typeStr
+      }
+      case 'rust': {
+        throw new Error('Rust not supported yet')
+      }
+      default: {
+        throw new Error(`Language: '{}' unknown`)
+      }
+    }
+  }
+
+  private constructorString(): string {
+    const expectedStr = `'${this.expected.replace(/'/g, "\\'")}'`
+    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+    return `new ${this.constructor.name}(${expectedStr}${optionsStr})`
   }
 }
 

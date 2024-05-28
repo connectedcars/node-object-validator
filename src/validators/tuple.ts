@@ -54,7 +54,7 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
     if (options?.types === true) {
       return this.typeString(options)
     } else {
-      return this.constructorString()
+      return this.constructorString(options)
     }
   }
 
