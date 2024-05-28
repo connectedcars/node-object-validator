@@ -37,6 +37,15 @@ describe('Integer', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
+    })
+
     it('should export types', () => {
       const validator = new RequiredInteger(0, 10, { optimize: false })
       const code = validator.toString({ types: true })
@@ -145,6 +154,14 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, number | undefined>).toEqual(true)
     })
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
+    })
   })
 
   describe('NullableInteger', () => {
@@ -153,6 +170,14 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
       expect(validator.validate(10)).toStrictEqual([])
       expect(validator.validate(null)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, number | null>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
     })
   })
 
@@ -163,6 +188,14 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(validator.validate(null)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, number | null | undefined>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
     })
   })
 })

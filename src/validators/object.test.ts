@@ -92,6 +92,15 @@ describe('Object', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
+    })
+
     it('should export types', () => {
       const validator = new RequiredObject(
         {
@@ -404,6 +413,14 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, Record<string, any> | undefined>).toEqual(true)
     })
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
+    })
   })
 
   describe('NullableObject', () => {
@@ -412,6 +429,14 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
       expect(validator.validate({})).toStrictEqual([])
       expect(validator.validate(null)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, Record<string, any> | null>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
     })
   })
 
@@ -422,6 +447,14 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(validator.validate(null)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, Record<string, any> | null | undefined>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
     })
   })
 })

@@ -38,6 +38,15 @@ describe('IntegerString', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
+    })
+
     it('should export types', () => {
       const validator = new RequiredIntegerString(0, 10, { optimize: false })
       const code = validator.toString({ types: true })
@@ -145,6 +154,14 @@ describe.each([false, true])('IntegerString (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, string | undefined>).toEqual(true)
     })
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
+    })
   })
 
   describe('NullableIntegerString', () => {
@@ -153,6 +170,14 @@ describe.each([false, true])('IntegerString (optimize: %s)', optimize => {
       expect(validator.validate('10')).toStrictEqual([])
       expect(validator.validate(null)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, string | null>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
     })
   })
 
@@ -165,6 +190,14 @@ describe.each([false, true])('IntegerString (optimize: %s)', optimize => {
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, string | null | undefined>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
     })
   })
 })

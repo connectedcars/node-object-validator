@@ -38,6 +38,15 @@ describe('FloatString', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
+    })
+
     it('should export types', () => {
       const validator = new RequiredFloatString(0, 10, { optimize: false })
       const code = validator.toString({ types: true })
@@ -150,6 +159,14 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, string | undefined>).toEqual(true)
     })
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
+    })
   })
 
   describe('NullableFloatString', () => {
@@ -158,6 +175,14 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
       expect(validator.validate('1.0')).toStrictEqual([])
       expect(validator.validate(null)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, string | null>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
     })
   })
 
@@ -168,6 +193,14 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, string | null | undefined>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
     })
   })
 })

@@ -64,6 +64,14 @@ describe('Union', () => {
       const errors2 = validateUnion(schema, 1244)
       expect(errors2).toEqual([])
     })
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
+    })
   })
 
   describe('isUnion', () => {
@@ -92,6 +100,14 @@ describe('Union', () => {
       const validator = new RequiredUnion([new RequiredString(), new RequiredFloat()], { optimize: false })
       const code = validator.toString({ types: true })
       expect(code).toEqual('string | number')
+    })
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
     })
   })
 })
@@ -305,6 +321,14 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toEqual([])
       expect(true as AssertEqual<typeof validator.tsType, 'number' | 'string' | 'error' | undefined>).toEqual(true)
     })
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
+    })
   })
 
   describe('NullableUnion', () => {
@@ -316,6 +340,14 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
       expect(validator.validate('number')).toEqual([])
       expect(validator.validate(null)).toEqual([])
       expect(true as AssertEqual<typeof validator.tsType, 'number' | 'string' | 'error' | null>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
     })
   })
 
@@ -332,6 +364,14 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         true
       )
     })
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
+    })
   })
 
   describe('Enum', () => {
@@ -340,6 +380,14 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
       it('should validate message of type string', () => {
         expect(enumValidator.validate('hello')).toEqual([])
         expect(true as AssertEqual<typeof enumValidator.tsType, 'stuff' | 'hello' | 'more'>).toEqual(true)
+      })
+
+      it('toString, constructor', () => {
+        // TODO: yes
+      })
+
+      it('toString, typescript', () => {
+        // TODO: yes
       })
     })
 
@@ -350,6 +398,14 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         expect(enumValidator.validate(undefined)).toEqual([])
         expect(true as AssertEqual<typeof enumValidator.tsType, 'stuff' | 'hello' | 'more' | undefined>).toEqual(true)
       })
+
+      it('toString, constructor', () => {
+        // TODO: yes
+      })
+
+      it('toString, typescript', () => {
+        // TODO: yes
+      })
     })
 
     describe('NullableEnum', () => {
@@ -358,6 +414,14 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         expect(enumValidator.validate('hello')).toEqual([])
         expect(enumValidator.validate(null)).toEqual([])
         expect(true as AssertEqual<typeof enumValidator.tsType, 'stuff' | 'hello' | 'more' | null>).toEqual(true)
+      })
+
+      it('toString, constructor', () => {
+        // TODO: yes
+      })
+
+      it('toString, typescript', () => {
+        // TODO: yes
       })
     })
     describe('OptionalNullableEnum', () => {
@@ -368,6 +432,14 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         expect(true as AssertEqual<typeof enumValidator.tsType, 'stuff' | 'hello' | 'more' | null | undefined>).toEqual(
           true
         )
+      })
+
+      it('toString, constructor', () => {
+        // TODO: yes
+      })
+
+      it('toString, typescript', () => {
+        // TODO: yes
       })
     })
   })
@@ -435,6 +507,14 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         ])
         expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
       })
+
+      it('toString, constructor', () => {
+        // TODO: yes
+      })
+
+      it('toString, typescript', () => {
+        // TODO: yes
+      })
     })
 
     describe('OptionalDateTimeOrDate', () => {
@@ -444,6 +524,14 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         expect(validator.validate('2018-08-06T13:37:00Z')).toStrictEqual([])
         expect(validator.validate(undefined)).toStrictEqual([])
         expect(true as AssertEqual<typeof validator.tsType, Date | string | undefined>).toEqual(true)
+      })
+
+      it('toString, constructor', () => {
+        // TODO: yes
+      })
+
+      it('toString, typescript', () => {
+        // TODO: yes
       })
     })
 
@@ -455,6 +543,14 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         expect(validator.validate(null)).toStrictEqual([])
         expect(true as AssertEqual<typeof validator.tsType, Date | string | null>).toEqual(true)
       })
+
+      it('toString, constructor', () => {
+        // TODO: yes
+      })
+
+      it('toString, typescript', () => {
+        // TODO: yes
+      })
     })
 
     describe('OptionalNullableDateTimeOrDate', () => {
@@ -464,6 +560,14 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         expect(validator.validate('2018-08-06T13:37:00Z')).toStrictEqual([])
         expect(validator.validate(undefined)).toStrictEqual([])
         expect(true as AssertEqual<typeof validator.tsType, Date | string | null | undefined>).toEqual(true)
+      })
+
+      it('toString, constructor', () => {
+        // TODO: yes
+      })
+
+      it('toString, typescript', () => {
+        // TODO: yes
       })
     })
   })
@@ -616,12 +720,28 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
     })
 
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
+    })
+
     describe('OptionalFloatOrFloatString', () => {
       it('accepts empty value', () => {
         const validator = new OptionalFloatOrFloatString(0, Number.MAX_SAFE_INTEGER, { optimize })
         expect(validator.validate('0.6')).toStrictEqual([])
         expect(validator.validate(undefined)).toStrictEqual([])
         expect(true as AssertEqual<typeof validator.tsType, string | number | undefined>).toEqual(true)
+      })
+
+      it('toString, constructor', () => {
+        // TODO: yes
+      })
+
+      it('toString, typescript', () => {
+        // TODO: yes
       })
     })
 
@@ -632,6 +752,14 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         expect(validator.validate(null)).toStrictEqual([])
         expect(true as AssertEqual<typeof validator.tsType, string | number | null>).toEqual(true)
       })
+
+      it('toString, constructor', () => {
+        // TODO: yes
+      })
+
+      it('toString, typescript', () => {
+        // TODO: yes
+      })
     })
 
     describe('OptionalNullableFloatOrFloatString', () => {
@@ -641,6 +769,14 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         expect(validator.validate(undefined)).toStrictEqual([])
         expect(validator.validate(null)).toStrictEqual([])
         expect(true as AssertEqual<typeof validator.tsType, string | number | null | undefined>).toEqual(true)
+      })
+
+      it('toString, constructor', () => {
+        // TODO: yes
+      })
+
+      it('toString, typescript', () => {
+        // TODO: yes
       })
     })
   })
@@ -744,6 +880,14 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         ])
         expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
       })
+
+      it('toString, constructor', () => {
+        // TODO: yes
+      })
+
+      it('toString, typescript', () => {
+        // TODO: yes
+      })
     })
 
     describe('OptionalIntegerOrIntegerString', () => {
@@ -752,6 +896,14 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         expect(validator.validate('10')).toStrictEqual([])
         expect(validator.validate(undefined)).toStrictEqual([])
         expect(true as AssertEqual<typeof validator.tsType, string | number | undefined>).toEqual(true)
+      })
+
+      it('toString, constructor', () => {
+        // TODO: yes
+      })
+
+      it('toString, typescript', () => {
+        // TODO: yes
       })
     })
 
@@ -762,6 +914,14 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         expect(validator.validate(null)).toStrictEqual([])
         expect(true as AssertEqual<typeof validator.tsType, string | number | null>).toEqual(true)
       })
+
+      it('toString, constructor', () => {
+        // TODO: yes
+      })
+
+      it('toString, typescript', () => {
+        // TODO: yes
+      })
     })
 
     describe('OptionalNullableIntegerOrIntegerString', () => {
@@ -771,6 +931,15 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         expect(validator.validate(undefined)).toStrictEqual([])
         expect(true as AssertEqual<typeof validator.tsType, string | number | null | undefined>).toEqual(true)
       })
+
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
+    })
     })
   })
 })

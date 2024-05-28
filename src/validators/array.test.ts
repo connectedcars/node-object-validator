@@ -34,6 +34,15 @@ describe('Array', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
+    })
+
     it('should export types', () => {
       const validator = new RequiredArray(new RequiredInteger(), 0, 10, { optimize: false })
       const code = validator.toString({ types: true })
@@ -118,7 +127,7 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
       validator.AssertType<Record<string, any>[] | undefined, true>()
     })
 
-    it('toString', () => {
+    it('toString, constructor', () => {
       const validator = new OptionalArray(new RequiredObject({}), 0, Number.MAX_SAFE_INTEGER, { optimize })
       const res = validator.toString()
 

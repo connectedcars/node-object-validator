@@ -36,6 +36,14 @@ describe('Undefined', () => {
       const code = validator.toString({ types: true })
       expect(code).toEqual('undefined')
     })
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
+    })
   })
 })
 
@@ -99,6 +107,14 @@ describe.each([false, true])('Undefined (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, undefined>).toEqual(true)
     })
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
+    })
   })
 
   describe('NullableUndefined', () => {
@@ -107,6 +123,14 @@ describe.each([false, true])('Undefined (optimize: %s)', optimize => {
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, null | undefined>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
     })
   })
 })

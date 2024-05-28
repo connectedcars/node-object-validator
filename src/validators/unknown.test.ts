@@ -9,6 +9,15 @@ describe('Unknown', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
+    })
+
     it('should export types', () => {
       const validator = new RequiredUnknown({ optimize: false })
       const code = validator.toString({ types: true })
@@ -51,6 +60,14 @@ describe.each([false, true])('Unknown (optimize: %s)', optimize => {
         expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
         expect(true as AssertEqual<typeof validator.tsType, unknown>).toEqual(true)
       })
+
+      it('toString, constructor', () => {
+        // TODO: yes
+      })
+
+      it('toString, typescript', () => {
+        // TODO: yes
+      })
     })
 
     describe('OptionalUnknown', () => {
@@ -58,6 +75,14 @@ describe.each([false, true])('Unknown (optimize: %s)', optimize => {
         const validator = new OptionalUnknown()
         expect(validator.validate(undefined)).toStrictEqual([])
         expect(true as AssertEqual<typeof validator.tsType, unknown | undefined>).toEqual(true)
+      })
+
+      it('toString, constructor', () => {
+        // TODO: yes
+      })
+
+      it('toString, typescript', () => {
+        // TODO: yes
       })
     })
   })

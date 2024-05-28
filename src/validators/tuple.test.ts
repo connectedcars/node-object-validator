@@ -125,6 +125,14 @@ describe('Tuple', () => {
       const expected = `[number, number] | undefined`
       expect(res).toEqual(expected)
     })
+
+    it('toString, constructor', () => {
+      // TODO: yes
+    })
+
+    it('toString, typescript', () => {
+      // TODO: yes
+    })
   })
 
   describe('NullableTuple', () => {
@@ -160,6 +168,7 @@ describe('Tuple', () => {
       const expected = `[number, number] | null`
       expect(res).toEqual(expected)
     })
+
   })
 
   describe('OptionalNullableTuple', () => {
