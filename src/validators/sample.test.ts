@@ -164,16 +164,13 @@ describe('Sample', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
-
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new RequiredSample(10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new RequiredInteger(, { optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
-    })
-
-    it('should export types', () => {
       const validator = new RequiredSample(10, { optimize: false })
       const code = validator.toString({ types: true })
       expect(code).toEqual('number')
@@ -348,11 +345,15 @@ describe.each([false, true])('Sample (optimize: %s)', optimize => {
     })
 
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new OptionalSample(10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new RequiredInteger(, { required: false, optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
+      const validator = new OptionalSample(10, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('number | undefined')
     })
   })
 
@@ -365,11 +366,15 @@ describe.each([false, true])('Sample (optimize: %s)', optimize => {
     })
 
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new NullableSample(10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new RequiredInteger(, { nullable: true, optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
+      const validator = new NullableSample(10, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('number | null')
     })
   })
 
@@ -382,11 +387,15 @@ describe.each([false, true])('Sample (optimize: %s)', optimize => {
     })
 
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new OptionalNullableSample(10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new RequiredInteger(, { required: false, nullable: true, optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
+      const validator = new OptionalNullableSample(10, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('number | undefined | null')
     })
   })
 })

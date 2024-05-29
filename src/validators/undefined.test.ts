@@ -31,18 +31,16 @@ describe('Undefined', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
-    it('should export types', () => {
+    it('toString, typescript', () => {
       const validator = new RequiredUndefined({ optimize: false })
       const code = validator.toString({ types: true })
       expect(code).toEqual('undefined')
     })
 
     it('toString, constructor', () => {
-      // TODO: yes
-    })
-
-    it('toString, typescript', () => {
-      // TODO: yes
+      const validator = new RequiredUndefined({ optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new RequiredUndefined({ optimize: false })')
     })
   })
 })
@@ -101,6 +99,7 @@ describe.each([false, true])('Undefined (optimize: %s)', optimize => {
     })
   })
 
+  // TODO: shouldn't we just remove this type?
   describe('OptionalUndefined', () => {
     it('accepts valid values', () => {
       const validator = new OptionalUndefined({ optimize })
@@ -108,12 +107,16 @@ describe.each([false, true])('Undefined (optimize: %s)', optimize => {
       expect(true as AssertEqual<typeof validator.tsType, undefined>).toEqual(true)
     })
 
-    it('toString, constructor', () => {
-      // TODO: yes
+    it('toString, typescript', () => {
+      const validator = new OptionalUndefined({ optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('undefined')
     })
 
-    it('toString, typescript', () => {
-      // TODO: yes
+    it('toString, constructor', () => {
+      const validator = new OptionalUndefined({ optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new OptionalUndefined({ optimize: false })')
     })
   })
 
@@ -125,12 +128,16 @@ describe.each([false, true])('Undefined (optimize: %s)', optimize => {
       expect(true as AssertEqual<typeof validator.tsType, null | undefined>).toEqual(true)
     })
 
-    it('toString, constructor', () => {
-      // TODO: yes
+    it('toString, typescript', () => {
+      const validator = new NullableUndefined({ optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('undefined | null')
     })
 
-    it('toString, typescript', () => {
-      // TODO: yes
+    it('toString, constructor', () => {
+      const validator = new NullableUndefined({ optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new NullableUndefined({ nullable: true, optimize: false })')
     })
   })
 })

@@ -38,16 +38,13 @@ describe.each([false, true])('Regex (optimize: %s)', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
-
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new RequiredRegexMatch(/hello/, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new RequiredRegexMatch(/hello/, { optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
-    })
-
-    it('should export types', () => {
       const validator = new RequiredRegexMatch(/hello/, { optimize: false })
       const code = validator.toString({ types: true })
       expect(code).toEqual('string')
@@ -126,11 +123,15 @@ describe.each([false, true])('Regex (optimize: %s)', optimize => {
     })
 
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new OptionalRegexMatch(/hello/, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new OptionalRegexMatch(/hello/, { required: false, optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
+      const validator = new OptionalRegexMatch(/hello/, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('string | undefined')
     })
   })
 
@@ -143,11 +144,15 @@ describe.each([false, true])('Regex (optimize: %s)', optimize => {
     })
 
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new NullableRegexMatch(/hello/, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new NullableRegexMatch(/hello/, { nullable: true, optimize: false })')
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
+      const validator = new NullableRegexMatch(/hello/, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('string | null')
     })
   })
 
@@ -161,11 +166,17 @@ describe.each([false, true])('Regex (optimize: %s)', optimize => {
     })
 
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new OptionalNullableRegexMatch(/hello/, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual(
+        'new OptionalNullableRegexMatch(/hello/, { required: false, nullable: true, optimize: false })'
+      )
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
+      const validator = new OptionalNullableRegexMatch(/hello/, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('string | undefined | null')
     })
   })
 })

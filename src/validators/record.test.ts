@@ -1,4 +1,4 @@
-import { RequiredFloat, RequiredInteger } from '..'
+import { OptionalNullableObject, RequiredFloat, RequiredInteger } from '..'
 import { AssertEqual } from '../common'
 import { NotIntegerFail, NotObjectFail, RequiredFail } from '../errors'
 import {
@@ -39,16 +39,13 @@ describe('Record', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
-
     it('toString, constructor', () => {
-      // TODO: yes
+      const validator = new RequiredRecord(new RequiredInteger(1, 2))
+      const code = validator.toString()
+      expect(code).toEqual(`new RequiredRecord(new RequiredInteger(1, 2))`)
     })
 
     it('toString, typescript', () => {
-      // TODO: yes
-    })
-
-    it('should export types', () => {
       const validator = new RequiredRecord(new RequiredInteger(1, 2))
       const code = validator.toString({ types: true })
       expect(code).toEqual(`Record<string, number>`)
@@ -154,15 +151,19 @@ describe.each([false, true])('Record (optimize: %s)', optimize => {
       })
 
       it('toString, constructor', () => {
-        // TODO: yes
+        const validator = new OptionalRecord(new RequiredInteger(1, 2))
+        const code = validator.toString()
+        expect(code).toEqual(`new OptionalRecord(new RequiredInteger(1, 2), { required: false })`)
       })
 
       it('toString, typescript', () => {
-        // TODO: yes
+        const validator = new OptionalRecord(new RequiredInteger(1, 2))
+        const code = validator.toString({ types: true })
+        expect(code).toEqual(`Record<string, number> | undefined`)
       })
     })
 
-    describe('NullableObject', () => {
+    describe('NullableRecord', () => {
       it('accepts empty value', () => {
         const validator = new NullableRecord(new RequiredInteger(1, 2), { optimize })
         expect(validator.validate({})).toStrictEqual([])
@@ -171,15 +172,19 @@ describe.each([false, true])('Record (optimize: %s)', optimize => {
       })
 
       it('toString, constructor', () => {
-        // TODO: yes
+        const validator = new NullableRecord(new RequiredInteger(1, 2))
+        const code = validator.toString()
+        expect(code).toEqual(`new NullableRecord(new RequiredInteger(1, 2), { nullable: true })`)
       })
 
       it('toString, typescript', () => {
-        // TODO: yes
+        const validator = new NullableRecord(new RequiredInteger(1, 2))
+        const code = validator.toString({ types: true })
+        expect(code).toEqual(`Record<string, number> | null`)
       })
     })
 
-    describe('OptionalNullableObject', () => {
+    describe('OptionalNullableRecord', () => {
       it('accepts empty value', () => {
         const validator = new OptionalNullableRecord(new RequiredInteger(1, 2), { optimize })
         expect(validator.validate({})).toStrictEqual([])
@@ -189,11 +194,17 @@ describe.each([false, true])('Record (optimize: %s)', optimize => {
       })
 
       it('toString, constructor', () => {
-        // TODO: yes
+        const validator = new OptionalNullableRecord(new RequiredInteger(1, 2))
+        const code = validator.toString()
+        expect(code).toEqual(
+          `new OptionalNullableRecord(new RequiredInteger(1, 2), { required: false, nullable: true })`
+        )
       })
 
       it('toString, typescript', () => {
-        // TODO: yes
+        const validator = new OptionalNullableRecord(new RequiredInteger(1, 2))
+        const code = validator.toString({ types: true })
+        expect(code).toEqual(`Record<string, number> | undefined | null`)
       })
     })
   })

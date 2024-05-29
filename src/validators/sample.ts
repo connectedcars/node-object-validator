@@ -138,16 +138,7 @@ export abstract class SampleValidator<T extends Sample = never, O = never> exten
     const language = options?.language ?? 'typescript'
     switch (language) {
       case 'typescript': {
-        let typeStr = this.validator.toString(options)
-
-        if (this.required === false) {
-          typeStr += ` | undefined`
-        }
-        if (this.nullable === true) {
-          typeStr += ` | null`
-        }
-
-        return typeStr
+        return this.validator.toString(options)
       }
       case 'rust': {
         throw new Error('Rust not supported yet')
