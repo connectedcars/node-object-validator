@@ -121,8 +121,6 @@ export class RequiredUndefined extends UndefinedValidator {
   }
 }
 
-
-  // TODO: shouldn't we just remove this type?
 export class OptionalUndefined extends UndefinedValidator {
   public required = false as const
   public constructor(options?: ValidatorOptions) {

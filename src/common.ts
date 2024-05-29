@@ -41,7 +41,6 @@ export interface ValidateOptions {
 }
 
 export interface ValidatorExportOptions {
-
   language?: string
   types?: boolean
 }

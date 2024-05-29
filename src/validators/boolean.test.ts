@@ -117,7 +117,7 @@ describe.each([false, true])('Boolean (optimize: %s)', optimize => {
     it('toString, constructor', () => {
       const validator = new OptionalBoolean({ optimize })
       const res = validator.toString()
-      let expected = ``
+      let expected
 
       if (optimize) {
         expected = `new OptionalBoolean({ required: false })`
@@ -148,7 +148,7 @@ describe.each([false, true])('Boolean (optimize: %s)', optimize => {
     it('toString, constructor', () => {
       const validator = new NullableBoolean({ optimize })
       const res = validator.toString()
-      let expected = ``
+      let expected
 
       if (optimize) {
         expected = `new NullableBoolean({ nullable: true })`
@@ -180,7 +180,7 @@ describe.each([false, true])('Boolean (optimize: %s)', optimize => {
     it('toString, constructor', () => {
       const validator = new OptionalNullableBoolean({ optimize })
       const res = validator.toString()
-      let expected = ``
+      let expected
 
       if (optimize) {
         expected = `new OptionalNullableBoolean({ required: false, nullable: true })`

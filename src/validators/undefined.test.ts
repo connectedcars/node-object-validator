@@ -99,7 +99,6 @@ describe.each([false, true])('Undefined (optimize: %s)', optimize => {
     })
   })
 
-  // TODO: shouldn't we just remove this type?
   describe('OptionalUndefined', () => {
     it('accepts valid values', () => {
       const validator = new OptionalUndefined({ optimize })

@@ -67,11 +67,9 @@ export abstract class DateValidator<O = never> extends ValidatorBase<Date | O> {
     }
   }
 
-
   protected validateValue(value: unknown, context?: string): ValidationFailure[] {
     return validateDate(value, context)
   }
-
 
   private typeString(options?: ValidatorExportOptions): string {
     const language = options?.language ?? 'typescript'

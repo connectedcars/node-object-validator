@@ -1,4 +1,4 @@
-import { OptionalNullableObject, RequiredFloat, RequiredInteger } from '..'
+import { RequiredFloat, RequiredInteger } from '..'
 import { AssertEqual } from '../common'
 import { NotIntegerFail, NotObjectFail, RequiredFail } from '../errors'
 import {
