@@ -164,7 +164,13 @@ describe('Sample', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
-    it('should export types', () => {
+    it('toString, constructor', () => {
+      const validator = new RequiredSample(10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new RequiredInteger(, { optimize: false })')
+    })
+
+    it('toString, typescript', () => {
       const validator = new RequiredSample(10, { optimize: false })
       const code = validator.toString({ types: true })
       expect(code).toEqual('number')
@@ -337,6 +343,18 @@ describe.each([false, true])('Sample (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, boolean | undefined>).toEqual(true)
     })
+
+    it('toString, constructor', () => {
+      const validator = new OptionalSample(10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new RequiredInteger(, { required: false, optimize: false })')
+    })
+
+    it('toString, typescript', () => {
+      const validator = new OptionalSample(10, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('number | undefined')
+    })
   })
 
   describe('NullableSample', () => {
@@ -346,6 +364,18 @@ describe.each([false, true])('Sample (optimize: %s)', optimize => {
       expect(validator.validate(null)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, boolean | null>).toEqual(true)
     })
+
+    it('toString, constructor', () => {
+      const validator = new NullableSample(10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new RequiredInteger(, { nullable: true, optimize: false })')
+    })
+
+    it('toString, typescript', () => {
+      const validator = new NullableSample(10, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('number | null')
+    })
   })
 
   describe('OptionalNullableSample', () => {
@@ -354,6 +384,18 @@ describe.each([false, true])('Sample (optimize: %s)', optimize => {
       expect(validator.validate(true)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, boolean | null | undefined>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      const validator = new OptionalNullableSample(10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new RequiredInteger(, { required: false, nullable: true, optimize: false })')
+    })
+
+    it('toString, typescript', () => {
+      const validator = new OptionalNullableSample(10, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('number | undefined | null')
     })
   })
 })

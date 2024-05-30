@@ -37,7 +37,13 @@ describe('String (optimize: %s)', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
-    it('should export types', () => {
+    it('toString, constructor', () => {
+      const validator = new RequiredString(0, 10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new RequiredString(0, 10, { optimize: false })')
+    })
+
+    it('toString, typescript', () => {
       const validator = new RequiredString(0, 10, { optimize: false })
       const code = validator.toString({ types: true })
       expect(code).toEqual('string')
@@ -147,6 +153,18 @@ describe.each([false, true])('String (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, string | undefined>).toEqual(true)
     })
+
+    it('toString, constructor', () => {
+      const validator = new OptionalString(0, 10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new OptionalString(0, 10, { required: false, optimize: false })')
+    })
+
+    it('toString, typescript', () => {
+      const validator = new OptionalString(0, 10, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('string | undefined')
+    })
   })
 
   describe('NullableString', () => {
@@ -155,6 +173,18 @@ describe.each([false, true])('String (optimize: %s)', optimize => {
       expect(validator.validate('')).toStrictEqual([])
       expect(validator.validate(null)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, string | null>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      const validator = new NullableString(0, 10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new NullableString(0, 10, { nullable: true, optimize: false })')
+    })
+
+    it('toString, typescript', () => {
+      const validator = new NullableString(0, 10, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('string | null')
     })
   })
 
@@ -165,6 +195,18 @@ describe.each([false, true])('String (optimize: %s)', optimize => {
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, string | null | undefined>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      const validator = new OptionalNullableString(0, 10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new OptionalNullableString(0, 10, { required: false, nullable: true, optimize: false })')
+    })
+
+    it('toString, typescript', () => {
+      const validator = new OptionalNullableString(0, 10, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('string | undefined | null')
     })
   })
 })

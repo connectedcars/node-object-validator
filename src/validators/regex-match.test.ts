@@ -38,7 +38,13 @@ describe.each([false, true])('Regex (optimize: %s)', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
-    it('should export types', () => {
+    it('toString, constructor', () => {
+      const validator = new RequiredRegexMatch(/hello/, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new RequiredRegexMatch(/hello/, { optimize: false })')
+    })
+
+    it('toString, typescript', () => {
       const validator = new RequiredRegexMatch(/hello/, { optimize: false })
       const code = validator.toString({ types: true })
       expect(code).toEqual('string')
@@ -115,6 +121,18 @@ describe.each([false, true])('Regex (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, string | undefined>).toEqual(true)
     })
+
+    it('toString, constructor', () => {
+      const validator = new OptionalRegexMatch(/hello/, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new OptionalRegexMatch(/hello/, { required: false, optimize: false })')
+    })
+
+    it('toString, typescript', () => {
+      const validator = new OptionalRegexMatch(/hello/, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('string | undefined')
+    })
   })
 
   describe('NullableRegexMatch', () => {
@@ -123,6 +141,18 @@ describe.each([false, true])('Regex (optimize: %s)', optimize => {
       expect(validator.validate('hello')).toStrictEqual([])
       expect(validator.validate(null)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, string | null>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      const validator = new NullableRegexMatch(/hello/, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new NullableRegexMatch(/hello/, { nullable: true, optimize: false })')
+    })
+
+    it('toString, typescript', () => {
+      const validator = new NullableRegexMatch(/hello/, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('string | null')
     })
   })
 
@@ -133,6 +163,20 @@ describe.each([false, true])('Regex (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(validator.validate(null)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, string | undefined | null>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      const validator = new OptionalNullableRegexMatch(/hello/, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual(
+        'new OptionalNullableRegexMatch(/hello/, { required: false, nullable: true, optimize: false })'
+      )
+    })
+
+    it('toString, typescript', () => {
+      const validator = new OptionalNullableRegexMatch(/hello/, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('string | undefined | null')
     })
   })
 })

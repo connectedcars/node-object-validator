@@ -78,14 +78,40 @@ export abstract class UndefinedValidator<O = never> extends ValidatorBase<undefi
   }
 
   public toString(options?: ValidatorExportOptions): string {
-    if (options?.types) {
-      return 'undefined'
+    if (options?.types === true) {
+      return this.typeString(options)
+    } else {
+      return this.constructorString()
     }
-    return `new ${this.constructor.name}(${this.optionsString})`
   }
 
   protected validateValue(value: unknown, context?: string): ValidationFailure[] {
     return validateUndefined(value, context)
+  }
+
+  private typeString(options?: ValidatorExportOptions): string {
+    const language = options?.language ?? 'typescript'
+    switch (language) {
+      case 'typescript': {
+        let typeStr = `undefined`
+
+        if (this.nullable === true) {
+          typeStr += ` | null`
+        }
+
+        return typeStr
+      }
+      case 'rust': {
+        throw new Error('Rust not supported yet')
+      }
+      default: {
+        throw new Error(`Language: '{}' unknown`)
+      }
+    }
+  }
+
+  private constructorString(): string {
+    return `new ${this.constructor.name}(${this.optionsString})`
   }
 }
 

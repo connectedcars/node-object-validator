@@ -32,7 +32,13 @@ describe('Null', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
-    it('should export types', () => {
+    it('toString, constructor', () => {
+      const validator = new RequiredNull({ optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new RequiredNull({ optimize: false })')
+    })
+
+    it('toString, typescript', () => {
       const validator = new RequiredNull({ optimize: false })
       const code = validator.toString({ types: true })
       expect(code).toEqual('null')
@@ -93,6 +99,18 @@ describe.each([false, true])('Null (optimize: %s)', optimize => {
       const validator = new OptionalNull({ optimize })
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, null | undefined>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      const validator = new OptionalNull({ optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new OptionalNull({ required: false, optimize: false })')
+    })
+
+    it('toString, typescript', () => {
+      const validator = new OptionalNull({ optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('null | undefined')
     })
   })
 })

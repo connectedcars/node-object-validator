@@ -31,10 +31,16 @@ describe('Undefined', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
-    it('should export types', () => {
+    it('toString, typescript', () => {
       const validator = new RequiredUndefined({ optimize: false })
       const code = validator.toString({ types: true })
       expect(code).toEqual('undefined')
+    })
+
+    it('toString, constructor', () => {
+      const validator = new RequiredUndefined({ optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new RequiredUndefined({ optimize: false })')
     })
   })
 })
@@ -99,6 +105,18 @@ describe.each([false, true])('Undefined (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, undefined>).toEqual(true)
     })
+
+    it('toString, typescript', () => {
+      const validator = new OptionalUndefined({ optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('undefined')
+    })
+
+    it('toString, constructor', () => {
+      const validator = new OptionalUndefined({ optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new OptionalUndefined({ optimize: false })')
+    })
   })
 
   describe('NullableUndefined', () => {
@@ -107,6 +125,18 @@ describe.each([false, true])('Undefined (optimize: %s)', optimize => {
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, null | undefined>).toEqual(true)
+    })
+
+    it('toString, typescript', () => {
+      const validator = new NullableUndefined({ optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('undefined | null')
+    })
+
+    it('toString, constructor', () => {
+      const validator = new NullableUndefined({ optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new NullableUndefined({ nullable: true, optimize: false })')
     })
   })
 })

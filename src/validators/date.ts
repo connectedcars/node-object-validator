@@ -60,14 +60,43 @@ export abstract class DateValidator<O = never> extends ValidatorBase<Date | O> {
   }
 
   public toString(options?: ValidatorExportOptions): string {
-    if (options?.types) {
-      return 'Date'
+    if (options?.types === true) {
+      return this.typeString(options)
+    } else {
+      return this.constructorString()
     }
-    return `new ${this.constructor.name}(${this.optionsString})`
   }
 
   protected validateValue(value: unknown, context?: string): ValidationFailure[] {
     return validateDate(value, context)
+  }
+
+  private typeString(options?: ValidatorExportOptions): string {
+    const language = options?.language ?? 'typescript'
+    switch (language) {
+      case 'typescript': {
+        let typeStr = `Date`
+
+        if (this.required === false) {
+          typeStr += ` | undefined`
+        }
+        if (this.nullable === true) {
+          typeStr += ` | null`
+        }
+
+        return typeStr
+      }
+      case 'rust': {
+        throw new Error('Rust not supported yet')
+      }
+      default: {
+        throw new Error(`Language: '{}' unknown`)
+      }
+    }
+  }
+
+  private constructorString(): string {
+    return `new ${this.constructor.name}(${this.optionsString})`
   }
 }
 

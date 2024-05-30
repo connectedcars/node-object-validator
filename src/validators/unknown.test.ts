@@ -9,7 +9,13 @@ describe('Unknown', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
-    it('should export types', () => {
+    it('toString, constructor', () => {
+      const validator = new RequiredUnknown({ optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new RequiredUnknown({ optimize: false })')
+    })
+
+    it('toString, typescript', () => {
       const validator = new RequiredUnknown({ optimize: false })
       const code = validator.toString({ types: true })
       expect(code).toEqual('unknown')
@@ -58,6 +64,18 @@ describe.each([false, true])('Unknown (optimize: %s)', optimize => {
         const validator = new OptionalUnknown()
         expect(validator.validate(undefined)).toStrictEqual([])
         expect(true as AssertEqual<typeof validator.tsType, unknown | undefined>).toEqual(true)
+      })
+
+      it('toString, constructor', () => {
+        const validator = new OptionalUnknown({ optimize: false })
+        const code = validator.toString()
+        expect(code).toEqual('new OptionalUnknown({ required: false, optimize: false })')
+      })
+
+      it('toString, typescript', () => {
+        const validator = new OptionalUnknown({ optimize: false })
+        const code = validator.toString({ types: true })
+        expect(code).toEqual('unknown | undefined')
       })
     })
   })

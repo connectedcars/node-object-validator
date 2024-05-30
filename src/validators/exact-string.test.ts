@@ -38,7 +38,13 @@ describe('validateExactString (optimize: %s)', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
-    it('should export types', () => {
+    it('toString, constructor', () => {
+      const validator = new RequiredExactString('MyString', { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual(`new RequiredExactString('MyString', { optimize: false })`)
+    })
+
+    it('toString, typescript', () => {
       const validator = new RequiredExactString('MyString', { optimize: false })
       const code = validator.toString({ types: true })
       expect(code).toEqual("'MyString'")
@@ -107,6 +113,18 @@ describe.each([false, true])('validateExactString (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, 'MyString' | undefined>).toEqual(true)
     })
+
+    it('toString, constructor', () => {
+      const validator = new OptionalExactString('MyString', { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual(`new OptionalExactString('MyString', { required: false, optimize: false })`)
+    })
+
+    it('toString, typescript', () => {
+      const validator = new OptionalExactString('MyString', { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual("'MyString' | undefined")
+    })
   })
 
   describe('NullableExactString', () => {
@@ -115,6 +133,18 @@ describe.each([false, true])('validateExactString (optimize: %s)', optimize => {
       expect(validator.validate('MyString')).toStrictEqual([])
       expect(validator.validate(null)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, 'MyString' | null>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      const validator = new NullableExactString('MyString', { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual(`new NullableExactString('MyString', { nullable: true, optimize: false })`)
+    })
+
+    it('toString, typescript', () => {
+      const validator = new NullableExactString('MyString', { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual("'MyString' | null")
     })
   })
 
@@ -125,6 +155,20 @@ describe.each([false, true])('validateExactString (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(validator.validate(null)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, 'MyString' | undefined | null>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      const validator = new OptionalNullableExactString('MyString', { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual(
+        `new OptionalNullableExactString('MyString', { required: false, nullable: true, optimize: false })`
+      )
+    })
+
+    it('toString, typescript', () => {
+      const validator = new OptionalNullableExactString('MyString', { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual("'MyString' | undefined | null")
     })
   })
 })

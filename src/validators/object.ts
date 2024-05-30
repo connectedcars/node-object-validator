@@ -129,19 +129,51 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
   }
 
   public toString(options?: ValidatorExportOptions): string {
-    const lines = Object.keys(this.schema).map(k =>
-      `'${k}': ${this.schema[k].toString(options)}`.replace(/(^|\n)/g, '$1  ')
-    )
-    if (options?.types) {
-      return `{\n${lines.join('\n')}\n}`
+    if (options?.types === true) {
+      return this.typeString(options)
+    } else {
+      return this.constructorString(options)
     }
-    const schemaStr = `{\n${lines.join(',\n')}\n}`
-    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
-    return `new ${this.constructor.name}(${schemaStr}${optionsStr})`
   }
 
   protected validateValue(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
     return validateObject(this.schema, value, context, { earlyFail: this.earlyFail, ...options })
+  }
+
+  private typeString(options?: ValidatorExportOptions): string {
+    const language = options?.language ?? 'typescript'
+    switch (language) {
+      case 'typescript': {
+        const lines = Object.keys(this.schema).map(k =>
+          `'${k}': ${this.schema[k].toString(options)}`.replace(/(^|\n)/g, '$1  ')
+        )
+        let typeStr = `{\n${lines.join('\n')}\n}`
+
+        if (this.required === false) {
+          typeStr += ` | undefined`
+        }
+        if (this.nullable === true) {
+          typeStr += ` | null`
+        }
+
+        return typeStr
+      }
+      case 'rust': {
+        throw new Error('Rust not supported yet')
+      }
+      default: {
+        throw new Error(`Language: '{}' unknown`)
+      }
+    }
+  }
+
+  private constructorString(options?: ValidatorExportOptions): string {
+    const lines = Object.keys(this.schema).map(k =>
+      `'${k}': ${this.schema[k].toString(options)}`.replace(/(^|\n)/g, '$1  ')
+    )
+    const schemaStr = `{\n${lines.join(',\n')}\n}`
+    const optionsStr = this.optionsString !== '' ? `, ${this.optionsString}` : ''
+    return `new ${this.constructor.name}(${schemaStr}${optionsStr})`
   }
 }
 

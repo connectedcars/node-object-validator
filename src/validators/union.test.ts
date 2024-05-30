@@ -88,10 +88,19 @@ describe('Union', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
-    it('should export types', () => {
+    it('toString, typescript', () => {
       const validator = new RequiredUnion([new RequiredString(), new RequiredFloat()], { optimize: false })
       const code = validator.toString({ types: true })
       expect(code).toEqual('string | number')
+    })
+
+    it('toString, constructor', () => {
+      const validator = new RequiredUnion([new RequiredString(), new RequiredFloat()], { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual(`new RequiredUnion([
+  new RequiredString(),
+  new RequiredFloat()
+], { optimize: false })`)
     })
   })
 })
@@ -305,6 +314,21 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toEqual([])
       expect(true as AssertEqual<typeof validator.tsType, 'number' | 'string' | 'error' | undefined>).toEqual(true)
     })
+
+    it('toString, typescript', () => {
+      const validator = new OptionalUnion([new RequiredString(), new RequiredFloat()], { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('string | number | undefined')
+    })
+
+    it('toString, constructor', () => {
+      const validator = new OptionalUnion([new RequiredString(), new RequiredFloat()], { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual(`new OptionalUnion([
+  new RequiredString(),
+  new RequiredFloat()
+], { required: false, optimize: false })`)
+    })
   })
 
   describe('NullableUnion', () => {
@@ -316,6 +340,21 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
       expect(validator.validate('number')).toEqual([])
       expect(validator.validate(null)).toEqual([])
       expect(true as AssertEqual<typeof validator.tsType, 'number' | 'string' | 'error' | null>).toEqual(true)
+    })
+
+    it('toString, typescript', () => {
+      const validator = new NullableUnion([new RequiredString(), new RequiredFloat()], { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('string | number | null')
+    })
+
+    it('toString, constructor', () => {
+      const validator = new NullableUnion([new RequiredString(), new RequiredFloat()], { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual(`new NullableUnion([
+  new RequiredString(),
+  new RequiredFloat()
+], { nullable: true, optimize: false })`)
     })
   })
 
@@ -332,6 +371,21 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         true
       )
     })
+
+    it('toString, typescript', () => {
+      const validator = new OptionalNullableUnion([new RequiredString(), new RequiredFloat()], { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('string | number | undefined | null')
+    })
+
+    it('toString, constructor', () => {
+      const validator = new OptionalNullableUnion([new RequiredString(), new RequiredFloat()], { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual(`new OptionalNullableUnion([
+  new RequiredString(),
+  new RequiredFloat()
+], { required: false, nullable: true, optimize: false })`)
+    })
   })
 
   describe('Enum', () => {
@@ -340,6 +394,25 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
       it('should validate message of type string', () => {
         expect(enumValidator.validate('hello')).toEqual([])
         expect(true as AssertEqual<typeof enumValidator.tsType, 'stuff' | 'hello' | 'more'>).toEqual(true)
+      })
+
+      it('toString, typescript', () => {
+        const validator = new RequiredEnum(['a1', 'b2'], {
+          optimize: false
+        })
+        const code = validator.toString({ types: true })
+        expect(code).toEqual(`'a1' | 'b2'`)
+      })
+
+      it('toString, constructor', () => {
+        const validator = new RequiredEnum(['a1', 'b2'], {
+          optimize: false
+        })
+        const code = validator.toString()
+        expect(code).toEqual(`new RequiredEnum([
+  new RequiredExactString('a1'),
+  new RequiredExactString('b2')
+], { optimize: false })`)
       })
     })
 
@@ -350,6 +423,25 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         expect(enumValidator.validate(undefined)).toEqual([])
         expect(true as AssertEqual<typeof enumValidator.tsType, 'stuff' | 'hello' | 'more' | undefined>).toEqual(true)
       })
+
+      it('toString, typescript', () => {
+        const validator = new OptionalEnum(['a1', 'b2'], {
+          optimize: false
+        })
+        const code = validator.toString({ types: true })
+        expect(code).toEqual(`'a1' | 'b2' | undefined`)
+      })
+
+      it('toString, constructor', () => {
+        const validator = new OptionalEnum(['a1', 'b2'], {
+          optimize: false
+        })
+        const code = validator.toString()
+        expect(code).toEqual(`new OptionalEnum([
+  new RequiredExactString('a1'),
+  new RequiredExactString('b2')
+], { required: false, optimize: false })`)
+      })
     })
 
     describe('NullableEnum', () => {
@@ -359,7 +451,27 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         expect(enumValidator.validate(null)).toEqual([])
         expect(true as AssertEqual<typeof enumValidator.tsType, 'stuff' | 'hello' | 'more' | null>).toEqual(true)
       })
+
+      it('toString, typescript', () => {
+        const validator = new NullableEnum(['a1', 'b2'], {
+          optimize: false
+        })
+        const code = validator.toString({ types: true })
+        expect(code).toEqual(`'a1' | 'b2' | null`)
+      })
+
+      it('toString, constructor', () => {
+        const validator = new NullableEnum(['a1', 'b2'], {
+          optimize: false
+        })
+        const code = validator.toString()
+        expect(code).toEqual(`new NullableEnum([
+  new RequiredExactString('a1'),
+  new RequiredExactString('b2')
+], { nullable: true, optimize: false })`)
+      })
     })
+
     describe('OptionalNullableEnum', () => {
       it('should validate null to give no failures', () => {
         const enumValidator = new OptionalNullableEnum(['stuff', 'hello', 'more'] as const, { optimize })
@@ -368,6 +480,25 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         expect(true as AssertEqual<typeof enumValidator.tsType, 'stuff' | 'hello' | 'more' | null | undefined>).toEqual(
           true
         )
+      })
+
+      it('toString, typescript', () => {
+        const validator = new OptionalNullableEnum(['a1', 'b2'], {
+          optimize: false
+        })
+        const code = validator.toString({ types: true })
+        expect(code).toEqual(`'a1' | 'b2' | undefined | null`)
+      })
+
+      it('toString, constructor', () => {
+        const validator = new OptionalNullableEnum(['a1', 'b2'], {
+          optimize: false
+        })
+        const code = validator.toString()
+        expect(code).toEqual(`new OptionalNullableEnum([
+  new RequiredExactString('a1'),
+  new RequiredExactString('b2')
+], { required: false, nullable: true, optimize: false })`)
       })
     })
   })
@@ -435,6 +566,25 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         ])
         expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
       })
+
+      it('toString, typescript', () => {
+        const validator = new RequiredDateTimeOrDate({
+          optimize: false
+        })
+        const code = validator.toString({ types: true })
+        expect(code).toEqual(`string | Date`)
+      })
+
+      it('toString, constructor', () => {
+        const validator = new RequiredDateTimeOrDate({
+          optimize: false
+        })
+        const code = validator.toString()
+        expect(code).toEqual(`new RequiredDateTimeOrDate([
+  new RequiredDateTime(),
+  new RequiredDate()
+], { optimize: false })`)
+      })
     })
 
     describe('OptionalDateTimeOrDate', () => {
@@ -444,6 +594,25 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         expect(validator.validate('2018-08-06T13:37:00Z')).toStrictEqual([])
         expect(validator.validate(undefined)).toStrictEqual([])
         expect(true as AssertEqual<typeof validator.tsType, Date | string | undefined>).toEqual(true)
+      })
+
+      it('toString, typescript', () => {
+        const validator = new OptionalDateTimeOrDate({
+          optimize: false
+        })
+        const code = validator.toString({ types: true })
+        expect(code).toEqual(`string | Date | undefined`)
+      })
+
+      it('toString, constructor', () => {
+        const validator = new OptionalDateTimeOrDate({
+          optimize: false
+        })
+        const code = validator.toString()
+        expect(code).toEqual(`new OptionalDateTimeOrDate([
+  new RequiredDateTime(),
+  new RequiredDate()
+], { required: false, optimize: false })`)
       })
     })
 
@@ -455,6 +624,25 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         expect(validator.validate(null)).toStrictEqual([])
         expect(true as AssertEqual<typeof validator.tsType, Date | string | null>).toEqual(true)
       })
+
+      it('toString, typescript', () => {
+        const validator = new NullableDateTimeOrDate({
+          optimize: false
+        })
+        const code = validator.toString({ types: true })
+        expect(code).toEqual(`string | Date | null`)
+      })
+
+      it('toString, constructor', () => {
+        const validator = new NullableDateTimeOrDate({
+          optimize: false
+        })
+        const code = validator.toString()
+        expect(code).toEqual(`new NullableDateTimeOrDate([
+  new RequiredDateTime(),
+  new RequiredDate()
+], { nullable: true, optimize: false })`)
+      })
     })
 
     describe('OptionalNullableDateTimeOrDate', () => {
@@ -464,6 +652,25 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         expect(validator.validate('2018-08-06T13:37:00Z')).toStrictEqual([])
         expect(validator.validate(undefined)).toStrictEqual([])
         expect(true as AssertEqual<typeof validator.tsType, Date | string | null | undefined>).toEqual(true)
+      })
+
+      it('toString, typescript', () => {
+        const validator = new OptionalNullableDateTimeOrDate({
+          optimize: false
+        })
+        const code = validator.toString({ types: true })
+        expect(code).toEqual(`string | Date | undefined | null`)
+      })
+
+      it('toString, constructor', () => {
+        const validator = new OptionalNullableDateTimeOrDate({
+          optimize: false
+        })
+        const code = validator.toString()
+        expect(code).toEqual(`new OptionalNullableDateTimeOrDate([
+  new RequiredDateTime(),
+  new RequiredDate()
+], { required: false, nullable: true, optimize: false })`)
       })
     })
   })
@@ -607,13 +814,33 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
           new NotFloatOrFloatStringFail('Must be a float or a string formatted float between -500 and 0.5', '0.7')
         ])
       })
-    })
-    it('rejects empty value', () => {
-      const validator = new RequiredFloatOrFloatString(0, Number.MAX_SAFE_INTEGER, { optimize })
-      expect(validator.validate(null)).toStrictEqual([
-        new NotFloatOrFloatStringFail('Must be a float or a string formatted float larger than 0', null)
-      ])
-      expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
+
+      it('rejects empty value', () => {
+        const validator = new RequiredFloatOrFloatString(0, Number.MAX_SAFE_INTEGER, { optimize })
+        expect(validator.validate(null)).toStrictEqual([
+          new NotFloatOrFloatStringFail('Must be a float or a string formatted float larger than 0', null)
+        ])
+        expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
+      })
+
+      it('toString, typescript', () => {
+        const validator = new RequiredFloatOrFloatString(0, Number.MAX_SAFE_INTEGER, {
+          optimize: false
+        })
+        const code = validator.toString({ types: true })
+        expect(code).toEqual(`number | string`)
+      })
+
+      it('toString, constructor', () => {
+        const validator = new RequiredFloatOrFloatString(0, Number.MAX_SAFE_INTEGER, {
+          optimize: false
+        })
+        const code = validator.toString()
+        expect(code).toEqual(`new RequiredFloatOrFloatString([
+  new RequiredFloat(0),
+  new RequiredFloatString(0)
+], { optimize: false })`)
+      })
     })
 
     describe('OptionalFloatOrFloatString', () => {
@@ -622,6 +849,25 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         expect(validator.validate('0.6')).toStrictEqual([])
         expect(validator.validate(undefined)).toStrictEqual([])
         expect(true as AssertEqual<typeof validator.tsType, string | number | undefined>).toEqual(true)
+      })
+
+      it('toString, typescript', () => {
+        const validator = new OptionalFloatOrFloatString(0, Number.MAX_SAFE_INTEGER, {
+          optimize: false
+        })
+        const code = validator.toString({ types: true })
+        expect(code).toEqual(`number | string | undefined`)
+      })
+
+      it('toString, constructor', () => {
+        const validator = new OptionalFloatOrFloatString(0, Number.MAX_SAFE_INTEGER, {
+          optimize: false
+        })
+        const code = validator.toString()
+        expect(code).toEqual(`new OptionalFloatOrFloatString([
+  new RequiredFloat(0),
+  new RequiredFloatString(0)
+], { required: false, optimize: false })`)
       })
     })
 
@@ -632,6 +878,25 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         expect(validator.validate(null)).toStrictEqual([])
         expect(true as AssertEqual<typeof validator.tsType, string | number | null>).toEqual(true)
       })
+
+      it('toString, typescript', () => {
+        const validator = new NullableFloatOrFloatString(0, Number.MAX_SAFE_INTEGER, {
+          optimize: false
+        })
+        const code = validator.toString({ types: true })
+        expect(code).toEqual(`number | string | null`)
+      })
+
+      it('toString, constructor', () => {
+        const validator = new NullableFloatOrFloatString(0, Number.MAX_SAFE_INTEGER, {
+          optimize: false
+        })
+        const code = validator.toString()
+        expect(code).toEqual(`new NullableFloatOrFloatString([
+  new RequiredFloat(0),
+  new RequiredFloatString(0)
+], { nullable: true, optimize: false })`)
+      })
     })
 
     describe('OptionalNullableFloatOrFloatString', () => {
@@ -641,6 +906,25 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         expect(validator.validate(undefined)).toStrictEqual([])
         expect(validator.validate(null)).toStrictEqual([])
         expect(true as AssertEqual<typeof validator.tsType, string | number | null | undefined>).toEqual(true)
+      })
+
+      it('toString, typescript', () => {
+        const validator = new OptionalNullableFloatOrFloatString(0, Number.MAX_SAFE_INTEGER, {
+          optimize: false
+        })
+        const code = validator.toString({ types: true })
+        expect(code).toEqual(`number | string | undefined | null`)
+      })
+
+      it('toString, constructor', () => {
+        const validator = new OptionalNullableFloatOrFloatString(0, Number.MAX_SAFE_INTEGER, {
+          optimize: false
+        })
+        const code = validator.toString()
+        expect(code).toEqual(`new OptionalNullableFloatOrFloatString([
+  new RequiredFloat(0),
+  new RequiredFloatString(0)
+], { required: false, nullable: true, optimize: false })`)
       })
     })
   })
@@ -744,6 +1028,25 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         ])
         expect(validator.validate(undefined)).toStrictEqual([new RequiredFail('Is required', undefined)])
       })
+
+      it('toString, typescript', () => {
+        const validator = new RequiredIntegerOrIntegerString(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, {
+          optimize: false
+        })
+        const code = validator.toString({ types: true })
+        expect(code).toEqual(`number | string`)
+      })
+
+      it('toString, constructor', () => {
+        const validator = new RequiredIntegerOrIntegerString(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, {
+          optimize: false
+        })
+        const code = validator.toString()
+        expect(code).toEqual(`new RequiredIntegerOrIntegerString([
+  new RequiredInteger(),
+  new RequiredIntegerString()
+], { optimize: false })`)
+      })
     })
 
     describe('OptionalIntegerOrIntegerString', () => {
@@ -752,6 +1055,25 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         expect(validator.validate('10')).toStrictEqual([])
         expect(validator.validate(undefined)).toStrictEqual([])
         expect(true as AssertEqual<typeof validator.tsType, string | number | undefined>).toEqual(true)
+      })
+
+      it('toString, typescript', () => {
+        const validator = new OptionalIntegerOrIntegerString(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, {
+          optimize: false
+        })
+        const code = validator.toString({ types: true })
+        expect(code).toEqual(`number | string | undefined`)
+      })
+
+      it('toString, constructor', () => {
+        const validator = new OptionalIntegerOrIntegerString(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, {
+          optimize: false
+        })
+        const code = validator.toString()
+        expect(code).toEqual(`new OptionalIntegerOrIntegerString([
+  new RequiredInteger(),
+  new RequiredIntegerString()
+], { required: false, optimize: false })`)
       })
     })
 
@@ -762,6 +1084,25 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         expect(validator.validate(null)).toStrictEqual([])
         expect(true as AssertEqual<typeof validator.tsType, string | number | null>).toEqual(true)
       })
+
+      it('toString, typescript', () => {
+        const validator = new NullableIntegerOrIntegerString(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, {
+          optimize: false
+        })
+        const code = validator.toString({ types: true })
+        expect(code).toEqual(`number | string | null`)
+      })
+
+      it('toString, constructor', () => {
+        const validator = new NullableIntegerOrIntegerString(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, {
+          optimize: false
+        })
+        const code = validator.toString()
+        expect(code).toEqual(`new NullableIntegerOrIntegerString([
+  new RequiredInteger(),
+  new RequiredIntegerString()
+], { nullable: true, optimize: false })`)
+      })
     })
 
     describe('OptionalNullableIntegerOrIntegerString', () => {
@@ -770,6 +1111,25 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
         expect(validator.validate('10')).toStrictEqual([])
         expect(validator.validate(undefined)).toStrictEqual([])
         expect(true as AssertEqual<typeof validator.tsType, string | number | null | undefined>).toEqual(true)
+      })
+
+      it('toString, typescript', () => {
+        const validator = new OptionalNullableIntegerOrIntegerString(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, {
+          optimize: false
+        })
+        const code = validator.toString({ types: true })
+        expect(code).toEqual(`number | string | undefined | null`)
+      })
+
+      it('toString, constructor', () => {
+        const validator = new OptionalNullableIntegerOrIntegerString(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, {
+          optimize: false
+        })
+        const code = validator.toString()
+        expect(code).toEqual(`new OptionalNullableIntegerOrIntegerString([
+  new RequiredInteger(),
+  new RequiredIntegerString()
+], { required: false, nullable: true, optimize: false })`)
       })
     })
   })

@@ -37,7 +37,13 @@ describe('Integer', () => {
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
 
-    it('should export types', () => {
+    it('toString, constructor', () => {
+      const validator = new RequiredInteger(0, 10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new RequiredInteger(0, 10, { optimize: false })')
+    })
+
+    it('toString, typescript', () => {
       const validator = new RequiredInteger(0, 10, { optimize: false })
       const code = validator.toString({ types: true })
       expect(code).toEqual('number')
@@ -145,6 +151,18 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, number | undefined>).toEqual(true)
     })
+
+    it('toString, constructor', () => {
+      const validator = new OptionalInteger(0, 10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new OptionalInteger(0, 10, { required: false, optimize: false })')
+    })
+
+    it('toString, typescript', () => {
+      const validator = new OptionalInteger(0, 10, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('number | undefined')
+    })
   })
 
   describe('NullableInteger', () => {
@@ -153,6 +171,18 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
       expect(validator.validate(10)).toStrictEqual([])
       expect(validator.validate(null)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, number | null>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      const validator = new NullableInteger(0, 10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new NullableInteger(0, 10, { nullable: true, optimize: false })')
+    })
+
+    it('toString, typescript', () => {
+      const validator = new NullableInteger(0, 10, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('number | null')
     })
   })
 
@@ -163,6 +193,18 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(validator.validate(null)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, number | null | undefined>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      const validator = new OptionalNullableInteger(0, 10, { optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new OptionalNullableInteger(0, 10, { required: false, nullable: true, optimize: false })')
+    })
+
+    it('toString, typescript', () => {
+      const validator = new OptionalNullableInteger(0, 10, { optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('number | undefined | null')
     })
   })
 })

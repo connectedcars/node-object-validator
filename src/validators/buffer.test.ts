@@ -33,7 +33,13 @@ describe('Buffer', () => {
   })
 
   describe('RequiredBuffer', () => {
-    it('should export types', () => {
+    it('toString, constructor', () => {
+      const validator = new RequiredBuffer({ optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new RequiredBuffer({ optimize: false })')
+    })
+
+    it('toString, typescript', () => {
       const validator = new RequiredBuffer({ optimize: false })
       const code = validator.toString({ types: true })
       expect(code).toEqual('Buffer')
@@ -102,6 +108,18 @@ describe.each([false, true])('Buffer (optimize: %s)', optimize => {
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, Buffer | undefined>).toEqual(true)
     })
+
+    it('toString, constructor', () => {
+      const validator = new OptionalBuffer({ optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new OptionalBuffer({ required: false, optimize: false })')
+    })
+
+    it('toString, typescript', () => {
+      const validator = new OptionalBuffer({ optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('Buffer | undefined')
+    })
   })
 
   describe('NullableBuffer', () => {
@@ -110,6 +128,18 @@ describe.each([false, true])('Buffer (optimize: %s)', optimize => {
       expect(validator.validate(Buffer.from('abcd'))).toStrictEqual([])
       expect(validator.validate(null)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, Buffer | null>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      const validator = new NullableBuffer({ optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new NullableBuffer({ nullable: true, optimize: false })')
+    })
+
+    it('toString, typescript', () => {
+      const validator = new NullableBuffer({ optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('Buffer | null')
     })
   })
 
@@ -120,6 +150,18 @@ describe.each([false, true])('Buffer (optimize: %s)', optimize => {
       expect(validator.validate(null)).toStrictEqual([])
       expect(validator.validate(undefined)).toStrictEqual([])
       expect(true as AssertEqual<typeof validator.tsType, Buffer | null | undefined>).toEqual(true)
+    })
+
+    it('toString, constructor', () => {
+      const validator = new OptionalNullableBuffer({ optimize: false })
+      const code = validator.toString()
+      expect(code).toEqual('new OptionalNullableBuffer({ required: false, nullable: true, optimize: false })')
+    })
+
+    it('toString, typescript', () => {
+      const validator = new OptionalNullableBuffer({ optimize: false })
+      const code = validator.toString({ types: true })
+      expect(code).toEqual('Buffer | undefined | null')
     })
   })
 })
