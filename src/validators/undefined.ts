@@ -105,7 +105,7 @@ export abstract class UndefinedValidator<O = never> extends ValidatorBase<undefi
         throw new Error('Rust not supported yet')
       }
       default: {
-        throw new Error(`Language: '{}' unknown`)
+        throw new Error(`Language: '${options?.language}' unknown`)
       }
     }
   }

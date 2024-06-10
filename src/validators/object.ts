@@ -162,7 +162,7 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
         throw new Error('Rust not supported yet')
       }
       default: {
-        throw new Error(`Language: '{}' unknown`)
+        throw new Error(`Language: '${options?.language}' unknown`)
       }
     }
   }

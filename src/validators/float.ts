@@ -113,7 +113,7 @@ export abstract class FloatValidator<O = never> extends ValidatorBase<number | O
         throw new Error('Rust not supported yet')
       }
       default: {
-        throw new Error(`Language: '{}' unknown`)
+        throw new Error(`Language: '${options?.language}' unknown`)
       }
     }
   }

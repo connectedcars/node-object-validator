@@ -217,4 +217,10 @@ describe('Rust Types', () => {
     const rustType3 = new OptionalNullableBoolean().toString({ types: true, language: 'rust' })
     expect(rustType3).toEqual('Option<bool>')
   })
+
+  it('Unknown Language', () => {
+    expect(() => {
+      new RequiredBoolean().toString({ types: true, language: 'bingo' as any })
+    }).toThrow(`Language: 'bingo' unknown`)
+  })
 })

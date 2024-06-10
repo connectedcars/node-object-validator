@@ -91,7 +91,7 @@ export abstract class BooleanValidator<O = never> extends ValidatorBase<boolean 
         return isOption ? `Option<bool>` : 'bool'
       }
       default: {
-        throw new Error(`Language: '{}' unknown`)
+        throw new Error(`Language: '${options?.language}' unknown`)
       }
     }
   }

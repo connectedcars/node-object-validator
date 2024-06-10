@@ -284,7 +284,7 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
         throw new Error('Rust not supported yet')
       }
       default: {
-        throw new Error(`Language: '{}' unknown`)
+        throw new Error(`Language: '${options?.language}' unknown`)
       }
     }
   }

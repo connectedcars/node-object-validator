@@ -167,7 +167,7 @@ export abstract class ArrayValidator<T extends ValidatorBase = never, O = never>
         return `Vec<${innerType}>`
       }
       default: {
-        throw new Error(`Language: '{}' unknown`)
+        throw new Error(`Language: '${options?.language}' unknown`)
       }
     }
   }

@@ -82,7 +82,7 @@ export abstract class FloatStringValidator<O = never> extends ValidatorBase<stri
         throw new Error('Rust not supported yet')
       }
       default: {
-        throw new Error(`Language: '{}' unknown`)
+        throw new Error(`Language: '${options?.language}' unknown`)
       }
     }
   }

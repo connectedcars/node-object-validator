@@ -55,7 +55,7 @@ export abstract class BufferValidator<O = never> extends ValidatorBase<Buffer | 
         throw new Error('Rust not supported yet')
       }
       default: {
-        throw new Error(`Language: '{}' unknown`)
+        throw new Error(`Language: '${options?.language}' unknown`)
       }
     }
   }

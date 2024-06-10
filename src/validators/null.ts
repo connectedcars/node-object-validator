@@ -109,7 +109,7 @@ export abstract class NullValidator<O = never> extends ValidatorBase<null | O> {
         throw new Error('Rust not supported yet')
       }
       default: {
-        throw new Error(`Language: '{}' unknown`)
+        throw new Error(`Language: '${options?.language}' unknown`)
       }
     }
   }
