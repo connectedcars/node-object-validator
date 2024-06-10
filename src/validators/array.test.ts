@@ -1,7 +1,7 @@
 import { AssertEqual } from '../common'
 import { NotArrayFail, NotIntegerFail, RequiredFail } from '../errors'
 import { isArray, NullableArray, OptionalArray, OptionalNullableArray, RequiredArray, validateArray } from './array'
-import { RequiredInteger } from './integer'
+import { OptionalInteger, RequiredInteger } from './integer'
 import { RequiredObject } from './object'
 
 describe('Array', () => {
@@ -223,5 +223,17 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
 }> | null`
       expect(res).toEqual(expected)
     })
+  })
+})
+
+describe('Rust Types', () => {
+  it('Vec', () => {
+    const rustType = new RequiredArray(new RequiredInteger()).toString({ types: true, language: 'rust' })
+    expect(rustType).toEqual('Vec<u32>')
+  })
+
+  it('Option<Vec>', () => {
+    const rustType = new OptionalArray(new OptionalInteger()).toString({ types: true, language: 'rust' })
+    expect(rustType).toEqual('Option<Vec<Option<u32>>')
   })
 })

@@ -41,7 +41,8 @@ export interface ValidateOptions {
 }
 
 export interface ValidatorExportOptions {
-  language?: string
+  language?: 'typescript' | 'rust'
+  jsonSafeTypes?: boolean
   types?: boolean
 }
 

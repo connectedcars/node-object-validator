@@ -208,3 +208,54 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
     })
   })
 })
+
+describe('Rust Types', () => {
+  it('Required', () => {
+    const rustType1 = new RequiredInteger().toString({ types: true, language: 'rust' })
+    expect(rustType1).toEqual('i64')
+
+    const rustType2 = new RequiredInteger(0, 85).toString({ types: true, language: 'rust' })
+    expect(rustType2).toEqual('u8')
+
+    const rustType3 = new RequiredInteger(-1, 285).toString({ types: true, language: 'rust' })
+    expect(rustType3).toEqual('i16')
+
+    const rustType4 = new RequiredInteger(-99999999, 9999999).toString({
+      types: true,
+      language: 'rust',
+      jsonSafeTypes: true
+    })
+    expect(rustType4).toEqual('i32')
+  })
+
+  it('Option', () => {
+    const rustType1 = new OptionalInteger().toString({ types: true, language: 'rust' })
+    expect(rustType1).toEqual('Option<i64>')
+
+    const rustType2 = new NullableInteger().toString({ types: true, language: 'rust' })
+    expect(rustType2).toEqual('Option<i64>')
+
+    const rustType3 = new OptionalNullableInteger().toString({ types: true, language: 'rust' })
+    expect(rustType3).toEqual('Option<i64>')
+  })
+
+  it('jsonSafeTypes', () => {
+    expect(() => {
+      new RequiredInteger().toString({ types: true, language: 'rust', jsonSafeTypes: true })
+    }).toThrow(
+      'Javascript numbers are limited to 53 bits so max 32bit for compatible types in rust, min: -9007199254740991 max: 9007199254740991'
+    )
+
+    expect(() => {
+      new RequiredInteger(-85).toString({ types: true, language: 'rust', jsonSafeTypes: true })
+    }).toThrow(
+      'Javascript numbers are limited to 53 bits so max 32bit for compatible types in rust, min: -85 max: 9007199254740991'
+    )
+
+    expect(() => {
+      new RequiredInteger(0).toString({ types: true, language: 'rust', jsonSafeTypes: true })
+    }).toThrow(
+      'Javascript numbers are limited to 53 bits so max 32bit for compatible types in rust, min: 0 max: 9007199254740991'
+    )
+  })
+})

@@ -161,7 +161,10 @@ export abstract class ArrayValidator<T extends ValidatorBase = never, O = never>
         return typeStr
       }
       case 'rust': {
-        throw new Error('Rust not supported yet')
+        const isOption = !this.schema.required || this.schema.nullable
+        const schemaStr = this.schema.toString(options)
+        const innerType = isOption ? `Option<${schemaStr}>` : schemaStr
+        return `Vec<${innerType}>`
       }
       default: {
         throw new Error(`Language: '{}' unknown`)
