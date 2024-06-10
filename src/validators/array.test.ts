@@ -229,11 +229,17 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
 describe('Rust Types', () => {
   it('Vec', () => {
     const rustType = new RequiredArray(new RequiredInteger()).toString({ types: true, language: 'rust' })
-    expect(rustType).toEqual('Vec<u32>')
+    expect(rustType).toEqual('Vec<i64>')
   })
 
   it('Option<Vec>', () => {
     const rustType = new OptionalArray(new OptionalInteger()).toString({ types: true, language: 'rust' })
-    expect(rustType).toEqual('Option<Vec<Option<u32>>')
+    expect(rustType).toEqual('Option<Vec<Option<i64>>>')
+  })
+
+  it('Unknown Language', () => {
+    expect(() => {
+      new RequiredArray(new RequiredInteger()).toString({ types: true, language: 'bingo' as any })
+    }).toThrow(`Language: 'bingo' unknown`)
   })
 })

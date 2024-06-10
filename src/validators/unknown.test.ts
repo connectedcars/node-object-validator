@@ -80,3 +80,11 @@ describe.each([false, true])('Unknown (optimize: %s)', optimize => {
     })
   })
 })
+
+describe('Rust Types', () => {
+  it('Error', () => {
+    expect(() => {
+      new RequiredUnknown().toString({ types: true, language: 'rust' })
+    }).toThrow(`Unknown is not supported in Rust`)
+  })
+})

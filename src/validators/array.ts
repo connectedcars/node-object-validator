@@ -161,10 +161,10 @@ export abstract class ArrayValidator<T extends ValidatorBase = never, O = never>
         return typeStr
       }
       case 'rust': {
-        const isOption = !this.schema.required || this.schema.nullable
         const schemaStr = this.schema.toString(options)
-        const innerType = isOption ? `Option<${schemaStr}>` : schemaStr
-        return `Vec<${innerType}>`
+        const isOption = !this.schema.required || this.schema.nullable
+        const typeStr = `Vec<${schemaStr}>`
+        return isOption ? `Option<${typeStr}>` : typeStr
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)

@@ -87,7 +87,12 @@ export abstract class DateValidator<O = never> extends ValidatorBase<Date | O> {
         return typeStr
       }
       case 'rust': {
-        throw new Error('Rust not supported yet')
+
+        // TODO: Dont know how fancy we want to be? If it's just local timestamps then Instant is fine
+        // const typeStr = 'chrono::DateTime<chrono::Utc>'
+        const typeStr = 'std::time::Instant'
+        const isOption = !this.required || this.nullable
+        return isOption ? `Option<${typeStr}>` : `${typeStr}`
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)

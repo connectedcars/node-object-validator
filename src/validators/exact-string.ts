@@ -92,7 +92,8 @@ export abstract class ExactStringValidator<T extends string = never, O = never> 
         return typeStr
       }
       case 'rust': {
-        throw new Error('Rust not supported yet')
+        // TODO: This isn't really supported, unless we have this be part of an Enum? (Which is where this is used?)
+        throw new Error('Not possible in rust?')
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)

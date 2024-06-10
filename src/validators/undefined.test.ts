@@ -140,3 +140,11 @@ describe.each([false, true])('Undefined (optimize: %s)', optimize => {
     })
   })
 })
+
+describe('Rust Types', () => {
+  it('Error', () => {
+    expect(() => {
+      new RequiredUndefined().toString({ types: true, language: 'rust' })
+    }).toThrow(`Undefined is not supported in Rust`)
+  })
+})

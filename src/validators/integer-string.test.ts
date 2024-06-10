@@ -212,3 +212,24 @@ describe.each([false, true])('IntegerString (optimize: %s)', optimize => {
     })
   })
 })
+
+describe('Rust Types', () => {
+  it('Required', () => {
+    const rustType1 = new RequiredIntegerString().toString({ types: true, language: 'rust' })
+    expect(rustType1).toEqual('i64')
+
+    const rustType2 = new RequiredIntegerString(0).toString({ types: true, language: 'rust' })
+    expect(rustType2).toEqual('u64')
+  })
+
+  it('Option', () => {
+    const rustType1 = new OptionalIntegerString().toString({ types: true, language: 'rust' })
+    expect(rustType1).toEqual('Option<i64>')
+
+    const rustType2 = new NullableIntegerString().toString({ types: true, language: 'rust' })
+    expect(rustType2).toEqual('Option<i64>')
+
+    const rustType3 = new OptionalNullableIntegerString().toString({ types: true, language: 'rust' })
+    expect(rustType3).toEqual('Option<i64>')
+  })
+})

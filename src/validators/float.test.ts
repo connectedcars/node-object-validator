@@ -197,3 +197,27 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
     })
   })
 })
+
+describe('Rust Types', () => {
+  it('Required', () => {
+    const rustType = new RequiredFloat().toString({ types: true, language: 'rust' })
+    expect(rustType).toEqual('f64')
+  })
+
+  it('Option', () => {
+    const rustType1 = new OptionalFloat().toString({ types: true, language: 'rust' })
+    expect(rustType1).toEqual('Option<f64>')
+
+    const rustType2 = new NullableFloat().toString({ types: true, language: 'rust' })
+    expect(rustType2).toEqual('Option<f64>')
+
+    const rustType3 = new OptionalNullableFloat().toString({ types: true, language: 'rust' })
+    expect(rustType3).toEqual('Option<f64>')
+  })
+
+  it('Unknown Language', () => {
+    expect(() => {
+      new RequiredFloat().toString({ types: true, language: 'bingo' as any })
+    }).toThrow(`Language: 'bingo' unknown`)
+  })
+})

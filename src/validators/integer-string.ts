@@ -79,7 +79,14 @@ export abstract class IntegerStringValidator<O = never> extends ValidatorBase<st
         return typeStr
       }
       case 'rust': {
-        throw new Error('Rust not supported yet')
+        let typeStr
+        if (this.min >= 0) {
+          typeStr = 'u64'
+        } else {
+          typeStr = 'i64'
+        }
+        const isOption = !this.required || this.nullable
+        return isOption ? `Option<${typeStr}>` : `${typeStr}`
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)
