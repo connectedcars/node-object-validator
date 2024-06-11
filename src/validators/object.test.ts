@@ -525,3 +525,27 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
     })
   })
 })
+
+describe('Rust Types', () => {
+  it('Required', () => {
+    const rustType = new RequiredObject({ propA: new RequiredInteger() }).toString({ types: true, language: 'rust' })
+    expect(rustType).toEqual('bool')
+  })
+
+  // it('Option', () => {
+  //   const rustType1 = new OptionalObject().toString({ types: true, language: 'rust' })
+  //   expect(rustType1).toEqual('Option<bool>')
+  //
+  //   const rustType2 = new NullableObject().toString({ types: true, language: 'rust' })
+  //   expect(rustType2).toEqual('Option<bool>')
+  //
+  //   const rustType3 = new OptionalNullableObject().toString({ types: true, language: 'rust' })
+  //   expect(rustType3).toEqual('Option<bool>')
+  // })
+
+  it('Unknown Language', () => {
+    expect(() => {
+      new RequiredObject({ propA: new RequiredInteger() }).toString({ types: true, language: 'bingo' as any })
+    }).toThrow(`Language: 'bingo' unknown`)
+  })
+})

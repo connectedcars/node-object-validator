@@ -92,8 +92,16 @@ export abstract class ExactStringValidator<T extends string = never, O = never> 
         return typeStr
       }
       case 'rust': {
-        // TODO: This isn't really supported, unless we have this be part of an Enum? (Which is where this is used?)
-        throw new Error('Not possible in rust?')
+        // TODO: If we assume this is a part of a Rust enum (or typescript union member 'a' | 'b').
+        // This isn't really supported on it's own
+        // Meaning they can't be on their own but we can just write out the name (then #[ignore(pretty)] blabla to not force PascalCase)
+        // Just means people will HAVE to have it be part of an enum... (or union etc, but they do need a name)
+
+        const isOption = !this.required || this.nullable
+        if (isOption) {
+          throw new Error(`Rust does not support optional ExactString`)
+        }
+        return this.expected.toString()
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)

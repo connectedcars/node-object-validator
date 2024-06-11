@@ -172,3 +172,30 @@ describe.each([false, true])('validateExactString (optimize: %s)', optimize => {
     })
   })
 })
+
+describe('Rust Types', () => {
+  it('Required', () => {
+    const rustType = new RequiredExactString('computerKatten').toString({ types: true, language: 'rust' })
+    expect(rustType).toEqual('computerKatten')
+  })
+
+  it('Option', () => {
+    expect(() => {
+      new OptionalExactString('computerKatten').toString({ types: true, language: 'rust' })
+    }).toThrow(`Rust does not support optional ExactString`)
+
+    expect(() => {
+      new NullableExactString('computerKatten').toString({ types: true, language: 'rust' })
+    }).toThrow(`Rust does not support optional ExactString`)
+
+    expect(() => {
+      new OptionalNullableExactString('computerKatten').toString({ types: true, language: 'rust' })
+    }).toThrow(`Rust does not support optional ExactString`)
+  })
+
+  it('Unknown Language', () => {
+    expect(() => {
+      new RequiredExactString('computerKatten').toString({ types: true, language: 'bingo' as any })
+    }).toThrow(`Language: 'bingo' unknown`)
+  })
+})
