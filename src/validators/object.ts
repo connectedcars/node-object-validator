@@ -159,19 +159,11 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
         return typeStr
       }
       case 'rust': {
-        // TODO: should we define the "Struct", or refer to the name?
-        // If it's the definition, then an "option" variant doesn't make sense
-        // const isOption = !this.required || this.nullable
-        // return isOption ? `Option<bool>` : 'bool'
-
-        // What about the name? You can't "inline" types
-
-        const lines = Object.keys(this.schema).map(k =>
-          `'${k}': ${this.schema[k].toString(options)}`.replace(/(^|\n)/g, '$1  ')
-        )
-        // const typeName = this.
-        // const typeStr = `struct {\n${lines.join('\n')}\n}`
-        return `fixme`
+        if (options?.rustTypeName === undefined) {
+          throw new Error('forget about it champ')
+        } else {
+          return options.rustTypeName
+        }
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)
