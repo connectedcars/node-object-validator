@@ -6,7 +6,7 @@ import {
   ValidatorExportOptions,
   ValidatorOptions
 } from '../common'
-import { NotIntegerFail, NotStringFail, OutOfRangeFail, RequiredFail, ValidationFailure } from '../errors'
+import { NotIntegerFail, NotStringFail, OutOfRangeFail, RequiredFail, ValidationFailure, WrongLengthFail } from '../errors'
 import { validateString } from './string'
 
 export function isUnixDateTime(value: unknown, context?: string): value is string {
@@ -25,7 +25,7 @@ export function validateUnixDateTime(value: unknown, context?: string): Validati
 
   const numValue = Number(value)
 
-  if (isNaN(numValue) || !Number.isInteger(numValue)) {
+  if (!Number.isInteger(numValue)) {
     return [new NotIntegerFail(`Must be a number in string format`, value, context)]
   }
 
@@ -90,7 +90,8 @@ export abstract class UnixDateTimeValidator<O = never> extends ValidatorBase<str
         NotIntegerFail: NotIntegerFail,
         OutOfRangeFail: OutOfRangeFail,
         NotStringFail: NotStringFail,
-        RequiredFail: RequiredFail
+        RequiredFail: RequiredFail,
+        WrongLengthFail: WrongLengthFail
       },
       declarations,
       code
