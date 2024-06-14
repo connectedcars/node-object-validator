@@ -6,7 +6,14 @@ import {
   ValidatorExportOptions,
   ValidatorOptions
 } from '../common'
-import { NotIntegerFail, NotStringFail, OutOfRangeFail, RequiredFail, ValidationFailure, WrongLengthFail } from '../errors'
+import {
+  NotIntegerFail,
+  NotStringFail,
+  OutOfRangeFail,
+  RequiredFail,
+  ValidationFailure,
+  WrongLengthFail
+} from '../errors'
 import { validateString } from './string'
 
 export function isUnixDateTime(value: unknown, context?: string): value is string {
