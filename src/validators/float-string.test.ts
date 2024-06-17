@@ -1,4 +1,4 @@
-import { AssertEqual } from '../common'
+import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotFloatStringFail, OutOfRangeFail, RequiredFail, WrongLengthFail } from '../errors'
 import {
   isFloatString,
@@ -217,19 +217,21 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
 })
 
 describe('Rust Types', () => {
+  const options: ValidatorExportOptions = { types: true, language: 'rust' }
+
   it('Required', () => {
-    const rustType = new RequiredFloatString().toString({ types: true, language: 'rust' })
+    const rustType = new RequiredFloatString().toString(options)
     expect(rustType).toEqual('f64')
   })
 
   it('Option', () => {
-    const rustType1 = new OptionalFloatString().toString({ types: true, language: 'rust' })
+    const rustType1 = new OptionalFloatString().toString(options)
     expect(rustType1).toEqual('Option<f64>')
 
-    const rustType2 = new NullableFloatString().toString({ types: true, language: 'rust' })
+    const rustType2 = new NullableFloatString().toString(options)
     expect(rustType2).toEqual('Option<f64>')
 
-    const rustType3 = new OptionalNullableFloatString().toString({ types: true, language: 'rust' })
+    const rustType3 = new OptionalNullableFloatString().toString(options)
     expect(rustType3).toEqual('Option<f64>')
   })
 

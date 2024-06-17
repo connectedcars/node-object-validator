@@ -1,4 +1,4 @@
-import { AssertEqual } from '../common'
+import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotIntegerFail, OutOfRangeFail, RequiredFail } from '../errors'
 import {
   isInteger,
@@ -210,14 +210,16 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
 })
 
 describe('Rust Types', () => {
+  const options: ValidatorExportOptions = { types: true, language: 'rust' }
+
   it('Required', () => {
-    const rustType1 = new RequiredInteger().toString({ types: true, language: 'rust' })
+    const rustType1 = new RequiredInteger().toString(options)
     expect(rustType1).toEqual('i64')
 
-    const rustType2 = new RequiredInteger(0, 85).toString({ types: true, language: 'rust' })
+    const rustType2 = new RequiredInteger(0, 85).toString(options)
     expect(rustType2).toEqual('u8')
 
-    const rustType3 = new RequiredInteger(-1, 285).toString({ types: true, language: 'rust' })
+    const rustType3 = new RequiredInteger(-1, 285).toString(options)
     expect(rustType3).toEqual('i16')
 
     const rustType4 = new RequiredInteger(-99999999, 9999999).toString({
@@ -229,13 +231,13 @@ describe('Rust Types', () => {
   })
 
   it('Option', () => {
-    const rustType1 = new OptionalInteger().toString({ types: true, language: 'rust' })
+    const rustType1 = new OptionalInteger().toString(options)
     expect(rustType1).toEqual('Option<i64>')
 
-    const rustType2 = new NullableInteger().toString({ types: true, language: 'rust' })
+    const rustType2 = new NullableInteger().toString(options)
     expect(rustType2).toEqual('Option<i64>')
 
-    const rustType3 = new OptionalNullableInteger().toString({ types: true, language: 'rust' })
+    const rustType3 = new OptionalNullableInteger().toString(options)
     expect(rustType3).toEqual('Option<i64>')
   })
 

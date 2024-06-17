@@ -42,8 +42,13 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
 > {
   public schema: T
 
+  private rustTypeGenerated: boolean
+  private rustTypeName?: string
+
   public constructor(schema: [...T], options?: ValidatorBaseOptions) {
     super(options)
+    this.rustTypeGenerated = false
+    this.rustTypeName = options?.rustTypeName
     this.schema = schema
     if (options?.optimize !== false) {
       this.optimize(schema)
@@ -81,7 +86,18 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
         return typeStr
       }
       case 'rust': {
-        throw new Error('Rust not supported yet')
+        if (this.rustTypeName === undefined) {
+          throw new Error(`'rustTypeName' option is not set`)
+        }
+        if (!this.rustTypeGenerated) {
+          this.rustTypeGenerated = true
+
+          // For tuples, we only need the types in order, not the keys.
+          const types = Object.values(this.schema).map(v => v.toString(options))
+          return `struct ${this.rustTypeName}(${types.join(', ')});`
+        }
+        const isOption = !this.required || this.nullable
+        return isOption ? `Option<${this.rustTypeName}>` : `${this.rustTypeName}`
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)
@@ -97,8 +113,8 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
 }
 
 export class RequiredTuple<T extends ValidatorBase[]> extends TupleValidator<T> {
-  public constructor(schema: [...T]) {
-    super(schema)
+  public constructor(schema: [...T], options?: ValidatorOptions) {
+    super(schema, { ...options })
   }
 }
 

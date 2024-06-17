@@ -67,11 +67,14 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
   ObjectWrap<UndefinedToOptional<{ [K in keyof T]: T[K]['tsType'] }>> | O
 > {
   public schema: ObjectSchema
-  private typeStringGenerated: boolean
+
+  private rustTypeGenerated: boolean
+  private rustTypeName?: string
 
   public constructor(schema: T, options?: ValidatorBaseOptions) {
     super(options)
-    this.typeStringGenerated = false
+    this.rustTypeGenerated = false
+    this.rustTypeName = options?.rustTypeName
     this.schema = schema
     if (options?.optimize !== false) {
       this.optimize(schema)
@@ -162,17 +165,17 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
         return typeStr
       }
       case 'rust': {
-        if (options?.rustTypeName === undefined) {
+        if (this.rustTypeName === undefined) {
           throw new Error(`'rustTypeName' option is not set`)
         }
-        if (!this.typeStringGenerated) {
-          this.typeStringGenerated = true
+        if (!this.rustTypeGenerated) {
+          this.rustTypeGenerated = true
 
           const lines = Object.keys(this.schema).map(k => `  ${toSnakeCase(k)}: ${this.schema[k].toString(options)},`)
-          return `struct ${options?.rustTypeName} {\n${lines.join('\n')}\n}`
+          return `struct ${this.rustTypeName} {\n${lines.join('\n')}\n}`
         }
         const isOption = !this.required || this.nullable
-        return isOption ? `Option<${options.rustTypeName}>` : `${options.rustTypeName}`
+        return isOption ? `Option<${this.rustTypeName}>` : `${this.rustTypeName}`
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)

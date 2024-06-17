@@ -1,5 +1,5 @@
 import { RequiredFloat, RequiredInteger } from '..'
-import { AssertEqual } from '../common'
+import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotIntegerFail, NotObjectFail, RequiredFail } from '../errors'
 import {
   isRecord,
@@ -207,5 +207,34 @@ describe.each([false, true])('Record (optimize: %s)', optimize => {
         expect(code).toEqual(`Record<string, number> | undefined | null`)
       })
     })
+  })
+})
+
+describe('Rust Types', () => {
+  const options: ValidatorExportOptions = {
+    types: true,
+    language: 'rust'
+  }
+
+  it('Required', () => {
+    const validator = new RequiredRecord(new RequiredInteger())
+    expect(validator.toString(options)).toEqual(`HashMap<String, i64>`)
+  })
+
+  it('Option', () => {
+    const rustType1 = new OptionalRecord(new RequiredInteger()).toString(options)
+    expect(rustType1).toEqual('Option<HashMap<String, i64>>')
+
+    const rustType2 = new NullableRecord(new RequiredInteger()).toString(options)
+    expect(rustType2).toEqual('Option<HashMap<String, i64>>')
+
+    const rustType3 = new OptionalNullableRecord(new RequiredInteger()).toString(options)
+    expect(rustType3).toEqual('Option<HashMap<String, i64>>')
+  })
+
+  it('Unknown Language', () => {
+    expect(() => {
+      new RequiredRecord(new RequiredInteger()).toString({ types: true, language: 'bingo' as any })
+    }).toThrow(`Language: 'bingo' unknown`)
   })
 })

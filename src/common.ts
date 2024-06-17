@@ -23,18 +23,22 @@ export type ValidatorBaseOptions = {
   required?: boolean
   nullable?: boolean
   earlyFail?: boolean
+  rustTypeName?: string
 }
 
 /**
  * @typedef ValidatorOptions
  * @property {boolean} [earlyFail=false] Stop validation on first failure (default: false)
  * @property {boolean} [optimize=true] Generate an optimized function for doing the validation (default: true)
+ * @property {string} [string='Something'] Required for generating rust types when referencing objects (default: undefined)
  */
 export interface ValidatorOptions {
   earlyFail?: boolean
   optimize?: boolean
+  rustTypeName?: string
 }
 
+// TODO: why isn't the type above just used?
 export interface ValidateOptions {
   earlyFail?: boolean
   optimized?: boolean
@@ -42,7 +46,6 @@ export interface ValidateOptions {
 
 export interface ValidatorExportOptions {
   language?: 'typescript' | 'rust'
-  rustTypeName?: string
   jsonSafeTypes?: boolean
   types?: boolean
 }
@@ -54,7 +57,7 @@ export function isValidator(value: unknown): value is ValidatorBase {
   return false
 }
 
-export function generateOptionsString(options: ValidatorBaseOptions, defaults: Required<ValidatorBaseOptions>): string {
+export function generateOptionsString(options: ValidatorBaseOptions, defaults: ValidatorBaseOptions): string {
   const selectedOptions: string[] = []
   if (options.required !== undefined && options.required !== defaults.required) {
     selectedOptions.push(`required: ${options.required}`)
@@ -67,6 +70,9 @@ export function generateOptionsString(options: ValidatorBaseOptions, defaults: R
   }
   if (options.optimize !== undefined && options.optimize !== defaults.optimize) {
     selectedOptions.push(`optimize: ${options.optimize}`)
+  }
+  if (options.rustTypeName !== undefined && options.rustTypeName !== defaults.rustTypeName) {
+    selectedOptions.push(`rustTypeName: ${options.rustTypeName}`)
   }
   return selectedOptions.length > 0 ? `{ ${selectedOptions.join(', ')} }` : ''
 }
@@ -82,7 +88,7 @@ export abstract class ValidatorBase<T = unknown> {
   protected optionsString: string
 
   public constructor(options?: ValidatorBaseOptions) {
-    const defaults = { required: true, nullable: false, earlyFail: false, optimize: true }
+    const defaults = { required: true, nullable: false, earlyFail: false, optimize: true, rustTypeName: undefined }
     const mergedOptions = { ...defaults, ...options }
 
     this.optionsString = options ? generateOptionsString(options, defaults) : ''

@@ -19,6 +19,13 @@ export function validateExactString(value: unknown, expected: string, context?: 
 export abstract class ExactStringValidator<T extends string = never, O = never> extends ValidatorBase<T | O> {
   public expected: T
 
+  // TODO: probably not? how would we know when/how to split out? this needs to be on the union itself, with stuff passed down.
+  // But how would you from the TS type say that a given "ExactString" is that variant bassed into another type?
+  // MAYBE if we define the exactstrings outside and put in the reference instead
+
+  // private rustTypeGenerated: boolean
+  // private rustTag: string
+
   public constructor(expected: T, options?: ValidatorBaseOptions) {
     super(options)
     this.expected = expected
@@ -92,15 +99,13 @@ export abstract class ExactStringValidator<T extends string = never, O = never> 
         return typeStr
       }
       case 'rust': {
-        // TODO: If we assume this is a part of a Rust enum (or typescript union member 'a' | 'b').
-        // This isn't really supported on it's own
-        // Meaning they can't be on their own but we can just write out the name (then #[ignore(pretty)] blabla to not force PascalCase)
-        // Just means people will HAVE to have it be part of an enum... (or union etc, but they do need a name)
-
         const isOption = !this.required || this.nullable
         if (isOption) {
           throw new Error(`Rust does not support optional ExactString`)
         }
+
+        // TODO: If it's part of an element (is part of something with a "tag"?)
+        // Maybe not
         return this.expected.toString()
       }
       default: {

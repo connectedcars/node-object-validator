@@ -281,6 +281,7 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
         return typeStr
       }
       case 'rust': {
+        // TODO: we assume every element is an "ExactString". Which toStrings() to just a name
         throw new Error('Rust not supported yet')
       }
       default: {

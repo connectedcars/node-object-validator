@@ -1,4 +1,4 @@
-import { AssertEqual } from '../common'
+import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotExactStringFail, RequiredFail } from '../errors'
 import {
   isExactString,
@@ -174,22 +174,24 @@ describe.each([false, true])('validateExactString (optimize: %s)', optimize => {
 })
 
 describe('Rust Types', () => {
+  const options: ValidatorExportOptions = { types: true, language: 'rust' }
+
   it('Required', () => {
-    const rustType = new RequiredExactString('computerKatten').toString({ types: true, language: 'rust' })
+    const rustType = new RequiredExactString('computerKatten').toString(options)
     expect(rustType).toEqual('computerKatten')
   })
 
   it('Option', () => {
     expect(() => {
-      new OptionalExactString('computerKatten').toString({ types: true, language: 'rust' })
+      new OptionalExactString('computerKatten').toString(options)
     }).toThrow(`Rust does not support optional ExactString`)
 
     expect(() => {
-      new NullableExactString('computerKatten').toString({ types: true, language: 'rust' })
+      new NullableExactString('computerKatten').toString(options)
     }).toThrow(`Rust does not support optional ExactString`)
 
     expect(() => {
-      new OptionalNullableExactString('computerKatten').toString({ types: true, language: 'rust' })
+      new OptionalNullableExactString('computerKatten').toString(options)
     }).toThrow(`Rust does not support optional ExactString`)
   })
 

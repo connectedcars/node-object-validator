@@ -1,4 +1,4 @@
-import { AssertEqual } from '../common'
+import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotStringFail, RequiredFail, WrongLengthFail } from '../errors'
 import {
   isString,
@@ -212,19 +212,21 @@ describe.each([false, true])('String (optimize: %s)', optimize => {
 })
 
 describe('Rust Types', () => {
+  const options: ValidatorExportOptions = { types: true, language: 'rust' }
+
   it('Required', () => {
-    const rustType = new RequiredString().toString({ types: true, language: 'rust' })
+    const rustType = new RequiredString().toString(options)
     expect(rustType).toEqual('String')
   })
 
   it('Option', () => {
-    const rustType1 = new OptionalString().toString({ types: true, language: 'rust' })
+    const rustType1 = new OptionalString().toString(options)
     expect(rustType1).toEqual('Option<String>')
 
-    const rustType2 = new NullableString().toString({ types: true, language: 'rust' })
+    const rustType2 = new NullableString().toString(options)
     expect(rustType2).toEqual('Option<String>')
 
-    const rustType3 = new OptionalNullableString().toString({ types: true, language: 'rust' })
+    const rustType3 = new OptionalNullableString().toString(options)
     expect(rustType3).toEqual('Option<String>')
   })
 
