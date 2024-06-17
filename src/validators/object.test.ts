@@ -1,6 +1,7 @@
-import { AssertEqual } from '../common'
+import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotArrayFail, NotFloatFail, NotIntegerFail, NotObjectFail, RequiredFail } from '../errors'
 import { OptionalArray, RequiredArray } from './array'
+import { OptionalBoolean } from './boolean'
 import { OptionalDate } from './date'
 import { RequiredFloat } from './float'
 import { OptionalInteger, RequiredInteger } from './integer'
@@ -527,25 +528,45 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
 })
 
 describe('Rust Types', () => {
+  const options: ValidatorExportOptions = {
+    types: true,
+    language: 'rust',
+    rustTypeName: 'RustTypeName'
+  }
+
   it('Required', () => {
-    const rustType = new RequiredObject({ propA: new RequiredInteger() }).toString({ types: true, language: 'rust' })
-    expect(rustType).toEqual('bool')
+    const validator = new RequiredObject({ propA: new RequiredInteger() })
+    // First time: Type definition
+    const expected1 = `struct RustTypeName {
+  prop_a: i64,
+}`
+    expect(validator.toString(options)).toEqual(expected1)
+
+    // Next times: Reference (just the name)
+    expect(validator.toString(options)).toEqual(`RustTypeName`)
   })
 
-  // it('Option', () => {
-  //   const rustType1 = new OptionalObject().toString({ types: true, language: 'rust' })
-  //   expect(rustType1).toEqual('Option<bool>')
-  //
-  //   const rustType2 = new NullableObject().toString({ types: true, language: 'rust' })
-  //   expect(rustType2).toEqual('Option<bool>')
-  //
-  //   const rustType3 = new OptionalNullableObject().toString({ types: true, language: 'rust' })
-  //   expect(rustType3).toEqual('Option<bool>')
-  // })
+  it('Option', () => {
+    const validator = new OptionalObject({ propB: new OptionalBoolean() })
+    // First time: Type definition
+    const expected1 = `struct RustTypeName {
+  prop_b: Option<bool>,
+}`
+    expect(validator.toString(options)).toEqual(expected1)
+
+    // Next times: Reference (just the name)
+    expect(validator.toString(options)).toEqual(`Option<RustTypeName>`)
+  })
 
   it('Unknown Language', () => {
     expect(() => {
       new RequiredObject({ propA: new RequiredInteger() }).toString({ types: true, language: 'bingo' as any })
     }).toThrow(`Language: 'bingo' unknown`)
+  })
+
+  it('No rustTypeName', () => {
+    expect(() => {
+      new RequiredObject({ propA: new RequiredInteger() }).toString({ types: true, language: 'rust' })
+    }).toThrow(`'rustTypeName' option is not set`)
   })
 })

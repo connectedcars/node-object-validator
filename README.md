@@ -626,3 +626,6 @@ failureEarly optimized in 0.715 s (1,398,601.399 ops/s)
 failureLate in 1.309 s (763,941.94 ops/s)
 failureLate optimized in 0.351 s (2,849,002.849 ops/s)
 ```
+
+# Generating Rust Types
+Blabla setup file with toString, seperate out your "inner types" and toString() them first

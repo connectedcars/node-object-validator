@@ -7,6 +7,7 @@ import {
   ValidatorOptions
 } from '../common'
 import { NotObjectFail, RequiredFail, ValidationFailure } from '../errors'
+import { toSnakeCase } from '../util'
 
 export function isObject<T extends ObjectSchema>(
   schema: T,
@@ -66,9 +67,11 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
   ObjectWrap<UndefinedToOptional<{ [K in keyof T]: T[K]['tsType'] }>> | O
 > {
   public schema: ObjectSchema
+  private typeStringGenerated: boolean
 
   public constructor(schema: T, options?: ValidatorBaseOptions) {
     super(options)
+    this.typeStringGenerated = false
     this.schema = schema
     if (options?.optimize !== false) {
       this.optimize(schema)
@@ -160,10 +163,16 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
       }
       case 'rust': {
         if (options?.rustTypeName === undefined) {
-          throw new Error('forget about it champ')
-        } else {
-          return options.rustTypeName
+          throw new Error(`'rustTypeName' option is not set`)
         }
+        if (!this.typeStringGenerated) {
+          this.typeStringGenerated = true
+
+          const lines = Object.keys(this.schema).map(k => `  ${toSnakeCase(k)}: ${this.schema[k].toString(options)},`)
+          return `struct ${options?.rustTypeName} {\n${lines.join('\n')}\n}`
+        }
+        const isOption = !this.required || this.nullable
+        return isOption ? `Option<${options.rustTypeName}>` : `${options.rustTypeName}`
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)
