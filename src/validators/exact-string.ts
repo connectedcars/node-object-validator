@@ -104,10 +104,8 @@ export abstract class ExactStringValidator<T extends string = never, O = never> 
           throw new Error(`Rust does not support optional ExactString`)
         }
 
-        // TODO: If it's the value of an enum, we need to preface with the enum Name
-        // EnumName::ExactStringThing
-        // TODO: If it's part of an element (is part of something with a "tag"?)
-        // Maybe not
+
+
         return this.expected.toString()
       }
       default: {
