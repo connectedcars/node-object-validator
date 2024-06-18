@@ -1,4 +1,4 @@
-import { AssertEqual } from '../common'
+import { AssertEqual, ValidatorExportOptions } from '../common'
 import {
   NotDatetimeOrDateFail,
   NotExactStringFail,
@@ -1132,5 +1132,43 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
 ], { required: false, nullable: true, optimize: false })`)
       })
     })
+  })
+})
+
+describe('Rust Types', () => {
+  const options: ValidatorExportOptions = { types: true, language: 'rust' }
+
+  it('Required', () => {
+    const validator = new RequiredUnion([new RequiredExactString('Sut')], { rustTypeName: 'RustEnum' })
+    const expected1 = `enum RustEnum {
+  Sut,
+}`
+    expect(validator.toString(options)).toEqual(expected1)
+
+    // Second time it's a reference
+    expect(validator.toString(options)).toEqual(`RustEnum`)
+  })
+
+  it('Optional', () => {
+    const validator = new OptionalUnion([new RequiredExactString('Sut')], { rustTypeName: 'RustEnum' })
+    const expected1 = `enum RustEnum {
+  Sut,
+}`
+    expect(validator.toString(options)).toEqual(expected1)
+
+    // Second time it's a reference
+    expect(validator.toString(options)).toEqual(`Option<RustEnum>`)
+  })
+
+  it('Unknown Language', () => {
+    expect(() => {
+      new RequiredUnion([new RequiredExactString('SampleString')]).toString({ types: true, language: 'bingo' as any })
+    }).toThrow(`Language: 'bingo' unknown`)
+  })
+
+  it('No rustTypeName', () => {
+    expect(() => {
+      new OptionalUnion([new RequiredExactString('Sut')]).toString({ types: true, language: 'rust' })
+    }).toThrow(`'rustTypeName' option is not set`)
   })
 })

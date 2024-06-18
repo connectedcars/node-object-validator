@@ -92,7 +92,6 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
         if (!this.rustTypeGenerated) {
           this.rustTypeGenerated = true
 
-          // For tuples, we only need the types in order, not the keys.
           const types = Object.values(this.schema).map(v => v.toString(options))
           return `struct ${this.rustTypeName}(${types.join(', ')});`
         }

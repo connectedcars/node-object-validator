@@ -52,7 +52,9 @@ export abstract class BufferValidator<O = never> extends ValidatorBase<Buffer | 
         return typeStr
       }
       case 'rust': {
-        throw new Error('TODO viktor')
+        const isOption = !this.required || this.nullable
+        const typeStr = `Vec<u8>`
+        return isOption ? `Option<${typeStr}>` : typeStr
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)

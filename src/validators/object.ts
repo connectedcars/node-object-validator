@@ -165,6 +165,7 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
         return typeStr
       }
       case 'rust': {
+        // TODO: if ExactString on property 'type', make it into an enum thingy? (or pass in stuff manually?)
         if (this.rustTypeName === undefined) {
           throw new Error(`'rustTypeName' option is not set`)
         }

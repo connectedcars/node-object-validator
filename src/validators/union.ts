@@ -124,9 +124,14 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
   public schema: T
   private every: boolean
 
+  private rustTypeGenerated: boolean
+  private rustTypeName?: string
+
   public constructor(schema: T, options?: UnionValidatorOptions & ValidatorBaseOptions) {
     super(options)
     this.schema = schema
+    this.rustTypeGenerated = false
+    this.rustTypeName = options?.rustTypeName
     this.every = options?.every ? true : false
     if (options?.optimize !== false) {
       this.optimize(schema)
@@ -282,7 +287,26 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
       }
       case 'rust': {
         // TODO: we assume every element is an "ExactString". Which toStrings() to just a name
-        throw new Error('Rust not supported yet')
+        if (this.rustTypeName === undefined) {
+          throw new Error(`'rustTypeName' option is not set`)
+        }
+
+        if (!this.rustTypeGenerated) {
+          this.rustTypeGenerated = true
+
+          const lines = this.schema.map(validatorElement => {
+            const str = validatorElement.toString({ types: false })
+            if (str.includes(`ExactString`) === false) {
+              throw new Error(`Unions/Enums in Rust require 'ExactString' as values`)
+            }
+
+            return validatorElement.toString(options)
+          })
+
+          return `enum ${this.rustTypeName} {\n  ${lines.join('\n')},\n}`
+        }
+        const isOption = !this.required || this.nullable
+        return isOption ? `Option<${this.rustTypeName}>` : `${this.rustTypeName}`
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)

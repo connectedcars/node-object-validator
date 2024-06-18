@@ -1,4 +1,4 @@
-import { AssertEqual } from '../common'
+import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotBufferFail, RequiredFail } from '../errors'
 import {
   isBuffer,
@@ -163,5 +163,31 @@ describe.each([false, true])('Buffer (optimize: %s)', optimize => {
       const code = validator.toString({ types: true })
       expect(code).toEqual('Buffer | undefined | null')
     })
+  })
+})
+
+describe('Rust Types', () => {
+  const options: ValidatorExportOptions = { types: true, language: 'rust' }
+
+  it('Required', () => {
+    const rustType = new RequiredBuffer().toString(options)
+    expect(rustType).toEqual('Vec<u8>')
+  })
+
+  it('Option', () => {
+    const rustType1 = new OptionalBuffer().toString(options)
+    expect(rustType1).toEqual('Option<Vec<u8>>')
+
+    const rustType2 = new NullableBuffer().toString(options)
+    expect(rustType2).toEqual('Option<Vec<u8>>')
+
+    const rustType3 = new OptionalNullableBuffer().toString(options)
+    expect(rustType3).toEqual('Option<Vec<u8>>')
+  })
+
+  it('Unknown Language', () => {
+    expect(() => {
+      new RequiredBuffer().toString({ types: true, language: 'bingo' as any })
+    }).toThrow(`Language: 'bingo' unknown`)
   })
 })

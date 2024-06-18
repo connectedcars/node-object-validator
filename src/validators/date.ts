@@ -88,8 +88,6 @@ export abstract class DateValidator<O = never> extends ValidatorBase<Date | O> {
       }
       case 'rust': {
 
-        // TODO: Dont know how fancy we want to be? If it's just local timestamps then Instant is fine
-        // const typeStr = 'chrono::DateTime<chrono::Utc>'
         const typeStr = 'std::time::Instant'
         const isOption = !this.required || this.nullable
         return isOption ? `Option<${typeStr}>` : `${typeStr}`
