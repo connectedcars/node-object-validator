@@ -208,7 +208,7 @@ describe('Rust Types', () => {
 
   it('Required', () => {
     const validator = new RequiredTuple([new RequiredInteger(), new OptionalBoolean()], {
-      rustTypeName: 'RustTypeName'
+      typeName: 'RustTypeName'
     })
     // First time: Type definition
     const expected1 = `struct RustTypeName(i64, Option<bool>);`
@@ -221,20 +221,20 @@ describe('Rust Types', () => {
   it('Nested', () => {
     // Inner
     const innerValidator = new RequiredTuple([new RequiredInteger(), new OptionalBoolean()], {
-      rustTypeName: 'InnerType'
+      typeName: 'InnerType'
     })
     const expected1 = `struct InnerType(i64, Option<bool>);`
     expect(innerValidator.toString(options)).toEqual(expected1)
 
     // Outer
-    const outerValidator = new RequiredTuple([new RequiredFloat(), innerValidator], { rustTypeName: 'OuterType' })
+    const outerValidator = new RequiredTuple([new RequiredFloat(), innerValidator], { typeName: 'OuterType' })
     const expected2 = `struct OuterType(f64, InnerType);`
     expect(outerValidator.toString(options)).toEqual(expected2)
   })
 
   it('Option, OptionalTuple', () => {
     const validator = new OptionalTuple([new OptionalBoolean()], {
-      rustTypeName: 'RustTypeName'
+      typeName: 'RustTypeName'
     })
     // First time: Type definition
     const expected1 = `struct RustTypeName(Option<bool>);`
@@ -245,7 +245,7 @@ describe('Rust Types', () => {
   })
 
   it('Option, NullableTuple', () => {
-    const validator = new NullableTuple([new OptionalBoolean()], { rustTypeName: 'RustTypeName' })
+    const validator = new NullableTuple([new OptionalBoolean()], { typeName: 'RustTypeName' })
     // First time: Type definition
     const expected1 = `struct RustTypeName(Option<bool>);`
     expect(validator.toString(options)).toEqual(expected1)
@@ -255,7 +255,7 @@ describe('Rust Types', () => {
   })
 
   it('Option, OptionalNullableTuple', () => {
-    const validator = new OptionalNullableTuple([new OptionalBoolean()], { rustTypeName: 'RustTypeName' })
+    const validator = new OptionalNullableTuple([new OptionalBoolean()], { typeName: 'RustTypeName' })
     // First time: Type definition
     const expected1 = `struct RustTypeName(Option<bool>);`
     expect(validator.toString(options)).toEqual(expected1)

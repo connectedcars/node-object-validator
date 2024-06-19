@@ -1,3 +1,4 @@
+import { UnionValidator } from '..'
 import {
   CodeGenResult,
   ValidateOptions,
@@ -74,7 +75,7 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
   public constructor(schema: T, options?: ValidatorBaseOptions) {
     super(options)
     this.rustTypeGenerated = false
-    this.rustTypeName = options?.rustTypeName
+    this.rustTypeName = options?.typeName
     this.schema = schema
     if (options?.optimize !== false) {
       this.optimize(schema)
@@ -165,14 +166,32 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
         return typeStr
       }
       case 'rust': {
-        // TODO: if ExactString on property 'type', make it into an enum thingy? (or pass in stuff manually?)
-        if (this.rustTypeName === undefined) {
-          throw new Error(`'rustTypeName' option is not set`)
+        if (options?.parent instanceof UnionValidator) {
+          // If the 'type' key is present in this.schema, set splitType to true
+          if ('type' in this.schema) {
+            // Make an inline enum variant that references another struct that has every type
+            // TODO: we need to generate / move the inline struct up
+
+            if (typeof this.schema['type'] === 'string') {
+              const typeValue = this.schema['type'] as unknown as string
+              // TODO: Move all other properties to a new type, and name it
+              return `    ${typeValue.charAt(0).toUpperCase() + typeValue.slice(1)}(OtherDataStructWeMovedTODO),`
+            }
+          } else if (Object.keys(this.schema).length === 1) {
+            // If 'type' is not present and there's only 1 key in this.schema, save that key as 'enumVariantName'
+            const [enumVariantName, enumVariantValue] = Object.entries(this.schema)[0]
+            return `${enumVariantName}(${enumVariantValue.toString(options)})`
+          } else {
+            throw new Error(`Invalid object with a parent Union. For: ${this.toString()}`)
+          }
+        } else if (this.rustTypeName === undefined) {
+          throw new Error(`'rustTypeName' option is not set on ${this.toString()}`)
         }
+
         if (!this.rustTypeGenerated) {
           this.rustTypeGenerated = true
 
-          const lines = Object.keys(this.schema).map(k => `  ${toSnakeCase(k)}: ${this.schema[k].toString(options)},`)
+          const lines = Object.keys(this.schema).map(k => `    ${toSnakeCase(k)}: ${this.schema[k].toString(options)},`)
           return `struct ${this.rustTypeName} {\n${lines.join('\n')}\n}`
         }
         const isOption = !this.required || this.nullable

@@ -1,3 +1,4 @@
+import { UnionValidator } from '..'
 import {
   ValidateOptions,
   ValidatorBase,
@@ -48,7 +49,7 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
   public constructor(schema: [...T], options?: ValidatorBaseOptions) {
     super(options)
     this.rustTypeGenerated = false
-    this.rustTypeName = options?.rustTypeName
+    this.rustTypeName = options?.typeName
     this.schema = schema
     if (options?.optimize !== false) {
       this.optimize(schema)
@@ -86,9 +87,15 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
         return typeStr
       }
       case 'rust': {
-        if (this.rustTypeName === undefined) {
-          throw new Error(`'rustTypeName' option is not set`)
+        // If not generated yet and in a union = inline it
+        if (!this.rustTypeGenerated && options?.parent instanceof UnionValidator) {
+          const types = Object.values(this.schema).map(v => v.toString(options))
+          return `${types.join(', ')}`
+        } else if (this.rustTypeName === undefined) {
+          throw new Error(`'typeName' option is not set on ${this.toString()}`)
         }
+
+        // If not generated yet, generate it
         if (!this.rustTypeGenerated) {
           this.rustTypeGenerated = true
 

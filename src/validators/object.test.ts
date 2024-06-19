@@ -534,7 +534,7 @@ describe('Rust Types', () => {
   }
 
   it('Required', () => {
-    const validator = new RequiredObject({ propA: new RequiredInteger() }, { rustTypeName: 'RustTypeName' })
+    const validator = new RequiredObject({ propA: new RequiredInteger() }, { typeName: 'RustTypeName' })
     // First time: Type definition
     const expected1 = `struct RustTypeName {
   prop_a: i64,
@@ -547,7 +547,7 @@ describe('Rust Types', () => {
 
   it('Nested', () => {
     // Inner
-    const innerValidator = new RequiredObject({ innerA: new OptionalBoolean() }, { rustTypeName: 'InnerType' })
+    const innerValidator = new RequiredObject({ innerA: new OptionalBoolean() }, { typeName: 'InnerType' })
     const expected1 = `struct InnerType {
   inner_a: Option<bool>,
 }`
@@ -556,7 +556,7 @@ describe('Rust Types', () => {
     // Outer
     const outerValidator = new RequiredObject(
       { outerA: new RequiredFloat(), otherObj: innerValidator },
-      { rustTypeName: 'OuterType' }
+      { typeName: 'OuterType' }
     )
     const expected2 = `struct OuterType {
   outer_a: f64,
@@ -566,7 +566,7 @@ describe('Rust Types', () => {
   })
 
   it('Option, OptionalObject', () => {
-    const validator = new OptionalObject({ propB: new OptionalBoolean() }, { rustTypeName: 'RustTypeName' })
+    const validator = new OptionalObject({ propB: new OptionalBoolean() }, { typeName: 'RustTypeName' })
     // First time: Type definition
     const expected1 = `struct RustTypeName {
   prop_b: Option<bool>,
@@ -578,7 +578,7 @@ describe('Rust Types', () => {
   })
 
   it('Option, NullableObject', () => {
-    const validator = new NullableObject({ propB: new OptionalBoolean() }, { rustTypeName: 'RustTypeName' })
+    const validator = new NullableObject({ propB: new OptionalBoolean() }, { typeName: 'RustTypeName' })
     // First time: Type definition
     const expected1 = `struct RustTypeName {
   prop_b: Option<bool>,
@@ -590,7 +590,7 @@ describe('Rust Types', () => {
   })
 
   it('Option, OptionalNullableObject', () => {
-    const validator = new OptionalNullableObject({ propB: new OptionalBoolean() }, { rustTypeName: 'RustTypeName' })
+    const validator = new OptionalNullableObject({ propB: new OptionalBoolean() }, { typeName: 'RustTypeName' })
     // First time: Type definition
     const expected1 = `struct RustTypeName {
   prop_b: Option<bool>,

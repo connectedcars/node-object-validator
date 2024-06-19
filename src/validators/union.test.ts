@@ -1139,7 +1139,7 @@ describe('Rust Types', () => {
   const options: ValidatorExportOptions = { types: true, language: 'rust' }
 
   it('Required', () => {
-    const validator = new RequiredUnion([new RequiredExactString('Sut')], { rustTypeName: 'RustEnum' })
+    const validator = new RequiredUnion([new RequiredExactString('Sut')], { typeName: 'RustEnum' })
     const expected1 = `enum RustEnum {
   Sut,
 }`
@@ -1150,7 +1150,7 @@ describe('Rust Types', () => {
   })
 
   it('Optional', () => {
-    const validator = new OptionalUnion([new RequiredExactString('Sut')], { rustTypeName: 'RustEnum' })
+    const validator = new OptionalUnion([new RequiredExactString('Sut')], { typeName: 'RustEnum' })
     const expected1 = `enum RustEnum {
   Sut,
 }`

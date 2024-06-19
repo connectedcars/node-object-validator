@@ -131,7 +131,7 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
     super(options)
     this.schema = schema
     this.rustTypeGenerated = false
-    this.rustTypeName = options?.rustTypeName
+    this.rustTypeName = options?.typeName
     this.every = options?.every ? true : false
     if (options?.optimize !== false) {
       this.optimize(schema)
@@ -294,15 +294,11 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
           this.rustTypeGenerated = true
 
           const lines = this.schema.map(validatorElement => {
-            // const str = validatorElement.toString({ types: false })
-            // if (str.includes(`ExactString`) === false) {
-            //   throw new Error(`Unions/Enums in Rust require 'ExactString' as values. Was given: ${str}`)
-            // }
-            //
-            return validatorElement.toString(options)
+            const memberOptions: ValidatorExportOptions = { ...options, parent: this }
+            return validatorElement.toString(memberOptions)
           })
 
-          return `enum ${this.rustTypeName} {\n  ${lines.join('\n')},\n}`
+          return `enum ${this.rustTypeName} {\n    ${lines.join(',\n    ')},\n}`
         }
         const isOption = !this.required || this.nullable
         return isOption ? `Option<${this.rustTypeName}>` : `${this.rustTypeName}`

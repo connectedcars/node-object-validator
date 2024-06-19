@@ -23,7 +23,7 @@ export type ValidatorBaseOptions = {
   required?: boolean
   nullable?: boolean
   earlyFail?: boolean
-  rustTypeName?: string
+  typeName?: string
 }
 
 /**
@@ -35,7 +35,7 @@ export type ValidatorBaseOptions = {
 export interface ValidatorOptions {
   earlyFail?: boolean
   optimize?: boolean
-  rustTypeName?: string
+  typeName?: string // type name
 }
 
 // TODO: why isn't the type above just used?
@@ -48,6 +48,7 @@ export interface ValidatorExportOptions {
   language?: 'typescript' | 'rust'
   jsonSafeTypes?: boolean
   types?: boolean
+  parent?: ValidatorBase
 }
 
 export function isValidator(value: unknown): value is ValidatorBase {
@@ -71,8 +72,8 @@ export function generateOptionsString(options: ValidatorBaseOptions, defaults: V
   if (options.optimize !== undefined && options.optimize !== defaults.optimize) {
     selectedOptions.push(`optimize: ${options.optimize}`)
   }
-  if (options.rustTypeName !== undefined && options.rustTypeName !== defaults.rustTypeName) {
-    selectedOptions.push(`rustTypeName: ${options.rustTypeName}`)
+  if (options.typeName !== undefined && options.typeName !== defaults.typeName) {
+    selectedOptions.push(`typeName: ${options.typeName}`)
   }
   return selectedOptions.length > 0 ? `{ ${selectedOptions.join(', ')} }` : ''
 }
@@ -88,7 +89,13 @@ export abstract class ValidatorBase<T = unknown> {
   protected optionsString: string
 
   public constructor(options?: ValidatorBaseOptions) {
-    const defaults = { required: true, nullable: false, earlyFail: false, optimize: true, rustTypeName: undefined }
+    const defaults = {
+      required: true,
+      nullable: false,
+      earlyFail: false,
+      optimize: true,
+      rustTypeName: undefined
+    }
     const mergedOptions = { ...defaults, ...options }
 
     this.optionsString = options ? generateOptionsString(options, defaults) : ''
