@@ -273,6 +273,6 @@ describe('Rust Types', () => {
   it('No rustTypeName', () => {
     expect(() => {
       new RequiredTuple([new RequiredInteger()]).toString({ types: true, language: 'rust' })
-    }).toThrow(`'rustTypeName' option is not set`)
+    }).toThrow(`'typeName' option is not set on new RequiredTuple([new RequiredInteger()])`)
   })
 })

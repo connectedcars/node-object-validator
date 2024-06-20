@@ -4,6 +4,7 @@ import {
   OptionalString,
   RequiredBoolean,
   RequiredExactString,
+  RequiredFloat,
   RequiredInteger,
   RequiredObject,
   RequiredString,
@@ -15,12 +16,11 @@ import { ValidatorExportOptions } from '../common'
 describe('Rust Types Full Flow', () => {
   const options: ValidatorExportOptions = { types: true, language: 'rust' }
 
-  it('Example 1', () => {
+  it('Example 1, from hal-can', () => {
     const externalTupleValidator = new RequiredTuple([new RequiredInteger(0, 255), new RequiredInteger(0, 255)], {
       typeName: 'ExternalTuple'
     })
 
-    // TODO: u8 should be 255
     const externalInterfaceValidator = new RequiredUnion(
       [
         new RequiredExactString('CAN0'),
@@ -30,13 +30,13 @@ describe('Rust Types Full Flow', () => {
         new RequiredExactString('VCAN1'),
         new RequiredExactString('VCAN2'),
         new RequiredObject({
-          PINS: new RequiredTuple([new RequiredInteger(0, 253), new RequiredInteger(0, 253)])
+          PINS: new RequiredTuple([new RequiredInteger(0, 255), new RequiredInteger(0, 255)])
         }),
         new RequiredObject({
           FAKEEXTTUPLE: externalTupleValidator
         }),
         new RequiredObject({
-          FAKEVALUE: new RequiredInteger(0, 253)
+          FAKEVALUE: new RequiredInteger(0, 255)
         })
       ],
       { typeName: 'ExternalInterface' }
@@ -72,7 +72,7 @@ describe('Rust Types Full Flow', () => {
     )
 
     // Inner Types
-    expect(externalTupleValidator.toString(options)).toEqual(`struct ExternalTuple(u16, u16);`)
+    expect(externalTupleValidator.toString(options)).toEqual(`struct ExternalTuple(u8, u8);`)
 
     expect(externalInterfaceValidator.toString(options)).toEqual(`enum ExternalInterface {
     CAN0,
@@ -111,6 +111,50 @@ describe('Rust Types Full Flow', () => {
     tx_local_id: Option<String>,
     rx_local_id: Option<String>,
     raw: bool,
+}`)
+  })
+
+  it('Example 2, TS Union of objects with a type property', () => {
+    const tabbyValidator = new RequiredObject({
+      type: new RequiredExactString('tabby'),
+      weight: new RequiredFloat(),
+      age: new RequiredInteger(0)
+    })
+    const tuxedoValidator = new RequiredObject({
+      type: new RequiredExactString('tuxedo'),
+      weight: new RequiredFloat(),
+      age: new RequiredInteger(0)
+    })
+    const maineCoonValidator = new RequiredObject({
+      type: new RequiredExactString('maineCoon'),
+      weight: new RequiredFloat(),
+      age: new RequiredInteger(0),
+      furVariant: new RequiredString()
+    })
+
+    const catValidator = new RequiredUnion([tabbyValidator, tuxedoValidator, maineCoonValidator], { typeName: 'Cat' })
+
+    // Members first
+    expect(tabbyValidator.toString(options)).toEqual(`struct TabbyStruct {
+    weight: f64,
+    age: u64,
+}`)
+    expect(tuxedoValidator.toString(options)).toEqual(`struct TuxedoStruct {
+    weight: f64,
+    age: u64,
+}`)
+
+    expect(maineCoonValidator.toString(options)).toEqual(`struct MaineCoonStruct {
+    weight: f64,
+    age: u64,
+    fur_variant: String,
+}`)
+
+    // Then union
+    expect(catValidator.toString(options)).toEqual(`enum Cat {
+    Tabby(TabbyStruct),
+    Tuxedo(TuxedoStruct),
+    MaineCoon(MaineCoonStruct),
 }`)
   })
 })

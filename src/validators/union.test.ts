@@ -1141,7 +1141,7 @@ describe('Rust Types', () => {
   it('Required', () => {
     const validator = new RequiredUnion([new RequiredExactString('Sut')], { typeName: 'RustEnum' })
     const expected1 = `enum RustEnum {
-  Sut,
+    Sut,
 }`
     expect(validator.toString(options)).toEqual(expected1)
 
@@ -1152,7 +1152,7 @@ describe('Rust Types', () => {
   it('Optional', () => {
     const validator = new OptionalUnion([new RequiredExactString('Sut')], { typeName: 'RustEnum' })
     const expected1 = `enum RustEnum {
-  Sut,
+    Sut,
 }`
     expect(validator.toString(options)).toEqual(expected1)
 

@@ -537,7 +537,7 @@ describe('Rust Types', () => {
     const validator = new RequiredObject({ propA: new RequiredInteger() }, { typeName: 'RustTypeName' })
     // First time: Type definition
     const expected1 = `struct RustTypeName {
-  prop_a: i64,
+    prop_a: i64,
 }`
     expect(validator.toString(options)).toEqual(expected1)
 
@@ -549,7 +549,7 @@ describe('Rust Types', () => {
     // Inner
     const innerValidator = new RequiredObject({ innerA: new OptionalBoolean() }, { typeName: 'InnerType' })
     const expected1 = `struct InnerType {
-  inner_a: Option<bool>,
+    inner_a: Option<bool>,
 }`
     expect(innerValidator.toString(options)).toEqual(expected1)
 
@@ -559,8 +559,8 @@ describe('Rust Types', () => {
       { typeName: 'OuterType' }
     )
     const expected2 = `struct OuterType {
-  outer_a: f64,
-  other_obj: InnerType,
+    outer_a: f64,
+    other_obj: InnerType,
 }`
     expect(outerValidator.toString(options)).toEqual(expected2)
   })
@@ -569,7 +569,7 @@ describe('Rust Types', () => {
     const validator = new OptionalObject({ propB: new OptionalBoolean() }, { typeName: 'RustTypeName' })
     // First time: Type definition
     const expected1 = `struct RustTypeName {
-  prop_b: Option<bool>,
+    prop_b: Option<bool>,
 }`
     expect(validator.toString(options)).toEqual(expected1)
 
@@ -581,7 +581,7 @@ describe('Rust Types', () => {
     const validator = new NullableObject({ propB: new OptionalBoolean() }, { typeName: 'RustTypeName' })
     // First time: Type definition
     const expected1 = `struct RustTypeName {
-  prop_b: Option<bool>,
+    prop_b: Option<bool>,
 }`
     expect(validator.toString(options)).toEqual(expected1)
 
@@ -593,7 +593,7 @@ describe('Rust Types', () => {
     const validator = new OptionalNullableObject({ propB: new OptionalBoolean() }, { typeName: 'RustTypeName' })
     // First time: Type definition
     const expected1 = `struct RustTypeName {
-  prop_b: Option<bool>,
+    prop_b: Option<bool>,
 }`
     expect(validator.toString(options)).toEqual(expected1)
 

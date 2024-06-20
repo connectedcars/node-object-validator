@@ -1,4 +1,4 @@
-import { UnionValidator } from '..'
+import { ObjectValidator } from '..'
 import {
   ValidateOptions,
   ValidatorBase,
@@ -87,8 +87,13 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
         return typeStr
       }
       case 'rust': {
+        if (this.rustTypeGenerated) {
+          const isOption = !this.required || this.nullable
+          return isOption ? `Option<${this.rustTypeName}>` : `${this.rustTypeName}`
+        }
+
         // If not generated yet and in a union = inline it
-        if (!this.rustTypeGenerated && options?.parent instanceof UnionValidator) {
+        if (options?.parent instanceof ObjectValidator) {
           const types = Object.values(this.schema).map(v => v.toString(options))
           return `${types.join(', ')}`
         } else if (this.rustTypeName === undefined) {
@@ -96,14 +101,9 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
         }
 
         // If not generated yet, generate it
-        if (!this.rustTypeGenerated) {
-          this.rustTypeGenerated = true
-
-          const types = Object.values(this.schema).map(v => v.toString(options))
-          return `struct ${this.rustTypeName}(${types.join(', ')});`
-        }
-        const isOption = !this.required || this.nullable
-        return isOption ? `Option<${this.rustTypeName}>` : `${this.rustTypeName}`
+        this.rustTypeGenerated = true
+        const types = Object.values(this.schema).map(v => v.toString(options))
+        return `struct ${this.rustTypeName}(${types.join(', ')});`
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)

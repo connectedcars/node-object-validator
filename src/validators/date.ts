@@ -87,7 +87,6 @@ export abstract class DateValidator<O = never> extends ValidatorBase<Date | O> {
         return typeStr
       }
       case 'rust': {
-
         const typeStr = 'std::time::Instant'
         const isOption = !this.required || this.nullable
         return isOption ? `Option<${typeStr}>` : `${typeStr}`

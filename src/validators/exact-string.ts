@@ -1,3 +1,4 @@
+import { UnionValidator } from '..'
 import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotExactStringFail, RequiredFail, ValidationFailure } from '../errors'
 
@@ -101,10 +102,14 @@ export abstract class ExactStringValidator<T extends string = never, O = never> 
       case 'rust': {
         const isOption = !this.required || this.nullable
         if (isOption) {
-          throw new Error(`Rust does not support optional ExactString`)
+          throw new Error(`Rust does not support optional ExactString. For: ${this.toString()}`)
         }
-
-
+        if (options?.parent instanceof UnionValidator) {
+          // TODO: this is where we remove it
+          // throw new Error(
+          //   `ExactString's (enum variation in rust) parent needs to be a Union (enum). For: ${this.toString()}`
+          // )
+        }
 
         return this.expected.toString()
       }
