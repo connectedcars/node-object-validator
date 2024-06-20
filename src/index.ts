@@ -1,3 +1,4 @@
+export * from './util'
 export * from './validators/array'
 export * from './validators/boolean'
 export * from './validators/buffer'

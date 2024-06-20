@@ -124,14 +124,14 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
   public schema: T
   private every: boolean
 
-  private rustTypeGenerated: boolean
-  private rustTypeName?: string
+  private typeGenerated: boolean
+  private typeName?: string
 
   public constructor(schema: T, options?: UnionValidatorOptions & ValidatorBaseOptions) {
     super(options)
     this.schema = schema
-    this.rustTypeGenerated = false
-    this.rustTypeName = options?.typeName
+    this.typeGenerated = false
+    this.typeName = options?.typeName
     this.every = options?.every ? true : false
     if (options?.optimize !== false) {
       this.optimize(schema)
@@ -286,22 +286,29 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
         return typeStr
       }
       case 'rust': {
-        if (this.rustTypeName === undefined) {
-          throw new Error(`'rustTypeName' option is not set on ${this.toString()}`)
+        if (this.typeName === undefined) {
+          throw new Error(`'typeName' option is not set on ${this.toString()}`)
+        }
+        if (this.typeGenerated === true) {
+          const isOption = !this.required || this.nullable
+          return isOption ? `Option<${this.typeName}>` : `${this.typeName}`
         }
 
-        if (!this.rustTypeGenerated) {
-          this.rustTypeGenerated = true
+        this.typeGenerated = true
+        let isTaggedUnion = true
+        const lines = this.schema.map(validatorElement => {
+          if (validatorElement instanceof ExactStringValidator) {
+            isTaggedUnion = false
+          }
+          const memberOptions: ValidatorExportOptions = { ...options, parent: this }
+          return validatorElement.toString(memberOptions)
+        })
 
-          const lines = this.schema.map(validatorElement => {
-            const memberOptions: ValidatorExportOptions = { ...options, parent: this }
-            return validatorElement.toString(memberOptions)
-          })
-
-          return `enum ${this.rustTypeName} {\n    ${lines.join(',\n    ')},\n}`
+        let serdeStr = `#[derive(Serialize, Deserialize, Debug, Clone)]\n#[serde(rename_all = "camelCase")]\n`
+        if (isTaggedUnion === true) {
+          serdeStr += `#[serde(tag = "type")]\n`
         }
-        const isOption = !this.required || this.nullable
-        return isOption ? `Option<${this.rustTypeName}>` : `${this.rustTypeName}`
+        return `${serdeStr}enum ${this.typeName} {\n    ${lines.join(',\n    ')},\n}`
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)

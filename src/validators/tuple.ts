@@ -43,13 +43,13 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
 > {
   public schema: T
 
-  private rustTypeGenerated: boolean
-  private rustTypeName?: string
+  private typeGenerated: boolean
+  private typeName?: string
 
   public constructor(schema: [...T], options?: ValidatorBaseOptions) {
     super(options)
-    this.rustTypeGenerated = false
-    this.rustTypeName = options?.typeName
+    this.typeGenerated = false
+    this.typeName = options?.typeName
     this.schema = schema
     if (options?.optimize !== false) {
       this.optimize(schema)
@@ -87,23 +87,24 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
         return typeStr
       }
       case 'rust': {
-        if (this.rustTypeGenerated) {
+        if (this.typeGenerated) {
           const isOption = !this.required || this.nullable
-          return isOption ? `Option<${this.rustTypeName}>` : `${this.rustTypeName}`
+          return isOption ? `Option<${this.typeName}>` : `${this.typeName}`
         }
 
         // If not generated yet and in a union = inline it
         if (options?.parent instanceof ObjectValidator) {
           const types = Object.values(this.schema).map(v => v.toString(options))
           return `${types.join(', ')}`
-        } else if (this.rustTypeName === undefined) {
+        } else if (this.typeName === undefined) {
           throw new Error(`'typeName' option is not set on ${this.toString()}`)
         }
 
         // If not generated yet, generate it
-        this.rustTypeGenerated = true
+        this.typeGenerated = true
+        const serdeStr = `#[derive(Serialize, Deserialize, Debug, Clone)]\n#[serde(rename_all = "camelCase")]\n`
         const types = Object.values(this.schema).map(v => v.toString(options))
-        return `struct ${this.rustTypeName}(${types.join(', ')});`
+        return `${serdeStr}struct ${this.typeName}(${types.join(', ')});`
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)

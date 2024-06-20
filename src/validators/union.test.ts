@@ -1166,9 +1166,9 @@ describe('Rust Types', () => {
     }).toThrow(`Language: 'bingo' unknown`)
   })
 
-  it('No rustTypeName', () => {
+  it('No typeName', () => {
     expect(() => {
       new OptionalUnion([new RequiredExactString('Sut')]).toString({ types: true, language: 'rust' })
-    }).toThrow(`'rustTypeName' option is not set`)
+    }).toThrow(`'typeName' option is not set`)
   })
 })

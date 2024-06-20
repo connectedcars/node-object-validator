@@ -20,15 +20,11 @@ export function validateExactString(value: unknown, expected: string, context?: 
 export abstract class ExactStringValidator<T extends string = never, O = never> extends ValidatorBase<T | O> {
   public expected: T
 
-  // TODO: probably not? how would we know when/how to split out? this needs to be on the union itself, with stuff passed down.
-  // But how would you from the TS type say that a given "ExactString" is that variant bassed into another type?
-  // MAYBE if we define the exactstrings outside and put in the reference instead
-
-  // private rustTypeGenerated: boolean
-  // private rustTag: string
+  private typeGenerated: boolean
 
   public constructor(expected: T, options?: ValidatorBaseOptions) {
     super(options)
+    this.typeGenerated = false
     this.expected = expected
     if (options?.optimize !== false) {
       this.optimize(expected)
@@ -100,18 +96,26 @@ export abstract class ExactStringValidator<T extends string = never, O = never> 
         return typeStr
       }
       case 'rust': {
+        if (this.typeGenerated) {
+          throw new Error(
+            `Rust cannot use a reference to an ExactString/enum variant, use the reference to the entire enum`
+          )
+        }
+
         const isOption = !this.required || this.nullable
         if (isOption) {
           throw new Error(`Rust does not support optional ExactString. For: ${this.toString()}`)
         }
-        if (options?.parent instanceof UnionValidator) {
-          // TODO: this is where we remove it
-          // throw new Error(
-          //   `ExactString's (enum variation in rust) parent needs to be a Union (enum). For: ${this.toString()}`
-          // )
+
+        if (options?.parent instanceof UnionValidator === false) {
+          throw new Error(
+            `ExactString's (enum variation in rust) parent needs to be a Union (enum). For: ${this.toString()}`
+          )
         }
 
-        return this.expected.toString()
+        this.typeGenerated = true
+        const typeName = this.expected.charAt(0).toUpperCase() + this.expected.slice(1)
+        return typeName
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)

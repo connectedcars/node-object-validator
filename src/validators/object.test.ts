@@ -534,15 +534,15 @@ describe('Rust Types', () => {
   }
 
   it('Required', () => {
-    const validator = new RequiredObject({ propA: new RequiredInteger() }, { typeName: 'RustTypeName' })
+    const validator = new RequiredObject({ propA: new RequiredInteger() }, { typeName: 'typeName' })
     // First time: Type definition
-    const expected1 = `struct RustTypeName {
+    const expected1 = `struct typeName {
     prop_a: i64,
 }`
     expect(validator.toString(options)).toEqual(expected1)
 
     // Next times: Reference
-    expect(validator.toString(options)).toEqual(`RustTypeName`)
+    expect(validator.toString(options)).toEqual(`typeName`)
   })
 
   it('Nested', () => {
@@ -566,39 +566,39 @@ describe('Rust Types', () => {
   })
 
   it('Option, OptionalObject', () => {
-    const validator = new OptionalObject({ propB: new OptionalBoolean() }, { typeName: 'RustTypeName' })
+    const validator = new OptionalObject({ propB: new OptionalBoolean() }, { typeName: 'typeName' })
     // First time: Type definition
-    const expected1 = `struct RustTypeName {
+    const expected1 = `struct typeName {
     prop_b: Option<bool>,
 }`
     expect(validator.toString(options)).toEqual(expected1)
 
     // Next times: Reference
-    expect(validator.toString(options)).toEqual(`Option<RustTypeName>`)
+    expect(validator.toString(options)).toEqual(`Option<typeName>`)
   })
 
   it('Option, NullableObject', () => {
-    const validator = new NullableObject({ propB: new OptionalBoolean() }, { typeName: 'RustTypeName' })
+    const validator = new NullableObject({ propB: new OptionalBoolean() }, { typeName: 'typeName' })
     // First time: Type definition
-    const expected1 = `struct RustTypeName {
+    const expected1 = `struct typeName {
     prop_b: Option<bool>,
 }`
     expect(validator.toString(options)).toEqual(expected1)
 
     // Next times: Reference
-    expect(validator.toString(options)).toEqual(`Option<RustTypeName>`)
+    expect(validator.toString(options)).toEqual(`Option<typeName>`)
   })
 
   it('Option, OptionalNullableObject', () => {
-    const validator = new OptionalNullableObject({ propB: new OptionalBoolean() }, { typeName: 'RustTypeName' })
+    const validator = new OptionalNullableObject({ propB: new OptionalBoolean() }, { typeName: 'typeName' })
     // First time: Type definition
-    const expected1 = `struct RustTypeName {
+    const expected1 = `struct typeName {
     prop_b: Option<bool>,
 }`
     expect(validator.toString(options)).toEqual(expected1)
 
     // Next times: Reference
-    expect(validator.toString(options)).toEqual(`Option<RustTypeName>`)
+    expect(validator.toString(options)).toEqual(`Option<typeName>`)
   })
 
   it('Unknown Language', () => {
@@ -607,9 +607,9 @@ describe('Rust Types', () => {
     }).toThrow(`Language: 'bingo' unknown`)
   })
 
-  it('No rustTypeName', () => {
+  it('No typeName', () => {
     expect(() => {
       new RequiredObject({ propA: new RequiredInteger() }).toString({ types: true, language: 'rust' })
-    }).toThrow(`'rustTypeName' option is not set`)
+    }).toThrow(`'typeName' option is not set`)
   })
 })

@@ -94,7 +94,7 @@ export abstract class ValidatorBase<T = unknown> {
       nullable: false,
       earlyFail: false,
       optimize: true,
-      rustTypeName: undefined
+      typeName: undefined
     }
     const mergedOptions = { ...defaults, ...options }
 
