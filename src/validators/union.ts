@@ -293,6 +293,11 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
           const isOption = !this.required || this.nullable
           return isOption ? `Option<${this.typeName}>` : `${this.typeName}`
         }
+        if (options?.parent !== undefined) {
+          throw new Error(
+            `Cannot inline union/enums in rust. Generate it first and use a reference. For: ${this.toString()}`
+          )
+        }
 
         this.typeGenerated = true
         let isTaggedUnion = true
@@ -308,7 +313,7 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
         if (isTaggedUnion === true) {
           serdeStr += `#[serde(tag = "type")]\n`
         }
-        return `${serdeStr}enum ${this.typeName} {\n    ${lines.join(',\n    ')},\n}`
+        return `${serdeStr}enum ${this.typeName} {\n    ${lines.join(',\n    ')},\n}\n\n`
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)

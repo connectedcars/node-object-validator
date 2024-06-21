@@ -179,9 +179,13 @@ describe('Rust Types', () => {
 
   it('Required (in required union)', () => {
     const unionValidator = new RequiredUnion([new RequiredExactString(`computerKatten`)], { typeName: 'NeededUnion' })
-    expect(unionValidator.toString(options)).toEqual(`enum NeededUnion {
+    expect(unionValidator.toString(options)).toEqual(`#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+enum NeededUnion {
     ComputerKatten,
-}`)
+}
+
+`)
   })
 
   it('Option', () => {
@@ -209,9 +213,13 @@ describe('Rust Types', () => {
   it('Trying to use ExactStringe twice', () => {
     // Normal
     const unionValidator = new RequiredUnion([new RequiredExactString(`computerKatten`)], { typeName: 'NeededUnion' })
-    expect(unionValidator.toString(options)).toEqual(`enum NeededUnion {
+    expect(unionValidator.toString(options)).toEqual(`#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+enum NeededUnion {
     ComputerKatten,
-}`)
+}
+
+`)
 
     // Expected error
     expect(() => {

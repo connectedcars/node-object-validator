@@ -1140,9 +1140,13 @@ describe('Rust Types', () => {
 
   it('Required', () => {
     const validator = new RequiredUnion([new RequiredExactString('Sut')], { typeName: 'RustEnum' })
-    const expected1 = `enum RustEnum {
+    const expected1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+enum RustEnum {
     Sut,
-}`
+}
+
+`
     expect(validator.toString(options)).toEqual(expected1)
 
     // Second time it's a reference
@@ -1151,13 +1155,29 @@ describe('Rust Types', () => {
 
   it('Optional', () => {
     const validator = new OptionalUnion([new RequiredExactString('Sut')], { typeName: 'RustEnum' })
-    const expected1 = `enum RustEnum {
+    const expected1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+enum RustEnum {
     Sut,
-}`
+}
+
+`
     expect(validator.toString(options)).toEqual(expected1)
 
     // Second time it's a reference
     expect(validator.toString(options)).toEqual(`Option<RustEnum>`)
+  })
+
+  it('No inlining', () => {
+    expect(() => {
+      new RequiredUnion([new RequiredUnion([new RequiredExactString('Sut')], { typeName: 'RustEnumInner' })], {
+        typeName: 'RustEnum'
+      }).toString(options)
+    }).toThrow(
+      `Cannot inline union/enums in rust. Generate it first and use a reference. For: new RequiredUnion([
+  new RequiredExactString('Sut')
+], { typeName: RustEnumInner })`
+    )
   })
 
   it('Unknown Language', () => {

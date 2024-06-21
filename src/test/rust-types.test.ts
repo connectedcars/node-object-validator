@@ -43,7 +43,7 @@ describe('Rust Types Full Flow', () => {
     )
 
     const transportValidator = new RequiredUnion(
-      [new RequiredExactString('ISOTP'), new RequiredExactString('TP2'), new RequiredExactString('ISOTP-NOPAD')],
+      [new RequiredExactString('ISOTP'), new RequiredExactString('TP2'), new RequiredExactString('ISOTPNOPAD')],
       { typeName: 'Transport' }
     )
 
@@ -72,9 +72,15 @@ describe('Rust Types Full Flow', () => {
     )
 
     // Inner Types
-    expect(externalTupleValidator.toString(options)).toEqual(`struct ExternalTuple(u8, u8);`)
+    expect(externalTupleValidator.toString(options)).toEqual(`#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct ExternalTuple(u8, u8);
 
-    expect(externalInterfaceValidator.toString(options)).toEqual(`enum ExternalInterface {
+`)
+
+    expect(externalInterfaceValidator.toString(options)).toEqual(`#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+enum ExternalInterface {
     CAN0,
     CAN1,
     CAN2,
@@ -84,20 +90,32 @@ describe('Rust Types Full Flow', () => {
     PINS(u8, u8),
     FAKEEXTTUPLE(ExternalTuple),
     FAKEVALUE(u8),
-}`)
-    expect(transportValidator.toString(options)).toEqual(`enum Transport {
+}
+
+`)
+    expect(transportValidator.toString(options)).toEqual(`#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+enum Transport {
     ISOTP,
     TP2,
-    ISOTP-NOPAD,
-}`)
-    expect(applicationValidator.toString(options)).toEqual(`enum Application {
+    ISOTPNOPAD,
+}
+
+`)
+    expect(applicationValidator.toString(options)).toEqual(`#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+enum Application {
     OBD,
     UDS,
     KWP2000,
-}`)
+}
+
+`)
 
     // Main
-    expect(requestDIDValidator.toString(options)).toEqual(`struct RequestDID {
+    expect(requestDIDValidator.toString(options)).toEqual(`#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct RequestDID {
     adaption_setup: Vec<String>,
     adaption_teardown: Vec<String>,
     service_and_did: String,
@@ -111,7 +129,9 @@ describe('Rust Types Full Flow', () => {
     tx_local_id: Option<String>,
     rx_local_id: Option<String>,
     raw: bool,
-}`)
+}
+
+`)
   })
 
   it('Example 2, TS Union of objects with a type property', () => {
@@ -135,26 +155,43 @@ describe('Rust Types Full Flow', () => {
     const catValidator = new RequiredUnion([tabbyValidator, tuxedoValidator, maineCoonValidator], { typeName: 'Cat' })
 
     // Members first
-    expect(tabbyValidator.toString(options)).toEqual(`struct TabbyStruct {
+    expect(tabbyValidator.toString(options)).toEqual(`#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct TabbyStruct {
     weight: f64,
     age: u64,
-}`)
-    expect(tuxedoValidator.toString(options)).toEqual(`struct TuxedoStruct {
-    weight: f64,
-    age: u64,
-}`)
+}
 
-    expect(maineCoonValidator.toString(options)).toEqual(`struct MaineCoonStruct {
+`)
+    expect(tuxedoValidator.toString(options)).toEqual(`#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct TuxedoStruct {
+    weight: f64,
+    age: u64,
+}
+
+`)
+
+    expect(maineCoonValidator.toString(options)).toEqual(`#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct MaineCoonStruct {
     weight: f64,
     age: u64,
     fur_variant: String,
-}`)
+}
+
+`)
 
     // Then union
-    expect(catValidator.toString(options)).toEqual(`enum Cat {
+    expect(catValidator.toString(options)).toEqual(`#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+#[serde(tag = "type")]
+enum Cat {
     Tabby(TabbyStruct),
     Tuxedo(TuxedoStruct),
     MaineCoon(MaineCoonStruct),
-}`)
+}
+
+`)
   })
 })

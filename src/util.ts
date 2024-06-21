@@ -34,7 +34,6 @@ export function generateRustTypes(validators: ValidatorBase[], outputFile?: stri
     // eslint-disable-next-line no-console
     console.log(content)
   } else {
-    // TODO: dont write to tmp
-    writeFileSync(`/tmp/${outputFile}`, content)
+    writeFileSync(outputFile, content)
   }
 }

@@ -211,7 +211,11 @@ describe('Rust Types', () => {
       typeName: 'typeName'
     })
     // First time: Type definition
-    const expected1 = `struct typeName(i64, Option<bool>);`
+    const expected1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct typeName(i64, Option<bool>);
+
+`
     expect(validator.toString(options)).toEqual(expected1)
 
     // Next times: Reference (just the name)
@@ -223,12 +227,20 @@ describe('Rust Types', () => {
     const innerValidator = new RequiredTuple([new RequiredInteger(), new OptionalBoolean()], {
       typeName: 'InnerType'
     })
-    const expected1 = `struct InnerType(i64, Option<bool>);`
+    const expected1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct InnerType(i64, Option<bool>);
+
+`
     expect(innerValidator.toString(options)).toEqual(expected1)
 
     // Outer
     const outerValidator = new RequiredTuple([new RequiredFloat(), innerValidator], { typeName: 'OuterType' })
-    const expected2 = `struct OuterType(f64, InnerType);`
+    const expected2 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct OuterType(f64, InnerType);
+
+`
     expect(outerValidator.toString(options)).toEqual(expected2)
   })
 
@@ -237,7 +249,11 @@ describe('Rust Types', () => {
       typeName: 'typeName'
     })
     // First time: Type definition
-    const expected1 = `struct typeName(Option<bool>);`
+    const expected1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct typeName(Option<bool>);
+
+`
     expect(validator.toString(options)).toEqual(expected1)
 
     // Next times: Reference (just the name)
@@ -247,7 +263,11 @@ describe('Rust Types', () => {
   it('Option, NullableTuple', () => {
     const validator = new NullableTuple([new OptionalBoolean()], { typeName: 'typeName' })
     // First time: Type definition
-    const expected1 = `struct typeName(Option<bool>);`
+    const expected1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct typeName(Option<bool>);
+
+`
     expect(validator.toString(options)).toEqual(expected1)
 
     // Next times: Reference (just the name)
@@ -257,7 +277,11 @@ describe('Rust Types', () => {
   it('Option, OptionalNullableTuple', () => {
     const validator = new OptionalNullableTuple([new OptionalBoolean()], { typeName: 'typeName' })
     // First time: Type definition
-    const expected1 = `struct typeName(Option<bool>);`
+    const expected1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct typeName(Option<bool>);
+
+`
     expect(validator.toString(options)).toEqual(expected1)
 
     // Next times: Reference (just the name)

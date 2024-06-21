@@ -104,7 +104,7 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
         this.typeGenerated = true
         const serdeStr = `#[derive(Serialize, Deserialize, Debug, Clone)]\n#[serde(rename_all = "camelCase")]\n`
         const types = Object.values(this.schema).map(v => v.toString(options))
-        return `${serdeStr}struct ${this.typeName}(${types.join(', ')});`
+        return `${serdeStr}struct ${this.typeName}(${types.join(', ')});\n\n`
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)

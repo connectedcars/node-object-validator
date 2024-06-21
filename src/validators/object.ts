@@ -176,6 +176,7 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
         }
 
         const serdeStr = `#[derive(Serialize, Deserialize, Debug, Clone)]\n#[serde(rename_all = "camelCase")]\n`
+        const memberOptions: ValidatorExportOptions = { ...options, parent: this }
         if (
           'type' in this.schema &&
           this.schema['type'] instanceof ExactStringValidator &&
@@ -187,16 +188,15 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
 
           const lines = Object.keys(this.schema)
             .filter(k => !(k === 'type'))
-            .map(k => `    ${toSnakeCase(k)}: ${this.schema[k].toString(options)},`)
+            .map(k => `    ${toSnakeCase(k)}: ${this.schema[k].toString(memberOptions)},`)
 
           const typeValue = this.schema['type']['expected'] as unknown as string
           this.typeName = typeValue.charAt(0).toUpperCase() + typeValue.slice(1)
-          return `${serdeStr}struct ${this.typeName}Struct {\n${lines.join('\n')}\n}`
+          return `${serdeStr}struct ${this.typeName}Struct {\n${lines.join('\n')}\n}\n\n`
         } else if (options?.parent instanceof UnionValidator && Object.keys(this.schema).length === 1) {
           // Rust enum with data inside
           // If there's only 1 key in this.schema, save that single key as 'enumVariantName'
           // B example: rust: Enum{A, B(u8)} -> { 'b': 85 }
-          const memberOptions: ValidatorExportOptions = { ...options, parent: this }
           const [enumVariantName, enumVariantValue] = Object.entries(this.schema)[0]
           return `${enumVariantName}(${enumVariantValue.toString(memberOptions)})`
         }
@@ -206,8 +206,10 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
           throw new Error(`'typeName' option is not set on ${this.toString()}`)
         }
         this.typeGenerated = true
-        const lines = Object.keys(this.schema).map(k => `    ${toSnakeCase(k)}: ${this.schema[k].toString(options)},`)
-        return `${serdeStr}struct ${this.typeName} {\n${lines.join('\n')}\n}`
+        const lines = Object.keys(this.schema).map(
+          k => `    ${toSnakeCase(k)}: ${this.schema[k].toString(memberOptions)},`
+        )
+        return `${serdeStr}struct ${this.typeName} {\n${lines.join('\n')}\n}\n\n`
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)
