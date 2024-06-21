@@ -180,3 +180,11 @@ describe.each([false, true])('Regex (optimize: %s)', optimize => {
     })
   })
 })
+
+describe('Rust Types', () => {
+  it('Error', () => {
+    expect(() => {
+      new RequiredRegexMatch(/ja/).toString({ types: true, language: 'rust' })
+    }).toThrow(`Rust does not support compile time regexp`)
+  })
+})

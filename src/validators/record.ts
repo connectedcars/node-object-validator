@@ -91,10 +91,12 @@ export abstract class RecordValidator<T extends ValidatorBase = never, O = never
         return typeStr
       }
       case 'rust': {
-        throw new Error('Rust not supported yet')
+        const isOption = !this.required || this.nullable
+        const typeStr = `HashMap<String, ${this.schema.toString(options)}>`
+        return isOption ? `Option<${typeStr}>` : typeStr
       }
       default: {
-        throw new Error(`Language: '{}' unknown`)
+        throw new Error(`Language: '${options?.language}' unknown`)
       }
     }
   }

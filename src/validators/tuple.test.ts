@@ -1,3 +1,5 @@
+import { OptionalBoolean, RequiredFloat } from '..'
+import { ValidatorExportOptions } from '../common'
 import { NotArrayFail, NotIntegerFail, NotStringFail, RequiredFail, WrongLengthFail } from '../errors'
 import { OptionalArray } from './array'
 import { RequiredExactString } from './exact-string'
@@ -195,5 +197,106 @@ describe('Tuple', () => {
       const expected = `[number, number] | undefined | null`
       expect(res).toEqual(expected)
     })
+  })
+})
+
+describe('Rust Types', () => {
+  const options: ValidatorExportOptions = {
+    types: true,
+    language: 'rust'
+  }
+
+  it('Required', () => {
+    const validator = new RequiredTuple([new RequiredInteger(), new OptionalBoolean()], {
+      typeName: 'typeName'
+    })
+    // First time: Type definition
+    const expected1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct typeName(i64, Option<bool>);
+
+`
+    expect(validator.toString(options)).toEqual(expected1)
+
+    // Next times: Reference (just the name)
+    expect(validator.toString(options)).toEqual(`typeName`)
+  })
+
+  it('Nested', () => {
+    // Inner
+    const innerValidator = new RequiredTuple([new RequiredInteger(), new OptionalBoolean()], {
+      typeName: 'InnerType'
+    })
+    const expected1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct InnerType(i64, Option<bool>);
+
+`
+    expect(innerValidator.toString(options)).toEqual(expected1)
+
+    // Outer
+    const outerValidator = new RequiredTuple([new RequiredFloat(), innerValidator], { typeName: 'OuterType' })
+    const expected2 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct OuterType(f64, InnerType);
+
+`
+    expect(outerValidator.toString(options)).toEqual(expected2)
+  })
+
+  it('Option, OptionalTuple', () => {
+    const validator = new OptionalTuple([new OptionalBoolean()], {
+      typeName: 'typeName'
+    })
+    // First time: Type definition
+    const expected1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct typeName(Option<bool>);
+
+`
+    expect(validator.toString(options)).toEqual(expected1)
+
+    // Next times: Reference (just the name)
+    expect(validator.toString(options)).toEqual(`Option<typeName>`)
+  })
+
+  it('Option, NullableTuple', () => {
+    const validator = new NullableTuple([new OptionalBoolean()], { typeName: 'typeName' })
+    // First time: Type definition
+    const expected1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct typeName(Option<bool>);
+
+`
+    expect(validator.toString(options)).toEqual(expected1)
+
+    // Next times: Reference (just the name)
+    expect(validator.toString(options)).toEqual(`Option<typeName>`)
+  })
+
+  it('Option, OptionalNullableTuple', () => {
+    const validator = new OptionalNullableTuple([new OptionalBoolean()], { typeName: 'typeName' })
+    // First time: Type definition
+    const expected1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct typeName(Option<bool>);
+
+`
+    expect(validator.toString(options)).toEqual(expected1)
+
+    // Next times: Reference (just the name)
+    expect(validator.toString(options)).toEqual(`Option<typeName>`)
+  })
+
+  it('Unknown Language', () => {
+    expect(() => {
+      new RequiredTuple([new RequiredInteger()]).toString({ types: true, language: 'bingo' as any })
+    }).toThrow(`Language: 'bingo' unknown`)
+  })
+
+  it('No typeName', () => {
+    expect(() => {
+      new RequiredTuple([new RequiredInteger()]).toString({ types: true, language: 'rust' })
+    }).toThrow(`'typeName' option is not set on new RequiredTuple([new RequiredInteger()])`)
   })
 })

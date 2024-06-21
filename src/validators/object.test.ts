@@ -1,6 +1,7 @@
-import { AssertEqual } from '../common'
+import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotArrayFail, NotFloatFail, NotIntegerFail, NotObjectFail, RequiredFail } from '../errors'
 import { OptionalArray, RequiredArray } from './array'
+import { OptionalBoolean } from './boolean'
 import { OptionalDate } from './date'
 import { RequiredFloat } from './float'
 import { OptionalInteger, RequiredInteger } from './integer'
@@ -523,5 +524,116 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
       const code = validator.toString({ types: true })
       expect(code).toEqual(`{\n  'int': number\n  'float': number\n} | undefined | null`)
     })
+  })
+})
+
+describe('Rust Types', () => {
+  const options: ValidatorExportOptions = {
+    types: true,
+    language: 'rust'
+  }
+
+  it('Required', () => {
+    const validator = new RequiredObject({ propA: new RequiredInteger() }, { typeName: 'TypeName' })
+    // First time: Type definition
+    const expected1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct TypeName {
+    prop_a: i64,
+}
+
+`
+    expect(validator.toString(options)).toEqual(expected1)
+
+    // Next times: Reference
+    expect(validator.toString(options)).toEqual(`TypeName`)
+  })
+
+  it('Nested', () => {
+    // Inner
+    const innerValidator = new RequiredObject({ innerA: new OptionalBoolean() }, { typeName: 'InnerType' })
+    const expected1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct InnerType {
+    inner_a: Option<bool>,
+}
+
+`
+    expect(innerValidator.toString(options)).toEqual(expected1)
+
+    // Outer
+    const outerValidator = new RequiredObject(
+      { outerA: new RequiredFloat(), otherObj: innerValidator },
+      { typeName: 'OuterType' }
+    )
+    const expected2 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct OuterType {
+    outer_a: f64,
+    other_obj: InnerType,
+}
+
+`
+    expect(outerValidator.toString(options)).toEqual(expected2)
+  })
+
+  it('Option, OptionalObject', () => {
+    const validator = new OptionalObject({ propB: new OptionalBoolean() }, { typeName: 'TypeName' })
+    // First time: Type definition
+    const expected1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct TypeName {
+    prop_b: Option<bool>,
+}
+
+`
+    expect(validator.toString(options)).toEqual(expected1)
+
+    // Next times: Reference
+    expect(validator.toString(options)).toEqual(`Option<TypeName>`)
+  })
+
+  it('Option, NullableObject', () => {
+    const validator = new NullableObject({ propB: new OptionalBoolean() }, { typeName: 'TypeName' })
+    // First time: Type definition
+    const expected1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct TypeName {
+    prop_b: Option<bool>,
+}
+
+`
+    expect(validator.toString(options)).toEqual(expected1)
+
+    // Next times: Reference
+    expect(validator.toString(options)).toEqual(`Option<TypeName>`)
+  })
+
+  it('Option, OptionalNullableObject', () => {
+    const validator = new OptionalNullableObject({ propB: new OptionalBoolean() }, { typeName: 'TypeName' })
+    // First time: Type definition
+    const expected1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct TypeName {
+    prop_b: Option<bool>,
+}
+
+`
+    expect(validator.toString(options)).toEqual(expected1)
+
+    // Next times: Reference
+    expect(validator.toString(options)).toEqual(`Option<TypeName>`)
+  })
+
+  it('Unknown Language', () => {
+    expect(() => {
+      new RequiredObject({ propA: new RequiredInteger() }).toString({ types: true, language: 'bingo' as any })
+    }).toThrow(`Language: 'bingo' unknown`)
+  })
+
+  it('No typeName', () => {
+    expect(() => {
+      new RequiredObject({ propA: new RequiredInteger() }).toString({ types: true, language: 'rust' })
+    }).toThrow(`'typeName' option is not set`)
   })
 })

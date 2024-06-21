@@ -102,10 +102,10 @@ export abstract class UndefinedValidator<O = never> extends ValidatorBase<undefi
         return typeStr
       }
       case 'rust': {
-        throw new Error('Rust not supported yet')
+        throw new Error('Undefined is not supported in Rust')
       }
       default: {
-        throw new Error(`Language: '{}' unknown`)
+        throw new Error(`Language: '${options?.language}' unknown`)
       }
     }
   }

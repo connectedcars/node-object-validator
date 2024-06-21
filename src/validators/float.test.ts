@@ -1,4 +1,4 @@
-import { AssertEqual } from '../common'
+import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotFloatFail, OutOfRangeFail, RequiredFail } from '../errors'
 import { isFloat, NullableFloat, OptionalFloat, OptionalNullableFloat, RequiredFloat, validateFloat } from './float'
 
@@ -195,5 +195,31 @@ describe.each([false, true])('Float (optimize: %s)', optimize => {
       const code = validator.toString({ types: true })
       expect(code).toEqual('number | undefined | null')
     })
+  })
+})
+
+describe('Rust Types', () => {
+  const options: ValidatorExportOptions = { types: true, language: 'rust' }
+
+  it('Required', () => {
+    const rustType = new RequiredFloat().toString(options)
+    expect(rustType).toEqual('f64')
+  })
+
+  it('Option', () => {
+    const rustType1 = new OptionalFloat().toString(options)
+    expect(rustType1).toEqual('Option<f64>')
+
+    const rustType2 = new NullableFloat().toString(options)
+    expect(rustType2).toEqual('Option<f64>')
+
+    const rustType3 = new OptionalNullableFloat().toString(options)
+    expect(rustType3).toEqual('Option<f64>')
+  })
+
+  it('Unknown Language', () => {
+    expect(() => {
+      new RequiredFloat().toString({ types: true, language: 'bingo' as any })
+    }).toThrow(`Language: 'bingo' unknown`)
   })
 })

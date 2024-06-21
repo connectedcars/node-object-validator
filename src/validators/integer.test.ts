@@ -1,4 +1,4 @@
-import { AssertEqual } from '../common'
+import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotIntegerFail, OutOfRangeFail, RequiredFail } from '../errors'
 import {
   isInteger,
@@ -206,5 +206,58 @@ describe.each([false, true])('Integer (optimize: %s)', optimize => {
       const code = validator.toString({ types: true })
       expect(code).toEqual('number | undefined | null')
     })
+  })
+})
+
+describe('Rust Types', () => {
+  const options: ValidatorExportOptions = { types: true, language: 'rust' }
+
+  it('Required', () => {
+    const rustType1 = new RequiredInteger().toString(options)
+    expect(rustType1).toEqual('i64')
+
+    const rustType2 = new RequiredInteger(0, 85).toString(options)
+    expect(rustType2).toEqual('u8')
+
+    const rustType3 = new RequiredInteger(-1, 285).toString(options)
+    expect(rustType3).toEqual('i16')
+
+    const rustType4 = new RequiredInteger(-99999999, 9999999).toString({
+      types: true,
+      language: 'rust',
+      jsonSafeTypes: true
+    })
+    expect(rustType4).toEqual('i32')
+  })
+
+  it('Option', () => {
+    const rustType1 = new OptionalInteger().toString(options)
+    expect(rustType1).toEqual('Option<i64>')
+
+    const rustType2 = new NullableInteger().toString(options)
+    expect(rustType2).toEqual('Option<i64>')
+
+    const rustType3 = new OptionalNullableInteger().toString(options)
+    expect(rustType3).toEqual('Option<i64>')
+  })
+
+  it('jsonSafeTypes', () => {
+    expect(() => {
+      new RequiredInteger().toString({ types: true, language: 'rust', jsonSafeTypes: true })
+    }).toThrow(
+      'Javascript numbers are limited to 53 bits so max 32bit for compatible types in rust, min: -9007199254740991 max: 9007199254740991'
+    )
+
+    expect(() => {
+      new RequiredInteger(-85).toString({ types: true, language: 'rust', jsonSafeTypes: true })
+    }).toThrow(
+      'Javascript numbers are limited to 53 bits so max 32bit for compatible types in rust, min: -85 max: 9007199254740991'
+    )
+
+    expect(() => {
+      new RequiredInteger(0).toString({ types: true, language: 'rust', jsonSafeTypes: true })
+    }).toThrow(
+      'Javascript numbers are limited to 53 bits so max 32bit for compatible types in rust, min: 0 max: 9007199254740991'
+    )
   })
 })

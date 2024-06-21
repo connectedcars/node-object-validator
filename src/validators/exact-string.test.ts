@@ -1,4 +1,5 @@
-import { AssertEqual } from '../common'
+import { RequiredUnion } from '..'
+import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotExactStringFail, RequiredFail } from '../errors'
 import {
   isExactString,
@@ -170,5 +171,65 @@ describe.each([false, true])('validateExactString (optimize: %s)', optimize => {
       const code = validator.toString({ types: true })
       expect(code).toEqual("'MyString' | undefined | null")
     })
+  })
+})
+
+describe('Rust Types', () => {
+  const options: ValidatorExportOptions = { types: true, language: 'rust' }
+
+  it('Required (in required union)', () => {
+    const unionValidator = new RequiredUnion([new RequiredExactString(`computerKatten`)], { typeName: 'NeededUnion' })
+    expect(unionValidator.toString(options)).toEqual(`#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+enum NeededUnion {
+    ComputerKatten,
+}
+
+`)
+  })
+
+  it('Option', () => {
+    expect(() => {
+      new OptionalExactString('computerKatten').toString(options)
+    }).toThrow(`Rust does not support optional ExactString`)
+
+    expect(() => {
+      new NullableExactString('computerKatten').toString(options)
+    }).toThrow(`Rust does not support optional ExactString`)
+
+    expect(() => {
+      new OptionalNullableExactString('computerKatten').toString(options)
+    }).toThrow(`Rust does not support optional ExactString`)
+  })
+
+  it('Not in union', () => {
+    expect(() => {
+      new RequiredExactString('computerKatten').toString(options)
+    }).toThrow(
+      `ExactString's (enum variation in rust) parent needs to be a Union (enum). For: new RequiredExactString('computerKatten')`
+    )
+  })
+
+  it('Trying to use ExactStringe twice', () => {
+    // Normal
+    const unionValidator = new RequiredUnion([new RequiredExactString(`computerKatten`)], { typeName: 'NeededUnion' })
+    expect(unionValidator.toString(options)).toEqual(`#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+enum NeededUnion {
+    ComputerKatten,
+}
+
+`)
+
+    // Expected error
+    expect(() => {
+      unionValidator.schema[0].toString(options)
+    }).toThrow(`Rust cannot use a reference to an ExactString/enum variant, use the reference to the entire enum`)
+  })
+
+  it('Unknown Language', () => {
+    expect(() => {
+      new RequiredExactString('computerKatten').toString({ types: true, language: 'bingo' as any })
+    }).toThrow(`Language: 'bingo' unknown`)
   })
 })

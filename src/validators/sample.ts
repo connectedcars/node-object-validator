@@ -144,7 +144,7 @@ export abstract class SampleValidator<T extends Sample = never, O = never> exten
         throw new Error('Rust not supported yet')
       }
       default: {
-        throw new Error(`Language: '{}' unknown`)
+        throw new Error(`Language: '${options?.language}' unknown`)
       }
     }
   }

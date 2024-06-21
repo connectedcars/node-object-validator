@@ -110,10 +110,45 @@ export abstract class IntegerValidator<O = never> extends ValidatorBase<number |
         return typeStr
       }
       case 'rust': {
-        throw new Error('Rust not supported yet')
+        let typeStr
+
+        if (this.min >= 0) {
+          if (this.max <= 0xff) {
+            typeStr = 'u8'
+          } else if (this.max <= 0xff_ff) {
+            typeStr = 'u16'
+          } else if (this.max <= 0xff_ff_ff_ff) {
+            typeStr = 'u32'
+          } else {
+            if (options?.jsonSafeTypes) {
+              throw new Error(
+                `Javascript numbers are limited to 53 bits so max 32bit for compatible types in rust, min: ${this.min} max: ${this.max}`
+              )
+            }
+            typeStr = 'u64'
+          }
+        } else {
+          if (this.max <= 0x7f && this.min >= -0x80) {
+            typeStr = 'i8'
+          } else if (this.max <= 0x7f_ff && this.min >= -0x80_00) {
+            typeStr = 'i16'
+          } else if (this.max <= 0x7f_ff_ff_ff && this.min >= -0x80_00_00_00) {
+            typeStr = 'i32'
+          } else {
+            if (options?.jsonSafeTypes) {
+              throw new Error(
+                `Javascript numbers are limited to 53 bits so max 32bit for compatible types in rust, min: ${this.min} max: ${this.max}`
+              )
+            }
+            typeStr = 'i64'
+          }
+        }
+
+        const isOption = !this.required || this.nullable
+        return isOption ? `Option<${typeStr}>` : `${typeStr}`
       }
       default: {
-        throw new Error(`Language: '{}' unknown`)
+        throw new Error(`Language: '${options?.language}' unknown`)
       }
     }
   }

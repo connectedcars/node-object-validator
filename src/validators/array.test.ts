@@ -1,7 +1,7 @@
-import { AssertEqual } from '../common'
+import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotArrayFail, NotIntegerFail, RequiredFail } from '../errors'
 import { isArray, NullableArray, OptionalArray, OptionalNullableArray, RequiredArray, validateArray } from './array'
-import { RequiredInteger } from './integer'
+import { OptionalInteger, RequiredInteger } from './integer'
 import { RequiredObject } from './object'
 
 describe('Array', () => {
@@ -223,5 +223,25 @@ describe.each([false, true])('Array (optimize: %s)', optimize => {
 }> | null`
       expect(res).toEqual(expected)
     })
+  })
+})
+
+describe('Rust Types', () => {
+  const options: ValidatorExportOptions = { types: true, language: 'rust' }
+
+  it('Vec', () => {
+    const rustType = new RequiredArray(new RequiredInteger()).toString(options)
+    expect(rustType).toEqual('Vec<i64>')
+  })
+
+  it('Option<Vec>', () => {
+    const rustType = new OptionalArray(new OptionalInteger()).toString(options)
+    expect(rustType).toEqual('Option<Vec<Option<i64>>>')
+  })
+
+  it('Unknown Language', () => {
+    expect(() => {
+      new RequiredArray(new RequiredInteger()).toString({ types: true, language: 'bingo' as any })
+    }).toThrow(`Language: 'bingo' unknown`)
   })
 })

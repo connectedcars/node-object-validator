@@ -173,3 +173,27 @@ describe.each([false, true])('Date (optimize: %s)', optimize => {
     })
   })
 })
+
+describe('Rust Types', () => {
+  it('Required', () => {
+    const rustType = new RequiredDate().toString({ types: true, language: 'rust' })
+    expect(rustType).toEqual('std::time::Instant')
+  })
+
+  it('Option', () => {
+    const rustType1 = new OptionalDate().toString({ types: true, language: 'rust' })
+    expect(rustType1).toEqual('Option<std::time::Instant>')
+
+    const rustType2 = new NullableDate().toString({ types: true, language: 'rust' })
+    expect(rustType2).toEqual('Option<std::time::Instant>')
+
+    const rustType3 = new OptionalNullableDate().toString({ types: true, language: 'rust' })
+    expect(rustType3).toEqual('Option<std::time::Instant>')
+  })
+
+  it('Unknown Language', () => {
+    expect(() => {
+      new RequiredDate().toString({ types: true, language: 'bingo' as any })
+    }).toThrow(`Language: 'bingo' unknown`)
+  })
+})

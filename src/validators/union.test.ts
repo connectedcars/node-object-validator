@@ -1,4 +1,4 @@
-import { AssertEqual } from '../common'
+import { AssertEqual, ValidatorExportOptions } from '../common'
 import {
   NotDatetimeOrDateFail,
   NotExactStringFail,
@@ -1132,5 +1132,63 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
 ], { required: false, nullable: true, optimize: false })`)
       })
     })
+  })
+})
+
+describe('Rust Types', () => {
+  const options: ValidatorExportOptions = { types: true, language: 'rust' }
+
+  it('Required', () => {
+    const validator = new RequiredUnion([new RequiredExactString('Sut')], { typeName: 'RustEnum' })
+    const expected1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+enum RustEnum {
+    Sut,
+}
+
+`
+    expect(validator.toString(options)).toEqual(expected1)
+
+    // Second time it's a reference
+    expect(validator.toString(options)).toEqual(`RustEnum`)
+  })
+
+  it('Optional', () => {
+    const validator = new OptionalUnion([new RequiredExactString('Sut')], { typeName: 'RustEnum' })
+    const expected1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+enum RustEnum {
+    Sut,
+}
+
+`
+    expect(validator.toString(options)).toEqual(expected1)
+
+    // Second time it's a reference
+    expect(validator.toString(options)).toEqual(`Option<RustEnum>`)
+  })
+
+  it('No inlining', () => {
+    expect(() => {
+      new RequiredUnion([new RequiredUnion([new RequiredExactString('Sut')], { typeName: 'RustEnumInner' })], {
+        typeName: 'RustEnum'
+      }).toString(options)
+    }).toThrow(
+      `Cannot inline union/enums in rust. Generate it first and use a reference. For: new RequiredUnion([
+  new RequiredExactString('Sut')
+], { typeName: RustEnumInner })`
+    )
+  })
+
+  it('Unknown Language', () => {
+    expect(() => {
+      new RequiredUnion([new RequiredExactString('SampleString')]).toString({ types: true, language: 'bingo' as any })
+    }).toThrow(`Language: 'bingo' unknown`)
+  })
+
+  it('No typeName', () => {
+    expect(() => {
+      new OptionalUnion([new RequiredExactString('Sut')]).toString({ types: true, language: 'rust' })
+    }).toThrow(`'typeName' option is not set`)
   })
 })

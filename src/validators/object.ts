@@ -1,3 +1,4 @@
+import { ExactStringValidator, UnionValidator } from '..'
 import {
   CodeGenResult,
   ValidateOptions,
@@ -7,6 +8,7 @@ import {
   ValidatorOptions
 } from '../common'
 import { NotObjectFail, RequiredFail, ValidationFailure } from '../errors'
+import { toSnakeCase } from '../util'
 
 export function isObject<T extends ObjectSchema>(
   schema: T,
@@ -67,8 +69,14 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
 > {
   public schema: ObjectSchema
 
+  private typeGenerated: boolean
+  private taggedUnionMember?: boolean
+  private typeName?: string
+
   public constructor(schema: T, options?: ValidatorBaseOptions) {
     super(options)
+    this.typeGenerated = false
+    this.typeName = options?.typeName
     this.schema = schema
     if (options?.optimize !== false) {
       this.optimize(schema)
@@ -159,10 +167,52 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
         return typeStr
       }
       case 'rust': {
-        throw new Error('Rust not supported yet')
+        if (this.typeGenerated && this.taggedUnionMember) {
+          return `${this.typeName}(${this.typeName}Struct)`
+        }
+        if (this.typeGenerated) {
+          const isOption = !this.required || this.nullable
+          return isOption ? `Option<${this.typeName}>` : `${this.typeName}`
+        }
+
+        const serdeStr = `#[derive(Serialize, Deserialize, Debug, Clone)]\n#[serde(rename_all = "camelCase")]\n`
+        const memberOptions: ValidatorExportOptions = { ...options, parent: this }
+        if (
+          'type' in this.schema &&
+          this.schema['type'] instanceof ExactStringValidator &&
+          typeof this.schema['type']['expected'] === 'string'
+        ) {
+          // Tagged union from TS
+          this.taggedUnionMember = true
+          this.typeGenerated = true
+
+          const lines = Object.keys(this.schema)
+            .filter(k => !(k === 'type'))
+            .map(k => `    ${toSnakeCase(k)}: ${this.schema[k].toString(memberOptions)},`)
+
+          const typeValue = this.schema['type']['expected'] as unknown as string
+          this.typeName = typeValue.charAt(0).toUpperCase() + typeValue.slice(1)
+          return `${serdeStr}struct ${this.typeName}Struct {\n${lines.join('\n')}\n}\n\n`
+        } else if (options?.parent instanceof UnionValidator && Object.keys(this.schema).length === 1) {
+          // Rust enum with data inside
+          // If there's only 1 key in this.schema, save that single key as 'enumVariantName'
+          // B example: rust: Enum{A, B(u8)} -> { 'b': 85 }
+          const [enumVariantName, enumVariantValue] = Object.entries(this.schema)[0]
+          return `${enumVariantName}(${enumVariantValue.toString(memberOptions)})`
+        }
+
+        // Normal type generation
+        if (this.typeName === undefined) {
+          throw new Error(`'typeName' option is not set on ${this.toString()}`)
+        }
+        this.typeGenerated = true
+        const lines = Object.keys(this.schema).map(
+          k => `    ${toSnakeCase(k)}: ${this.schema[k].toString(memberOptions)},`
+        )
+        return `${serdeStr}struct ${this.typeName} {\n${lines.join('\n')}\n}\n\n`
       }
       default: {
-        throw new Error(`Language: '{}' unknown`)
+        throw new Error(`Language: '${options?.language}' unknown`)
       }
     }
   }

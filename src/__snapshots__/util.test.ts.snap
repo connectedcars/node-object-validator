@@ -1,0 +1,90 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`generateRustTypes write to file 1`] = `
+"use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = \\"camelCase\\")]
+struct TabbyStruct {
+    weight: f64,
+    age: u64,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = \\"camelCase\\")]
+struct TuxedoStruct {
+    weight: f64,
+    age: u64,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = \\"camelCase\\")]
+struct MaineCoonStruct {
+    weight: f64,
+    age: u64,
+    fur_variant: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = \\"camelCase\\")]
+#[serde(tag = \\"type\\")]
+enum Cat {
+    Tabby(TabbyStruct),
+    Tuxedo(TuxedoStruct),
+    MaineCoon(MaineCoonStruct),
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = \\"camelCase\\")]
+struct ExternalTuple(u8, u8);
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = \\"camelCase\\")]
+enum ExternalInterface {
+    CAN0,
+    CAN1,
+    CAN2,
+    VCAN0,
+    VCAN1,
+    VCAN2,
+    PINS(u8, u8),
+    FAKEEXTTUPLE(ExternalTuple),
+    FAKEVALUE(u8),
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = \\"camelCase\\")]
+enum Application {
+    OBD,
+    UDS,
+    KWP2000,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = \\"camelCase\\")]
+enum Transport {
+    ISOTP,
+    TP2,
+    ISOTPNOPAD,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = \\"camelCase\\")]
+struct RequestDID {
+    adaption_setup: Vec<String>,
+    adaption_teardown: Vec<String>,
+    service_and_did: String,
+    interface: ExternalInterface,
+    transport: Transport,
+    application: Application,
+    session_type: Option<String>,
+    use_functional_addressing: Option<bool>,
+    tx_id: String,
+    rx_id: Option<String>,
+    tx_local_id: Option<String>,
+    rx_local_id: Option<String>,
+    raw: bool,
+}
+
+"
+`;

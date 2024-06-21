@@ -124,9 +124,14 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
   public schema: T
   private every: boolean
 
+  private typeGenerated: boolean
+  private typeName?: string
+
   public constructor(schema: T, options?: UnionValidatorOptions & ValidatorBaseOptions) {
     super(options)
     this.schema = schema
+    this.typeGenerated = false
+    this.typeName = options?.typeName
     this.every = options?.every ? true : false
     if (options?.optimize !== false) {
       this.optimize(schema)
@@ -281,10 +286,37 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
         return typeStr
       }
       case 'rust': {
-        throw new Error('Rust not supported yet')
+        if (this.typeName === undefined) {
+          throw new Error(`'typeName' option is not set on ${this.toString()}`)
+        }
+        if (this.typeGenerated === true) {
+          const isOption = !this.required || this.nullable
+          return isOption ? `Option<${this.typeName}>` : `${this.typeName}`
+        }
+        if (options?.parent !== undefined) {
+          throw new Error(
+            `Cannot inline union/enums in rust. Generate it first and use a reference. For: ${this.toString()}`
+          )
+        }
+
+        this.typeGenerated = true
+        let isTaggedUnion = true
+        const lines = this.schema.map(validatorElement => {
+          if (validatorElement instanceof ExactStringValidator) {
+            isTaggedUnion = false
+          }
+          const memberOptions: ValidatorExportOptions = { ...options, parent: this }
+          return validatorElement.toString(memberOptions)
+        })
+
+        let serdeStr = `#[derive(Serialize, Deserialize, Debug, Clone)]\n#[serde(rename_all = "camelCase")]\n`
+        if (isTaggedUnion === true) {
+          serdeStr += `#[serde(tag = "type")]\n`
+        }
+        return `${serdeStr}enum ${this.typeName} {\n    ${lines.join(',\n    ')},\n}\n\n`
       }
       default: {
-        throw new Error(`Language: '{}' unknown`)
+        throw new Error(`Language: '${options?.language}' unknown`)
       }
     }
   }

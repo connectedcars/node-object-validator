@@ -106,10 +106,10 @@ export abstract class NullValidator<O = never> extends ValidatorBase<null | O> {
         return typeStr
       }
       case 'rust': {
-        throw new Error('Rust not supported yet')
+        throw new Error('Null is not supported in Rust')
       }
       default: {
-        throw new Error(`Language: '{}' unknown`)
+        throw new Error(`Language: '${options?.language}' unknown`)
       }
     }
   }
