@@ -628,4 +628,10 @@ failureLate optimized in 0.351 s (2,849,002.849 ops/s)
 ```
 
 # Generating Rust Types
-Blabla setup file with toString, seperate out your "inner types" and toString() them first
+Checkout examples in `./test/rust-types.test.ts` & `./util.test.ts`
+
+* Import the `generateRustTypes()` function from `util` in your project.
+* Use references to validators (and enum/union members)
+* Make an array of Validators and pass it into the function (in order)
+* Take the result, either copy from the console into your rust file, or give it a file path as the second argument
+
