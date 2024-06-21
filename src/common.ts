@@ -38,12 +38,6 @@ export interface ValidatorOptions {
   typeName?: string // type name
 }
 
-// TODO: why isn't the type above just used?
-export interface ValidateOptions {
-  earlyFail?: boolean
-  optimized?: boolean
-}
-
 export interface ValidatorExportOptions {
   language?: 'typescript' | 'rust'
   jsonSafeTypes?: boolean
@@ -129,8 +123,8 @@ export abstract class ValidatorBase<T = unknown> {
     }
   }
 
-  public validate(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
-    if (options?.optimized !== false && this.optimizedValidate !== null) {
+  public validate(value: unknown, context?: string, options?: ValidatorOptions): ValidationFailure[] {
+    if (options?.optimize !== false && this.optimizedValidate !== null) {
       return this.optimizedValidate(value, context)
     }
     if (this.nullable && value === null) {
@@ -139,7 +133,7 @@ export abstract class ValidatorBase<T = unknown> {
     if (value === undefined) {
       return this.required ? [new RequiredFail(`Is required`, value, context)] : []
     }
-    return this.validateValue(value, context, { earlyFail: this.earlyFail, optimized: false, ...options })
+    return this.validateValue(value, context, { earlyFail: this.earlyFail, optimize: false, ...options })
   }
 
   public codeGen(
@@ -244,5 +238,5 @@ export abstract class ValidatorBase<T = unknown> {
 
   public abstract toString(options?: ValidatorExportOptions): string
 
-  protected abstract validateValue(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[]
+  protected abstract validateValue(value: unknown, context?: string, options?: ValidatorOptions): ValidationFailure[]
 }
