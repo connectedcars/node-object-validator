@@ -1,4 +1,5 @@
 import {
+  addTypeDef,
   ExactStringValidator,
   isPlainObject,
   ObjectValidator,
@@ -8,16 +9,10 @@ import {
   RequiredFloat,
   RequiredFloatString,
   RequiredInteger,
-  RequiredIntegerString
+  RequiredIntegerString,
+  toPascalCase
 } from '..'
-import {
-  CodeGenResult,
-  ValidateOptions,
-  ValidatorBase,
-  ValidatorBaseOptions,
-  ValidatorExportOptions,
-  ValidatorOptions
-} from '../common'
+import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
 import {
   NotDatetimeOrDateFail,
   NotFloatOrFloatStringFail,
@@ -64,7 +59,7 @@ function findUnionKey(schema: ObjectValidator[]): string | null {
   return unionKey
 }
 
-export interface ValidateUnionOptions extends ValidateOptions {
+export interface ValidateUnionOptions extends ValidatorOptions {
   every?: boolean
 }
 
@@ -94,7 +89,7 @@ export function validateUnion(
 
   for (const [index, validator] of schema.entries()) {
     const propName = `${context || ''}(${index})`
-    const currentErrors = validator.validate(value, propName, { optimized: false, earlyFail: false, ...options })
+    const currentErrors = validator.validate(value, propName, { optimize: false, earlyFail: false, ...options })
     if (currentErrors.length === 0) {
       return []
     } else {
@@ -124,13 +119,11 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
   public schema: T
   private every: boolean
 
-  private typeGenerated: boolean
   private typeName?: string
 
   public constructor(schema: T, options?: UnionValidatorOptions & ValidatorBaseOptions) {
     super(options)
     this.schema = schema
-    this.typeGenerated = false
     this.typeName = options?.typeName
     this.every = options?.every ? true : false
     if (options?.optimize !== false) {
@@ -266,7 +259,7 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
     }
   }
 
-  protected validateValue(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
+  protected validateValue(value: unknown, context?: string, options?: ValidatorOptions): ValidationFailure[] {
     return validateUnion(this.schema, value, context, { earlyFail: this.earlyFail, every: this.every, ...options })
   }
 
@@ -286,34 +279,86 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
         return typeStr
       }
       case 'rust': {
-        if (this.typeName === undefined) {
-          throw new Error(`'typeName' option is not set on ${this.toString()}`)
+        // Checks
+        if (options?.typeDefinitions === undefined) {
+          throw new Error(`'typeDefinitions' is not set on ${this.toString()}`)
         }
-        if (this.typeGenerated === true) {
-          const isOption = !this.required || this.nullable
-          return isOption ? `Option<${this.typeName}>` : `${this.typeName}`
+        if (options?.parent === undefined) {
+          if (this.typeName === undefined) {
+            throw new Error(`'typeName' option is not set, with no parent set on ${this.toString()}`)
+          }
+        } else {
+          if (this.typeName === undefined) {
+            if (options.typeNameFromParent === undefined) {
+              throw new Error(`'typeName' option is not set, and 'options.objectKey' is not set on ${this.toString()}`)
+            } else {
+              this.typeName = toPascalCase(options.typeNameFromParent)
+            }
+          }
         }
-        if (options?.parent !== undefined) {
+
+        let unionKey: string | undefined = undefined
+        // Tagged union
+        if (this.schema.every(val => val instanceof ObjectValidator)) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const schema = this.schema as unknown as ObjectValidator<any, any>[]
+          // This is okay, even if we have the #[serde(tag = "tagName", content = "value")] pattern, the content will not be ExactString
+          unionKey = findUnionKey(schema) ?? undefined
+        }
+
+        // Non tagged union
+        if (this.schema.every(val => val instanceof ExactStringValidator || val instanceof ObjectValidator)) {
+          for (const val of this.schema) {
+            if (unionKey === undefined && val instanceof ObjectValidator && Object.keys(val.schema).length > 1) {
+              throw new Error(
+                `No support for objects in unions/enums which are not a TaggedUnion(or you reused a tag) or which have 1 value (which will become the variant). schema.toString(): ${this.schema.toString()}`
+              )
+            }
+          }
+        } else {
           throw new Error(
-            `Cannot inline union/enums in rust. Generate it first and use a reference. For: ${this.toString()}`
+            `Members of the Union(non tagged) are not an ExactString, schema.toString(): ${this.schema.toString()}`
           )
         }
 
-        this.typeGenerated = true
-        let isTaggedUnion = true
-        const lines = this.schema.map(validatorElement => {
-          if (validatorElement instanceof ExactStringValidator) {
-            isTaggedUnion = false
+        // For a tagged union the 'line' needs to say the value of the tag as a name. Then the struct. So: Name(NameStruct)
+        // BUT it CANNOT contain non structs for the value
+        let typeNameFromParent: string | undefined = undefined
+        const lines = []
+        for (const val of this.schema) {
+          if (unionKey !== undefined && val instanceof ObjectValidator) {
+            const tagValidator = val.schema[unionKey]
+            if (tagValidator instanceof ExactStringValidator) {
+              typeNameFromParent = toPascalCase(tagValidator.expected)
+            } else if (val.typeName !== undefined) {
+              typeNameFromParent = undefined
+            }
           }
-          const memberOptions: ValidatorExportOptions = { ...options, parent: this }
-          return validatorElement.toString(memberOptions)
-        })
+
+          const typeStr = val.toString({
+            ...options,
+            parent: this,
+            taggedUnionKey: unionKey,
+            typeNameFromParent: `${typeNameFromParent}Data`
+          })
+
+          if (val instanceof ObjectValidator && typeNameFromParent !== undefined) {
+            lines.push(`${typeNameFromParent}(${typeStr})`)
+          } else {
+            lines.push(typeStr)
+          }
+        }
 
         let serdeStr = `#[derive(Serialize, Deserialize, Debug, Clone)]\n#[serde(rename_all = "camelCase")]\n`
-        if (isTaggedUnion === true) {
-          serdeStr += `#[serde(tag = "type")]\n`
+        if (unionKey !== undefined) {
+          serdeStr += `#[serde(tag = "${unionKey}")]\n`
         }
-        return `${serdeStr}enum ${this.typeName} {\n    ${lines.join(',\n    ')},\n}\n\n`
+        const typeDef = `${serdeStr}enum ${this.typeName} {\n    ${lines.join(',\n    ')},\n}\n\n`
+        addTypeDef(this.typeName, typeDef, options.typeDefinitions)
+
+        // Reference
+        const isOption = !this.required || this.nullable
+        return isOption ? `Option<${this.typeName}>` : `${this.typeName}`
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)
@@ -396,7 +441,7 @@ export abstract class DateTimeOrDateValidator<O = never> extends UnionValidator<
     super([new RequiredDateTime(), new RequiredDate()], options)
   }
 
-  public validate(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
+  public validate(value: unknown, context?: string, options?: ValidatorOptions): ValidationFailure[] {
     const errors = super.validate(value, context, options)
     if (errors.length === 2) {
       return [
@@ -454,7 +499,7 @@ export abstract class FloatOrFloatStringValidator<O = never> extends UnionValida
     }
   }
 
-  public validate(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
+  public validate(value: unknown, context?: string, options?: ValidatorOptions): ValidationFailure[] {
     const errors = super.validate(value, context, options)
     if (errors.length === 2) {
       return [new NotFloatOrFloatStringFail(`${this.errStr}`, value, context)]
@@ -506,7 +551,7 @@ export abstract class IntegerOrIntegerStringValidator<O = never> extends UnionVa
     }
   }
 
-  public validate(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
+  public validate(value: unknown, context?: string, options?: ValidatorOptions): ValidationFailure[] {
     const errors = super.validate(value, context, options)
     if (errors.length === 2) {
       return [new NotIntegerOrIntegerStringFail(`${this.errStr}`, value, context)]

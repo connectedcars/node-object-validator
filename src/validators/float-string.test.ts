@@ -221,18 +221,18 @@ describe('Rust Types', () => {
 
   it('Required', () => {
     const rustType = new RequiredFloatString().toString(options)
-    expect(rustType).toEqual('f64')
+    expect(rustType).toEqual('String')
   })
 
   it('Option', () => {
     const rustType1 = new OptionalFloatString().toString(options)
-    expect(rustType1).toEqual('Option<f64>')
+    expect(rustType1).toEqual('Option<String>')
 
     const rustType2 = new NullableFloatString().toString(options)
-    expect(rustType2).toEqual('Option<f64>')
+    expect(rustType2).toEqual('Option<String>')
 
     const rustType3 = new OptionalNullableFloatString().toString(options)
-    expect(rustType3).toEqual('Option<f64>')
+    expect(rustType3).toEqual('Option<String>')
   })
 
   it('Unknown Language', () => {

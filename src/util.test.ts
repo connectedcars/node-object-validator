@@ -5,16 +5,19 @@ import {
   OptionalBoolean,
   OptionalString,
   RequiredBoolean,
+  RequiredDate,
+  RequiredDateTime,
   RequiredExactString,
   RequiredFloat,
   RequiredInteger,
   RequiredObject,
   RequiredString,
   RequiredTuple,
-  RequiredUnion
+  RequiredUnion,
+  RequiredUnixDateTime
 } from '.'
 import { ValidatorBase } from './common'
-import { generateRustTypes, toSnakeCase } from './util'
+import { generateRustTypes, toPascalCase, toSnakeCase } from './util'
 
 describe('toSnakeCase', () => {
   it('lower case first', () => {
@@ -25,6 +28,18 @@ describe('toSnakeCase', () => {
   it('upper case first', () => {
     const res = toSnakeCase('KatteKilling')
     expect(res).toEqual('katte_killing')
+  })
+})
+
+describe('toPascalCase', () => {
+  it('lower case first', () => {
+    const res = toPascalCase('katteKilling')
+    expect(res).toEqual('KatteKilling')
+  })
+
+  it('upper case first', () => {
+    const res = toPascalCase('KatteKilling')
+    expect(res).toEqual('KatteKilling')
   })
 })
 
@@ -79,19 +94,18 @@ describe('generateRustTypes', () => {
       { typeName: 'Transport' }
     )
 
-    const applicationValidator = new RequiredUnion(
-      [new RequiredExactString('OBD'), new RequiredExactString('UDS'), new RequiredExactString('KWP2000')],
-      { typeName: 'Application' }
-    )
-
     const requestDIDValidator = new RequiredObject(
       {
         adaption_setup: new OptionalArray(new RequiredString()),
         adaption_teardown: new OptionalArray(new RequiredString()),
         service_and_did: new RequiredString(),
         interface: externalInterfaceValidator,
+        application: new RequiredUnion(
+          [new RequiredExactString('OBD'), new RequiredExactString('UDS'), new RequiredExactString('KWP2000')],
+          { typeName: 'Application' }
+        ),
+
         transport: transportValidator,
-        application: applicationValidator,
         session_type: new OptionalString(),
         use_functional_addressing: new OptionalBoolean(),
         tx_id: new RequiredString(),
@@ -103,20 +117,53 @@ describe('generateRustTypes', () => {
       { typeName: 'RequestDID' }
     )
 
-    const validators: ValidatorBase[] = [
-      tabbyValidator,
-      tuxedoValidator,
-      maineCoonValidator,
-      catValidator,
-      externalTupleValidator,
-      externalInterfaceValidator,
-      applicationValidator,
-      transportValidator,
-      requestDIDValidator
-    ]
+    const validators: ValidatorBase[] = [catValidator, requestDIDValidator]
     const fileDumpPath = `/tmp/rust-types-test.rs`
     generateRustTypes(validators, fileDumpPath)
 
     expect(readFileSync(fileDumpPath, 'utf8')).toMatchSnapshot()
+  })
+
+  it('write to file, datetime used', () => {
+    const validator = new RequiredObject(
+      {
+        unix: new RequiredUnixDateTime(),
+        date: new RequiredDate(),
+        dateTime: new RequiredDateTime()
+      },
+      { typeName: 'RustType' }
+    )
+
+    const validators: ValidatorBase[] = [validator]
+    const fileDumpPath = `/tmp/rust-types-date-test.rs`
+    generateRustTypes(validators, fileDumpPath)
+
+    expect(readFileSync(fileDumpPath, 'utf8')).toMatchSnapshot()
+  })
+
+  // #[serde(rename_all = "camelCase")]
+  // #[serde(tag = "type")]
+  // enum MyEnum {
+  // Gives us:
+  // Error("cannot serialize tagged newtype variant MyEnum::VariantA containing a boolean", line: 0, column: 0)'
+  // VariantA(bool),
+  // Which we can't represent, so this catches a similar case
+  it('Err, Tagged union, invalid element', () => {
+    const validator = new RequiredUnion(
+      [
+        new RequiredObject({ type: new RequiredExactString('ja'), bingo: new RequiredInteger() }),
+        new RequiredBoolean()
+      ],
+      {
+        typeName: 'RustType'
+      }
+    )
+
+    const validators: ValidatorBase[] = [validator]
+    const fileDumpPath = `/tmp/rust-types-invalid-test.rs`
+
+    expect(() => {
+      generateRustTypes(validators, fileDumpPath)
+    }).toThrow(`Members of the Union(non tagged) are not an ExactString`)
   })
 })

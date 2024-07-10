@@ -1,18 +1,12 @@
-import { ObjectValidator } from '..'
-import {
-  ValidateOptions,
-  ValidatorBase,
-  ValidatorBaseOptions,
-  ValidatorExportOptions,
-  ValidatorOptions
-} from '../common'
+import { addTypeDef, ObjectValidator } from '..'
+import { ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotArrayFail, ValidationFailure, WrongLengthFail } from '../errors'
 
 export function validateTuple(
   schema: ValidatorBase[],
   value: unknown,
   context?: string,
-  options?: ValidateOptions
+  options?: ValidatorOptions
 ): ValidationFailure[] {
   if (!Array.isArray(value)) {
     return [new NotArrayFail(`Must be an array`, value, context)]
@@ -28,7 +22,7 @@ export function validateTuple(
     const validator = schema[i]
     const item = value[i]
     errors.push(
-      ...validator.validate(item, `${context || ''}[${i}]`, { optimized: false, earlyFail: false, ...options })
+      ...validator.validate(item, `${context || ''}[${i}]`, { optimize: false, earlyFail: false, ...options })
     )
     if (options?.earlyFail && errors.length > 0) {
       return errors
@@ -43,12 +37,10 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
 > {
   public schema: T
 
-  private typeGenerated: boolean
   private typeName?: string
 
   public constructor(schema: [...T], options?: ValidatorBaseOptions) {
     super(options)
-    this.typeGenerated = false
     this.typeName = options?.typeName
     this.schema = schema
     if (options?.optimize !== false) {
@@ -87,24 +79,36 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
         return typeStr
       }
       case 'rust': {
-        if (this.typeGenerated) {
-          const isOption = !this.required || this.nullable
-          return isOption ? `Option<${this.typeName}>` : `${this.typeName}`
-        }
+        const serdeStr = `#[derive(Serialize, Deserialize, Debug, Clone)]\n#[serde(rename_all = "camelCase")]\n`
 
-        // If not generated yet and in a union = inline it
-        if (options?.parent instanceof ObjectValidator) {
+        // If we are inlining, don't generate type (typeName check so objects can still use the reference)
+        if (options?.parent instanceof ObjectValidator && this.typeName === undefined) {
           const types = Object.values(this.schema).map(v => v.toString(options))
           return `${types.join(', ')}`
-        } else if (this.typeName === undefined) {
-          throw new Error(`'typeName' option is not set on ${this.toString()}`)
         }
 
-        // If not generated yet, generate it
-        this.typeGenerated = true
-        const serdeStr = `#[derive(Serialize, Deserialize, Debug, Clone)]\n#[serde(rename_all = "camelCase")]\n`
+        if (options?.typeDefinitions === undefined) {
+          throw new Error(`'typeDefinitions' is not set on ${this.toString()}`)
+        }
+        if (options?.parent === undefined && this.typeName === undefined) {
+          // Ignore typeNameFromParent as we will inline instead
+          throw new Error(`'typeName' is not set, with no parent set on ${this.toString()}`)
+        }
+        if (this.typeName === undefined) {
+          throw new Error(`'typeName' is not set when trying to generate named tuple ${this.toString()}`)
+        }
+
+        // Type generation
         const types = Object.values(this.schema).map(v => v.toString(options))
-        return `${serdeStr}struct ${this.typeName}(${types.join(', ')});\n\n`
+        addTypeDef(
+          this.typeName,
+          `${serdeStr}struct ${this.typeName}(${types.join(', ')});\n\n`,
+          options.typeDefinitions
+        )
+
+        // Normal reference
+        const isOption = !this.required || this.nullable
+        return isOption ? `Option<${this.typeName}>` : `${this.typeName}`
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)

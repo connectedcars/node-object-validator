@@ -79,9 +79,8 @@ export abstract class FloatStringValidator<O = never> extends ValidatorBase<stri
         return typeStr
       }
       case 'rust': {
-        const typeStr = 'f64'
         const isOption = !this.required || this.nullable
-        return isOption ? `Option<${typeStr}>` : `${typeStr}`
+        return isOption ? `Option<String>` : 'String'
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)

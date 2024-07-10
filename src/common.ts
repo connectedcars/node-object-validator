@@ -30,12 +30,12 @@ export type ValidatorBaseOptions = {
  * @typedef ValidatorOptions
  * @property {boolean} [earlyFail=false] Stop validation on first failure (default: false)
  * @property {boolean} [optimize=true] Generate an optimized function for doing the validation (default: true)
- * @property {string} [string='Something'] Required for generating rust types when referencing objects (default: undefined)
+ * @property {string} [typeName='Something'] Required for generating rust types when referencing objects (default: undefined)
  */
 export interface ValidatorOptions {
   earlyFail?: boolean
   optimize?: boolean
-  typeName?: string // type name
+  typeName?: string
 }
 
 export interface ValidatorExportOptions {
@@ -43,6 +43,9 @@ export interface ValidatorExportOptions {
   jsonSafeTypes?: boolean
   types?: boolean
   parent?: ValidatorBase
+  taggedUnionKey?: string
+  typeNameFromParent?: string
+  typeDefinitions?: Record<string, string>
 }
 
 export function isValidator(value: unknown): value is ValidatorBase {

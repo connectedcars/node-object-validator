@@ -1,4 +1,4 @@
-import { UnionValidator } from '..'
+import { ObjectValidator, toPascalCase, UnionValidator } from '..'
 import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotExactStringFail, RequiredFail, ValidationFailure } from '../errors'
 
@@ -96,26 +96,20 @@ export abstract class ExactStringValidator<T extends string = never, O = never> 
         return typeStr
       }
       case 'rust': {
-        if (this.typeGenerated) {
-          throw new Error(
-            `Rust cannot use a reference to an ExactString/enum variant, use the reference to the entire enum`
-          )
-        }
-
         const isOption = !this.required || this.nullable
         if (isOption) {
           throw new Error(`Rust does not support optional ExactString. For: ${this.toString()}`)
         }
 
-        if (options?.parent instanceof UnionValidator === false) {
-          throw new Error(
-            `ExactString's (enum variation in rust) parent needs to be a Union (enum). For: ${this.toString()}`
-          )
+        const isValidParent = options?.parent instanceof UnionValidator || options?.parent instanceof ObjectValidator
+        if (isValidParent === false) {
+          throw new Error(`ExactString has to be in an object/union. str: ${this.expected}`)
+        }
+        if (options.parent instanceof ObjectValidator && options.taggedUnionKey === undefined) {
+          throw new Error(`ExactString in an object, has to be part of a taggedUnion. str: ${this.expected}`)
         }
 
-        this.typeGenerated = true
-        const typeName = this.expected.charAt(0).toUpperCase() + this.expected.slice(1)
-        return typeName
+        return toPascalCase(this.expected)
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)

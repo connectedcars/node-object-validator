@@ -52,9 +52,7 @@ export abstract class BufferValidator<O = never> extends ValidatorBase<Buffer | 
         return typeStr
       }
       case 'rust': {
-        const isOption = !this.required || this.nullable
-        const typeStr = `Vec<u8>`
-        return isOption ? `Option<${typeStr}>` : typeStr
+        throw new Error(`Cannot serialize buffers`)
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)

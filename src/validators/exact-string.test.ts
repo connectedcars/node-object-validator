@@ -1,4 +1,4 @@
-import { RequiredUnion } from '..'
+import { RequiredObject, RequiredUnion } from '..'
 import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotExactStringFail, RequiredFail } from '../errors'
 import {
@@ -175,17 +175,48 @@ describe.each([false, true])('validateExactString (optimize: %s)', optimize => {
 })
 
 describe('Rust Types', () => {
-  const options: ValidatorExportOptions = { types: true, language: 'rust' }
+  let typeDefinitions: Record<string, string>
+  let options: ValidatorExportOptions
 
-  it('Required (in required union)', () => {
+  beforeEach(() => {
+    typeDefinitions = {}
+    options = {
+      types: true,
+      language: 'rust',
+      typeDefinitions
+    }
+  })
+
+  it('Required (in a union)', () => {
     const unionValidator = new RequiredUnion([new RequiredExactString(`computerKatten`)], { typeName: 'NeededUnion' })
-    expect(unionValidator.toString(options)).toEqual(`#[derive(Serialize, Deserialize, Debug, Clone)]
+    expect(unionValidator.toString(options)).toEqual('NeededUnion')
+
+    const expectedNeededUnion = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 enum NeededUnion {
     ComputerKatten,
 }
 
-`)
+`
+    expect(typeDefinitions).toEqual({
+      NeededUnion: expectedNeededUnion
+    })
+  })
+
+  it('Required, Err, in object without a union (taggedunion member, no parent)', () => {
+    const objValidator = new RequiredObject({ a: new RequiredExactString(`computerKatten`) }, { typeName: 'ObjName' })
+
+    expect(() => {
+      objValidator.toString(options)
+    }).toThrow(`ExactString in an object, has to be part of a taggedUnion. str: computerKatten`)
+  })
+
+  it('Required, Err, alone', () => {
+    const validator = new RequiredExactString(`computerKatten`)
+
+    expect(() => {
+      validator.toString(options)
+    }).toThrow(`ExactString has to be in an object/union. str: computerKatten`)
   })
 
   it('Option', () => {
@@ -200,31 +231,6 @@ enum NeededUnion {
     expect(() => {
       new OptionalNullableExactString('computerKatten').toString(options)
     }).toThrow(`Rust does not support optional ExactString`)
-  })
-
-  it('Not in union', () => {
-    expect(() => {
-      new RequiredExactString('computerKatten').toString(options)
-    }).toThrow(
-      `ExactString's (enum variation in rust) parent needs to be a Union (enum). For: new RequiredExactString('computerKatten')`
-    )
-  })
-
-  it('Trying to use ExactStringe twice', () => {
-    // Normal
-    const unionValidator = new RequiredUnion([new RequiredExactString(`computerKatten`)], { typeName: 'NeededUnion' })
-    expect(unionValidator.toString(options)).toEqual(`#[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
-enum NeededUnion {
-    ComputerKatten,
-}
-
-`)
-
-    // Expected error
-    expect(() => {
-      unionValidator.schema[0].toString(options)
-    }).toThrow(`Rust cannot use a reference to an ExactString/enum variant, use the reference to the entire enum`)
   })
 
   it('Unknown Language', () => {

@@ -1,11 +1,4 @@
-import {
-  CodeGenResult,
-  ValidateOptions,
-  ValidatorBase,
-  ValidatorBaseOptions,
-  ValidatorExportOptions,
-  ValidatorOptions
-} from '../common'
+import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotArrayFail, RequiredFail, ValidationFailure, WrongLengthFail } from '../errors'
 
 export function isArray<T extends ValidatorBase>(
@@ -28,7 +21,7 @@ export function validateArray(
   minLength = 0,
   maxLength = Number.MAX_SAFE_INTEGER,
   context?: string,
-  options?: ValidateOptions
+  options?: ValidatorOptions
 ): ValidationFailure[] {
   if (!Array.isArray(value)) {
     return [new NotArrayFail(`Must be an array`, value, context)]
@@ -46,7 +39,7 @@ export function validateArray(
   const validator = schema
   for (const [i, item] of value.entries()) {
     errors.push(
-      ...validator.validate(item, `${context || ''}[${i}]`, { optimized: false, earlyFail: false, ...options })
+      ...validator.validate(item, `${context || ''}[${i}]`, { optimize: false, earlyFail: false, ...options })
     )
     if (options?.earlyFail && errors.length > 0) {
       return errors

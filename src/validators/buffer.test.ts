@@ -170,19 +170,15 @@ describe('Rust Types', () => {
   const options: ValidatorExportOptions = { types: true, language: 'rust' }
 
   it('Required', () => {
-    const rustType = new RequiredBuffer().toString(options)
-    expect(rustType).toEqual('Vec<u8>')
+    expect(() => {
+      new RequiredBuffer().toString(options)
+    }).toThrow(`Cannot serialize buffers`)
   })
 
   it('Option', () => {
-    const rustType1 = new OptionalBuffer().toString(options)
-    expect(rustType1).toEqual('Option<Vec<u8>>')
-
-    const rustType2 = new NullableBuffer().toString(options)
-    expect(rustType2).toEqual('Option<Vec<u8>>')
-
-    const rustType3 = new OptionalNullableBuffer().toString(options)
-    expect(rustType3).toEqual('Option<Vec<u8>>')
+    expect(() => {
+      new RequiredBuffer().toString(options)
+    }).toThrow(`Cannot serialize buffers`)
   })
 
   it('Unknown Language', () => {

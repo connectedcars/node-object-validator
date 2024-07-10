@@ -180,18 +180,18 @@ describe('UnixDateTime Validators', () => {
 describe('Rust Types', () => {
   it('Required', () => {
     const rustType = new RequiredUnixDateTime().toString({ types: true, language: 'rust' })
-    expect(rustType).toEqual('std::time::Instant')
+    expect(rustType).toEqual('DateTime<Utc>')
   })
 
   it('Option', () => {
     const rustType1 = new OptionalUnixDateTime().toString({ types: true, language: 'rust' })
-    expect(rustType1).toEqual('Option<std::time::Instant>')
+    expect(rustType1).toEqual('Option<DateTime<Utc>>')
 
     const rustType2 = new NullableUnixDateTime().toString({ types: true, language: 'rust' })
-    expect(rustType2).toEqual('Option<std::time::Instant>')
+    expect(rustType2).toEqual('Option<DateTime<Utc>>')
 
     const rustType3 = new OptionalNullableUnixDateTime().toString({ types: true, language: 'rust' })
-    expect(rustType3).toEqual('Option<std::time::Instant>')
+    expect(rustType3).toEqual('Option<DateTime<Utc>>')
   })
 
   it('Unknown Language', () => {

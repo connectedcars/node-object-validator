@@ -183,18 +183,18 @@ describe.each([false, true])('DateTime (optimize: %s)', optimize => {
 describe('Rust Types', () => {
   it('Required', () => {
     const rustType = new RequiredDateTime().toString({ types: true, language: 'rust' })
-    expect(rustType).toEqual('std::time::Instant')
+    expect(rustType).toEqual('DateTime<Utc>')
   })
 
   it('Option', () => {
     const rustType1 = new OptionalDateTime().toString({ types: true, language: 'rust' })
-    expect(rustType1).toEqual('Option<std::time::Instant>')
+    expect(rustType1).toEqual('Option<DateTime<Utc>>')
 
     const rustType2 = new NullableDateTime().toString({ types: true, language: 'rust' })
-    expect(rustType2).toEqual('Option<std::time::Instant>')
+    expect(rustType2).toEqual('Option<DateTime<Utc>>')
 
     const rustType3 = new OptionalNullableDateTime().toString({ types: true, language: 'rust' })
-    expect(rustType3).toEqual('Option<std::time::Instant>')
+    expect(rustType3).toEqual('Option<DateTime<Utc>>')
   })
 
   it('Unknown Language', () => {

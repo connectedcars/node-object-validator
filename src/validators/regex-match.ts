@@ -113,7 +113,8 @@ export abstract class RegexMatchValidator<O = never> extends ValidatorBase<strin
         return typeStr
       }
       case 'rust': {
-        throw new Error(`Rust does not support compile time regexp`)
+        const isOption = !this.required || this.nullable
+        return isOption ? `Option<String>` : 'String'
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)

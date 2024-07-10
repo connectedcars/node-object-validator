@@ -8,11 +8,14 @@ import {
   RequiredFail,
   UnionFail
 } from '../errors'
+import { OptionalBoolean, RequiredBoolean } from './boolean'
 import { RequiredExactString } from './exact-string'
 import { RequiredFloat } from './float'
+import { RequiredInteger } from './integer'
 import { RequiredObject } from './object'
 import { RequiredRegexMatch } from './regex-match'
 import { RequiredString } from './string'
+import { RequiredTuple } from './tuple'
 import {
   isUnion,
   NullableDateTimeOrDate,
@@ -1136,48 +1139,194 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
 })
 
 describe('Rust Types', () => {
-  const options: ValidatorExportOptions = { types: true, language: 'rust' }
+  let typeDefinitions: Record<string, string>
+  let options: ValidatorExportOptions
 
-  it('Required', () => {
-    const validator = new RequiredUnion([new RequiredExactString('Sut')], { typeName: 'RustEnum' })
-    const expected1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+  beforeEach(() => {
+    typeDefinitions = {}
+    options = {
+      types: true,
+      language: 'rust',
+      typeDefinitions
+    }
+  })
+
+  it('Required, only ExactString', () => {
+    const validator = new RequiredUnion([new RequiredExactString('Sut'), new RequiredExactString('Sut2')], {
+      typeName: 'RustEnum'
+    })
+    const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 enum RustEnum {
     Sut,
+    Sut2,
 }
 
 `
-    expect(validator.toString(options)).toEqual(expected1)
-
-    // Second time it's a reference
     expect(validator.toString(options)).toEqual(`RustEnum`)
+    expect(typeDefinitions).toEqual({
+      RustEnum: expectedType
+    })
+  })
+
+  it('Required, tagged union, inline', () => {
+    const validator = new RequiredUnion(
+      [
+        new RequiredObject({ bingoTag: new RequiredExactString('kat'), ja: new RequiredBoolean() }),
+        new RequiredObject({ bingoTag: new RequiredExactString('mis'), ja: new OptionalBoolean() })
+      ],
+      {
+        typeName: 'RustEnum'
+      }
+    )
+
+    const expectedKat = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct KatData {
+    ja: bool,
+}
+
+`
+    const expectedMis = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct MisData {
+    ja: Option<bool>,
+}
+
+`
+    const expectedEnum = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+#[serde(tag = "bingoTag")]
+enum RustEnum {
+    Kat(KatData),
+    Mis(MisData),
+}
+
+`
+    expect(validator.toString(options)).toEqual(`RustEnum`)
+    expect(typeDefinitions).toEqual({
+      KatData: expectedKat,
+      MisData: expectedMis,
+      RustEnum: expectedEnum
+    })
+  })
+
+  it('Required, tagged union, outside, and overwrite typename', () => {
+    const outside1Validator = new RequiredObject({
+      bingoTag: new RequiredExactString('Kat'),
+      ja: new RequiredBoolean()
+    })
+    const outside2Validator = new RequiredObject({
+      bingoTag: new RequiredExactString('Mis'),
+      ja: new OptionalBoolean()
+    })
+    const outside3Validator = new RequiredObject(
+      {
+        bingoTag: new RequiredExactString('Specific'),
+        ja: new OptionalBoolean()
+      },
+      {
+        typeName: 'SpecificTypeName' // Will get used on the type inside
+      }
+    )
+
+    const validator = new RequiredUnion([outside1Validator, outside2Validator, outside3Validator], {
+      typeName: 'RustEnum'
+    })
+
+    const expectedOutside1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct KatData {
+    ja: bool,
+}
+
+`
+    const expectedOutside2 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct MisData {
+    ja: Option<bool>,
+}
+
+`
+    const expectedOutside3 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct SpecificTypeName {
+    ja: Option<bool>,
+}
+
+`
+    const expectedEnum = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+#[serde(tag = "bingoTag")]
+enum RustEnum {
+    Kat(KatData),
+    Mis(MisData),
+    Specific(SpecificTypeName),
+}
+
+`
+    expect(validator.toString(options)).toEqual(`RustEnum`)
+    expect(typeDefinitions).toEqual({
+      KatData: expectedOutside1,
+      MisData: expectedOutside2,
+      SpecificTypeName: expectedOutside3,
+      RustEnum: expectedEnum
+    })
+  })
+
+  it('Required, Inline data types (single value, tuple inside, tuple outside)', () => {
+    const misseKatValidator = new RequiredTuple(
+      [new RequiredInteger(0, 255), new RequiredInteger(0, 255), new RequiredInteger(0, 255)],
+      { typeName: 'MisseKatTuple' }
+    )
+    const validator = new RequiredUnion(
+      [
+        new RequiredObject({ kat: new RequiredInteger(0, 255) }),
+        new RequiredObject({ mis: new RequiredTuple([new RequiredInteger(0, 255), new RequiredBoolean()]) }),
+        new RequiredObject({ misseKat: misseKatValidator })
+      ],
+      {
+        typeName: 'RustEnum'
+      }
+    )
+
+    const expectedMisseKat = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct MisseKatTuple(u8, u8, u8);
+
+`
+    const expectedEnum = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+enum RustEnum {
+    Kat(u8),
+    Mis(u8, bool),
+    MisseKat(MisseKatTuple),
+}
+
+`
+    expect(validator.toString(options)).toEqual(`RustEnum`)
+    expect(typeDefinitions).toEqual({
+      MisseKatTuple: expectedMisseKat,
+      RustEnum: expectedEnum
+    })
   })
 
   it('Optional', () => {
-    const validator = new OptionalUnion([new RequiredExactString('Sut')], { typeName: 'RustEnum' })
-    const expected1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+    const validator = new OptionalUnion([new RequiredExactString('Sut'), new RequiredExactString('Sut2')], {
+      typeName: 'RustEnum'
+    })
+    const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 enum RustEnum {
     Sut,
+    Sut2,
 }
 
 `
-    expect(validator.toString(options)).toEqual(expected1)
-
-    // Second time it's a reference
     expect(validator.toString(options)).toEqual(`Option<RustEnum>`)
-  })
-
-  it('No inlining', () => {
-    expect(() => {
-      new RequiredUnion([new RequiredUnion([new RequiredExactString('Sut')], { typeName: 'RustEnumInner' })], {
-        typeName: 'RustEnum'
-      }).toString(options)
-    }).toThrow(
-      `Cannot inline union/enums in rust. Generate it first and use a reference. For: new RequiredUnion([
-  new RequiredExactString('Sut')
-], { typeName: RustEnumInner })`
-    )
+    expect(typeDefinitions).toEqual({
+      RustEnum: expectedType
+    })
   })
 
   it('Unknown Language', () => {
@@ -1188,7 +1337,16 @@ enum RustEnum {
 
   it('No typeName', () => {
     expect(() => {
-      new OptionalUnion([new RequiredExactString('Sut')]).toString({ types: true, language: 'rust' })
+      new OptionalUnion([new RequiredExactString('Sut')]).toString(options)
     }).toThrow(`'typeName' option is not set`)
+  })
+
+  it('No typeDefinitions', () => {
+    expect(() => {
+      new OptionalUnion([new RequiredExactString('Sut')], { typeName: 'jaNavn' }).toString({
+        types: true,
+        language: 'rust'
+      })
+    }).toThrow(`'typeDefinitions' is not set`)
   })
 })
