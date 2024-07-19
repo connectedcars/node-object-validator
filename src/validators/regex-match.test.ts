@@ -1,4 +1,4 @@
-import { AssertEqual } from '../common'
+import { AssertEqual, ValidatorExportOptions } from '../common'
 import { DoesNotMatchRegexFail, NotStringFail, RequiredFail } from '../errors'
 import {
   isRegexMatch,
@@ -178,5 +178,31 @@ describe.each([false, true])('Regex (optimize: %s)', optimize => {
       const code = validator.toString({ types: true })
       expect(code).toEqual('string | undefined | null')
     })
+  })
+})
+
+describe('Rust Types', () => {
+  const options: ValidatorExportOptions = { types: true, language: 'rust' }
+
+  it('Required', () => {
+    const rustType = new RequiredRegexMatch(/hello/).toString(options)
+    expect(rustType).toEqual('String')
+  })
+
+  it('Option', () => {
+    const rustType1 = new OptionalRegexMatch(/hello/).toString(options)
+    expect(rustType1).toEqual('Option<String>')
+
+    const rustType2 = new NullableRegexMatch(/hello/).toString(options)
+    expect(rustType2).toEqual('Option<String>')
+
+    const rustType3 = new OptionalNullableRegexMatch(/hello/).toString(options)
+    expect(rustType3).toEqual('Option<String>')
+  })
+
+  it('Unknown Language', () => {
+    expect(() => {
+      new RequiredRegexMatch(/hello/).toString({ types: true, language: 'bingo' as any })
+    }).toThrow(`Language: 'bingo' unknown`)
   })
 })

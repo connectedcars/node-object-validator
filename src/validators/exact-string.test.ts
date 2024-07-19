@@ -1,4 +1,5 @@
-import { AssertEqual } from '../common'
+import { RequiredObject, RequiredUnion } from '..'
+import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotExactStringFail, RequiredFail } from '../errors'
 import {
   isExactString,
@@ -170,5 +171,71 @@ describe.each([false, true])('validateExactString (optimize: %s)', optimize => {
       const code = validator.toString({ types: true })
       expect(code).toEqual("'MyString' | undefined | null")
     })
+  })
+})
+
+describe('Rust Types', () => {
+  let typeDefinitions: Record<string, string>
+  let options: ValidatorExportOptions
+
+  beforeEach(() => {
+    typeDefinitions = {}
+    options = {
+      types: true,
+      language: 'rust',
+      typeDefinitions
+    }
+  })
+
+  it('Required (in a union)', () => {
+    const unionValidator = new RequiredUnion([new RequiredExactString(`computerKatten`)], { typeName: 'NeededUnion' })
+    expect(unionValidator.toString(options)).toEqual('NeededUnion')
+
+    const expectedNeededUnion = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+enum NeededUnion {
+    ComputerKatten,
+}
+
+`
+    expect(typeDefinitions).toEqual({
+      NeededUnion: expectedNeededUnion
+    })
+  })
+
+  it('Required, Err, in object without a union (taggedunion member, no parent)', () => {
+    const objValidator = new RequiredObject({ a: new RequiredExactString(`computerKatten`) }, { typeName: 'ObjName' })
+
+    expect(() => {
+      objValidator.toString(options)
+    }).toThrow(`ExactString in an object, has to be part of a taggedUnion. str: computerKatten`)
+  })
+
+  it('Required, Err, alone', () => {
+    const validator = new RequiredExactString(`computerKatten`)
+
+    expect(() => {
+      validator.toString(options)
+    }).toThrow(`ExactString has to be in an object/union. str: computerKatten`)
+  })
+
+  it('Option', () => {
+    expect(() => {
+      new OptionalExactString('computerKatten').toString(options)
+    }).toThrow(`Rust does not support optional ExactString`)
+
+    expect(() => {
+      new NullableExactString('computerKatten').toString(options)
+    }).toThrow(`Rust does not support optional ExactString`)
+
+    expect(() => {
+      new OptionalNullableExactString('computerKatten').toString(options)
+    }).toThrow(`Rust does not support optional ExactString`)
+  })
+
+  it('Unknown Language', () => {
+    expect(() => {
+      new RequiredExactString('computerKatten').toString({ types: true, language: 'bingo' as any })
+    }).toThrow(`Language: 'bingo' unknown`)
   })
 })

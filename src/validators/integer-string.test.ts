@@ -1,4 +1,4 @@
-import { AssertEqual } from '../common'
+import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotIntegerStringFail, OutOfRangeFail, RequiredFail, WrongLengthFail } from '../errors'
 import {
   isIntegerString,
@@ -210,5 +210,28 @@ describe.each([false, true])('IntegerString (optimize: %s)', optimize => {
       const code = validator.toString({ types: true })
       expect(code).toEqual('string | undefined | null')
     })
+  })
+})
+
+describe('Rust Types', () => {
+  const options: ValidatorExportOptions = { types: true, language: 'rust' }
+
+  it('Required', () => {
+    const rustType1 = new RequiredIntegerString().toString(options)
+    expect(rustType1).toEqual('String')
+
+    const rustType2 = new RequiredIntegerString(0).toString(options)
+    expect(rustType2).toEqual('String')
+  })
+
+  it('Option', () => {
+    const rustType1 = new OptionalIntegerString().toString(options)
+    expect(rustType1).toEqual('Option<String>')
+
+    const rustType2 = new NullableIntegerString().toString(options)
+    expect(rustType2).toEqual('Option<String>')
+
+    const rustType3 = new OptionalNullableIntegerString().toString(options)
+    expect(rustType3).toEqual('Option<String>')
   })
 })

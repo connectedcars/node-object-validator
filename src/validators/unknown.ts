@@ -75,10 +75,10 @@ export abstract class UnknownValidator<O = never> extends ValidatorBase<unknown 
         return typeStr
       }
       case 'rust': {
-        throw new Error('Rust not supported yet')
+        throw new Error('Unknown is not supported in Rust')
       }
       default: {
-        throw new Error(`Language: '{}' unknown`)
+        throw new Error(`Language: '${options?.language}' unknown`)
       }
     }
   }

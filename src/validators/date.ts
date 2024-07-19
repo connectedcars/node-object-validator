@@ -87,10 +87,12 @@ export abstract class DateValidator<O = never> extends ValidatorBase<Date | O> {
         return typeStr
       }
       case 'rust': {
-        throw new Error('Rust not supported yet')
+        const typeStr = 'DateTime<Utc>'
+        const isOption = !this.required || this.nullable
+        return isOption ? `Option<${typeStr}>` : `${typeStr}`
       }
       default: {
-        throw new Error(`Language: '{}' unknown`)
+        throw new Error(`Language: '${options?.language}' unknown`)
       }
     }
   }

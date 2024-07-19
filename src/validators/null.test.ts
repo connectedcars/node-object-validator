@@ -114,3 +114,11 @@ describe.each([false, true])('Null (optimize: %s)', optimize => {
     })
   })
 })
+
+describe('Rust Types', () => {
+  it('Error', () => {
+    expect(() => {
+      new RequiredNull().toString({ types: true, language: 'rust' })
+    }).toThrow(`Null is not supported in Rust`)
+  })
+})

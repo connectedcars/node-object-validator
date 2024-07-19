@@ -1,3 +1,4 @@
+import { ObjectValidator, toPascalCase, UnionValidator } from '..'
 import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotExactStringFail, RequiredFail, ValidationFailure } from '../errors'
 
@@ -19,8 +20,11 @@ export function validateExactString(value: unknown, expected: string, context?: 
 export abstract class ExactStringValidator<T extends string = never, O = never> extends ValidatorBase<T | O> {
   public expected: T
 
+  private typeGenerated: boolean
+
   public constructor(expected: T, options?: ValidatorBaseOptions) {
     super(options)
+    this.typeGenerated = false
     this.expected = expected
     if (options?.optimize !== false) {
       this.optimize(expected)
@@ -92,10 +96,23 @@ export abstract class ExactStringValidator<T extends string = never, O = never> 
         return typeStr
       }
       case 'rust': {
-        throw new Error('Rust not supported yet')
+        const isOption = !this.required || this.nullable
+        if (isOption) {
+          throw new Error(`Rust does not support optional ExactString. For: ${this.toString()}`)
+        }
+
+        const isValidParent = options?.parent instanceof UnionValidator || options?.parent instanceof ObjectValidator
+        if (isValidParent === false) {
+          throw new Error(`ExactString has to be in an object/union. str: ${this.expected}`)
+        }
+        if (options.parent instanceof ObjectValidator && options.taggedUnionKey === undefined) {
+          throw new Error(`ExactString in an object, has to be part of a taggedUnion. str: ${this.expected}`)
+        }
+
+        return toPascalCase(this.expected)
       }
       default: {
-        throw new Error(`Language: '{}' unknown`)
+        throw new Error(`Language: '${options?.language}' unknown`)
       }
     }
   }

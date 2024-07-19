@@ -52,10 +52,10 @@ export abstract class BufferValidator<O = never> extends ValidatorBase<Buffer | 
         return typeStr
       }
       case 'rust': {
-        throw new Error('Rust not supported yet')
+        throw new Error(`Cannot serialize buffers`)
       }
       default: {
-        throw new Error(`Language: '{}' unknown`)
+        throw new Error(`Language: '${options?.language}' unknown`)
       }
     }
   }

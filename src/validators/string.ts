@@ -110,10 +110,11 @@ export abstract class StringValidator<O = never> extends ValidatorBase<string | 
         return typeStr
       }
       case 'rust': {
-        throw new Error('Rust not supported yet')
+        const isOption = !this.required || this.nullable
+        return isOption ? `Option<String>` : 'String'
       }
       default: {
-        throw new Error(`Language: '{}' unknown`)
+        throw new Error(`Language: '${options?.language}' unknown`)
       }
     }
   }

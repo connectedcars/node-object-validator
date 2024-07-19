@@ -1,11 +1,4 @@
-import {
-  isValidator,
-  ValidateOptions,
-  ValidatorBase,
-  ValidatorBaseOptions,
-  ValidatorExportOptions,
-  ValidatorOptions
-} from '../common'
+import { isValidator, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { ValidationFailure } from '../errors'
 import { RequiredArray } from './array'
 import { RequiredBoolean } from './boolean'
@@ -99,7 +92,7 @@ export function validateSample(
   sample: Sample,
   value: unknown,
   context?: string,
-  options?: ValidateOptions
+  options?: ValidatorOptions
 ): ValidationFailure[] {
   const validator = sampleToValidator(sample, options)
   return validator.validate(value, context, options)
@@ -130,7 +123,7 @@ export abstract class SampleValidator<T extends Sample = never, O = never> exten
     }
   }
 
-  protected validateValue(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
+  protected validateValue(value: unknown, context?: string, options?: ValidatorOptions): ValidationFailure[] {
     return this.validator.validate(value, context, { earlyFail: this.earlyFail, ...options })
   }
 
@@ -139,12 +132,13 @@ export abstract class SampleValidator<T extends Sample = never, O = never> exten
     switch (language) {
       case 'typescript': {
         return this.validator.toString(options)
+
       }
       case 'rust': {
-        throw new Error('Rust not supported yet')
+        return this.validator.toString(options)
       }
       default: {
-        throw new Error(`Language: '{}' unknown`)
+        throw new Error(`Language: '${options?.language}' unknown`)
       }
     }
   }

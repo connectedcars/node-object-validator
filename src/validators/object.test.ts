@@ -1,7 +1,9 @@
-import { AssertEqual } from '../common'
+import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotArrayFail, NotFloatFail, NotIntegerFail, NotObjectFail, RequiredFail } from '../errors'
 import { OptionalArray, RequiredArray } from './array'
-import { OptionalDate } from './date'
+import { OptionalBoolean } from './boolean'
+import { OptionalDate, RequiredDate } from './date'
+import { OptionalDateTime } from './datetime'
 import { RequiredFloat } from './float'
 import { OptionalInteger, RequiredInteger } from './integer'
 import {
@@ -13,6 +15,7 @@ import {
   validateObject
 } from './object'
 import { RequiredRegexMatch } from './regex-match'
+import { RequiredUnixDateTime } from './unixdatetime'
 
 describe('Object', () => {
   describe('validateObject', () => {
@@ -523,5 +526,224 @@ describe.each([false, true])('Object (optimize: %s)', optimize => {
       const code = validator.toString({ types: true })
       expect(code).toEqual(`{\n  'int': number\n  'float': number\n} | undefined | null`)
     })
+  })
+})
+
+describe('Rust Types', () => {
+  let typeDefinitions: Record<string, string>
+  let options: ValidatorExportOptions
+
+  beforeEach(() => {
+    typeDefinitions = {}
+    options = {
+      types: true,
+      language: 'rust',
+      typeDefinitions
+    }
+  })
+
+  it('Required', () => {
+    const validator = new RequiredObject({ propA: new RequiredInteger() }, { typeName: 'TypeName' })
+    expect(validator.toString(options)).toEqual(`TypeName`)
+
+    const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct TypeName {
+    prop_a: i64,
+}
+
+`
+    expect(typeDefinitions).toEqual({
+      TypeName: expectedType
+    })
+  })
+
+  it('Required, Nested, type definition outside', () => {
+    const innerValidator = new RequiredObject({ innerA: new OptionalBoolean() }, { typeName: 'InnerType' })
+    const outerValidator = new RequiredObject(
+      { outerA: new RequiredFloat(), otherObj: innerValidator },
+      { typeName: 'OuterType' }
+    )
+
+    const expectedInner = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct InnerType {
+    inner_a: Option<bool>,
+}
+
+`
+    const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct OuterType {
+    outer_a: f64,
+    other_obj: InnerType,
+}
+
+`
+
+    expect(innerValidator.toString(options)).toEqual('InnerType')
+    expect(outerValidator.toString(options)).toEqual('OuterType')
+    expect(typeDefinitions).toEqual({
+      InnerType: expectedInner,
+      OuterType: expectedOuter
+    })
+  })
+
+  it('Required, Nested, type definition nested, automatic name from key', () => {
+    const outerValidator = new RequiredObject(
+      {
+        outerA: new RequiredFloat(),
+        otherObj: new RequiredObject({ innerA: new OptionalBoolean() })
+      },
+      { typeName: 'OuterType' }
+    )
+
+    const expectedInner = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct OtherObj {
+    inner_a: Option<bool>,
+}
+
+`
+    const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct OuterType {
+    outer_a: f64,
+    other_obj: OtherObj,
+}
+
+`
+
+    expect(outerValidator.toString(options)).toEqual('OuterType')
+    expect(typeDefinitions).toEqual({
+      OtherObj: expectedInner,
+      OuterType: expectedOuter
+    })
+  })
+
+  it('Required, Nested, type definition nested, manual name', () => {
+    const outerValidator = new RequiredObject(
+      {
+        outerA: new RequiredFloat(),
+        otherObj: new RequiredObject({ innerA: new OptionalBoolean() }, { typeName: 'InnerType' })
+      },
+      { typeName: 'OuterType' }
+    )
+
+    const expectedInner = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct InnerType {
+    inner_a: Option<bool>,
+}
+
+`
+    const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct OuterType {
+    outer_a: f64,
+    other_obj: InnerType,
+}
+
+`
+
+    expect(outerValidator.toString(options)).toEqual('OuterType')
+    expect(typeDefinitions).toEqual({
+      InnerType: expectedInner,
+      OuterType: expectedOuter
+    })
+  })
+
+  it('Required, dates', () => {
+    const validator = new RequiredObject(
+      { propA: new RequiredUnixDateTime(), propB: new RequiredDate(), propC: new OptionalDateTime() },
+      { typeName: 'TypeName' }
+    )
+    expect(validator.toString(options)).toEqual(`TypeName`)
+
+    const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct TypeName {
+    #[serde(with = "chrono::serde::ts_seconds")]
+    prop_a: DateTime<Utc>,
+    prop_b: DateTime<Utc>,
+    prop_c: Option<DateTime<Utc>>,
+}
+
+`
+    expect(typeDefinitions).toEqual({
+      TypeName: expectedType
+    })
+  })
+
+  it('Option, OptionalObject', () => {
+    {
+      const validator = new OptionalObject({ propB: new OptionalBoolean() }, { typeName: 'TypeName' })
+      expect(validator.toString(options)).toEqual(`Option<TypeName>`)
+
+      const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct TypeName {
+    prop_b: Option<bool>,
+}
+
+`
+      expect(typeDefinitions).toEqual({
+        TypeName: expectedType
+      })
+    }
+  })
+
+  it('Option, NullableObject', () => {
+    const validator = new NullableObject({ propB: new OptionalBoolean() }, { typeName: 'TypeName' })
+    expect(validator.toString(options)).toEqual(`Option<TypeName>`)
+
+    const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct TypeName {
+    prop_b: Option<bool>,
+}
+
+`
+    expect(typeDefinitions).toEqual({
+      TypeName: expectedType
+    })
+  })
+
+  it('Option, OptionalNullableObject', () => {
+    const validator = new OptionalNullableObject({ propB: new OptionalBoolean() }, { typeName: 'TypeName' })
+    expect(validator.toString(options)).toEqual(`Option<TypeName>`)
+
+    const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct TypeName {
+    prop_b: Option<bool>,
+}
+
+`
+    expect(typeDefinitions).toEqual({
+      TypeName: expectedType
+    })
+  })
+
+  it('Unknown Language', () => {
+    expect(() => {
+      new RequiredObject({ propA: new RequiredInteger() }).toString({
+        types: true,
+        language: 'bingo' as any,
+        typeDefinitions
+      })
+    }).toThrow(`Language: 'bingo' unknown`)
+  })
+
+  it('No typeName', () => {
+    expect(() => {
+      new RequiredObject({ propA: new RequiredInteger() }).toString({ types: true, language: 'rust', typeDefinitions })
+    }).toThrow(`'typeName' option is not set`)
+  })
+
+  it('No typeDefinitions', () => {
+    expect(() => {
+      new RequiredObject({ propA: new RequiredInteger() }).toString({ types: true, language: 'rust' })
+    }).toThrow(`'typeDefinitions' is not set`)
   })
 })

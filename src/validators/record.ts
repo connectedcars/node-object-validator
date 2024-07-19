@@ -1,10 +1,4 @@
-import {
-  ValidateOptions,
-  ValidatorBase,
-  ValidatorBaseOptions,
-  ValidatorExportOptions,
-  ValidatorOptions
-} from '../common'
+import { ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotObjectFail, ValidationFailure } from '../errors'
 
 export function isRecord<T extends ValidatorBase>(
@@ -33,7 +27,7 @@ export function validateRecord(
   schema: ValidatorBase,
   value: unknown,
   context?: string,
-  options?: ValidateOptions
+  options?: ValidatorOptions
 ): ValidationFailure[] {
   const errors: ValidationFailure[] = []
   if (!isPlainRecord(value)) {
@@ -42,7 +36,7 @@ export function validateRecord(
   }
   for (const key of Object.keys(value)) {
     const keyName = context ? `${context}['${key}']` : key
-    errors.push(...schema.validate(value[key], keyName, { optimized: false, earlyFail: false, ...options }))
+    errors.push(...schema.validate(value[key], keyName, { optimize: false, earlyFail: false, ...options }))
     if (options?.earlyFail && errors.length > 0) {
       return errors
     }
@@ -71,7 +65,7 @@ export abstract class RecordValidator<T extends ValidatorBase = never, O = never
     }
   }
 
-  protected validateValue(value: unknown, context?: string, options?: ValidateOptions): ValidationFailure[] {
+  protected validateValue(value: unknown, context?: string, options?: ValidatorOptions): ValidationFailure[] {
     return validateRecord(this.schema, value, context, { earlyFail: this.earlyFail, ...options })
   }
 
@@ -91,10 +85,12 @@ export abstract class RecordValidator<T extends ValidatorBase = never, O = never
         return typeStr
       }
       case 'rust': {
-        throw new Error('Rust not supported yet')
+        const isOption = !this.required || this.nullable
+        const typeStr = `HashMap<String, ${this.schema.toString(options)}>`
+        return isOption ? `Option<${typeStr}>` : typeStr
       }
       default: {
-        throw new Error(`Language: '{}' unknown`)
+        throw new Error(`Language: '${options?.language}' unknown`)
       }
     }
   }

@@ -1,4 +1,4 @@
-import { AssertEqual } from '../common'
+import { AssertEqual, ValidatorExportOptions } from '../common'
 import {
   DoesNotMatchRegexFail,
   NotArrayFail,
@@ -397,5 +397,168 @@ describe.each([false, true])('Sample (optimize: %s)', optimize => {
       const code = validator.toString({ types: true })
       expect(code).toEqual('number | undefined | null')
     })
+  })
+})
+
+describe('Rust Types', () => {
+  const sample = {
+    type: 'gps_odometer_km',
+    unitId: '1234567',
+    recordedAt: '2018-08-06T13:37:00Z',
+    tripId: 1337,
+    value: 500,
+    position: {
+      latitude: 55.332131,
+      longitude: 12.54454,
+      accuracy: 18,
+      extra: {
+        tag: 'test',
+        tagversion: 32,
+        tagDepth: 3.1416
+      }
+    },
+    positions: [
+      {
+        latitude: 55.332131,
+        longitude: 12.54454,
+        accuracy: 18
+      }
+    ]
+  }
+
+  let typeDefinitions: Record<string, string>
+  let options: ValidatorExportOptions
+
+  beforeEach(() => {
+    typeDefinitions = {}
+    options = {
+      types: true,
+      language: 'rust',
+      typeDefinitions
+    }
+  })
+
+  it('Required', () => {
+    const validator = new RequiredSample(sample, { typeName: 'TypeName' })
+    expect(validator.toString(options)).toEqual(`TypeName`)
+
+    const expectedExtra = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct Extra {
+    tag: String,
+    tagversion: i64,
+    tag_depth: f64,
+}
+
+`
+
+    const expectedPosition = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct Position {
+    latitude: f64,
+    longitude: f64,
+    accuracy: i64,
+    extra: Extra,
+}
+
+`
+
+    const expectedPositions = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct Positions {
+    latitude: f64,
+    longitude: f64,
+    accuracy: i64,
+}
+
+`
+
+    const expectedTypeName = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct TypeName {
+    type: String,
+    unit_id: String,
+    recorded_at: DateTime<Utc>,
+    trip_id: i64,
+    value: i64,
+    position: Position,
+    positions: Vec<Positions>,
+}
+
+`
+
+    expect(typeDefinitions).toEqual({
+      Extra: expectedExtra,
+      Position: expectedPosition,
+      Positions: expectedPositions,
+      TypeName: expectedTypeName
+    })
+  })
+
+  it('Optional', () => {
+    const validator = new OptionalSample(sample, { typeName: 'TypeName' })
+    expect(validator.toString(options)).toEqual(`Option<TypeName>`)
+
+    const expectedExtra = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct Extra {
+    tag: String,
+    tagversion: i64,
+    tag_depth: f64,
+}
+
+`
+
+    const expectedPosition = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct Position {
+    latitude: f64,
+    longitude: f64,
+    accuracy: i64,
+    extra: Extra,
+}
+
+`
+
+    const expectedPositions = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct Positions {
+    latitude: f64,
+    longitude: f64,
+    accuracy: i64,
+}
+
+`
+
+    const expectedTypeName = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct TypeName {
+    type: String,
+    unit_id: String,
+    recorded_at: DateTime<Utc>,
+    trip_id: i64,
+    value: i64,
+    position: Position,
+    positions: Vec<Positions>,
+}
+
+`
+
+    expect(typeDefinitions).toEqual({
+      Extra: expectedExtra,
+      Position: expectedPosition,
+      Positions: expectedPositions,
+      TypeName: expectedTypeName
+    })
+  })
+
+  it('Unknown Language', () => {
+    expect(() => {
+      new RequiredSample(sample).toString({
+        types: true,
+        language: 'bingo' as any,
+        typeDefinitions
+      })
+    }).toThrow(`Language: 'bingo' unknown`)
   })
 })

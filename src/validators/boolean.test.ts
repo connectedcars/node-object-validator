@@ -1,4 +1,4 @@
-import { AssertEqual } from '../common'
+import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotBooleanFail, RequiredFail } from '../errors'
 import {
   isBoolean,
@@ -198,5 +198,31 @@ describe.each([false, true])('Boolean (optimize: %s)', optimize => {
 
       expect(res).toEqual(expected)
     })
+  })
+})
+
+describe('Rust Types', () => {
+  const options: ValidatorExportOptions = { types: true, language: 'rust' }
+
+  it('Required', () => {
+    const rustType = new RequiredBoolean().toString(options)
+    expect(rustType).toEqual('bool')
+  })
+
+  it('Option', () => {
+    const rustType1 = new OptionalBoolean().toString(options)
+    expect(rustType1).toEqual('Option<bool>')
+
+    const rustType2 = new NullableBoolean().toString(options)
+    expect(rustType2).toEqual('Option<bool>')
+
+    const rustType3 = new OptionalNullableBoolean().toString(options)
+    expect(rustType3).toEqual('Option<bool>')
+  })
+
+  it('Unknown Language', () => {
+    expect(() => {
+      new RequiredBoolean().toString({ types: true, language: 'bingo' as any })
+    }).toThrow(`Language: 'bingo' unknown`)
   })
 })
