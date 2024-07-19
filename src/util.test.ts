@@ -1,4 +1,3 @@
-import { readFileSync } from 'fs'
 
 import {
   OptionalArray,
@@ -118,10 +117,8 @@ describe('generateRustTypes', () => {
     )
 
     const validators: ValidatorBase[] = [catValidator, requestDIDValidator]
-    const fileDumpPath = `/tmp/rust-types-test.rs`
-    generateRustTypes(validators, fileDumpPath)
-
-    expect(readFileSync(fileDumpPath, 'utf8')).toMatchSnapshot()
+    const types = generateRustTypes(validators)
+    expect(types).toMatchSnapshot()
   })
 
   it('write to file, datetime used', () => {
@@ -135,10 +132,8 @@ describe('generateRustTypes', () => {
     )
 
     const validators: ValidatorBase[] = [validator]
-    const fileDumpPath = `/tmp/rust-types-date-test.rs`
-    generateRustTypes(validators, fileDumpPath)
-
-    expect(readFileSync(fileDumpPath, 'utf8')).toMatchSnapshot()
+    const types = generateRustTypes(validators)
+    expect(types).toMatchSnapshot()
   })
 
   // #[serde(rename_all = "camelCase")]
@@ -160,10 +155,9 @@ describe('generateRustTypes', () => {
     )
 
     const validators: ValidatorBase[] = [validator]
-    const fileDumpPath = `/tmp/rust-types-invalid-test.rs`
 
     expect(() => {
-      generateRustTypes(validators, fileDumpPath)
+      generateRustTypes(validators)
     }).toThrow(`Members of the Union(non tagged) are not an ExactString`)
   })
 })

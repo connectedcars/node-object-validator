@@ -1,6 +1,3 @@
-/* eslint-disable no-console */
-import { writeFileSync } from 'node:fs'
-
 import { ValidatorBase, ValidatorExportOptions } from './common'
 
 export function toSnakeCase(str: string): string {
@@ -31,11 +28,7 @@ export function addTypeDef(typeName: string, typeValue: string, record: Record<s
   }
 }
 
-export function generateRustTypes(
-  validators: ValidatorBase[],
-  outputFile?: string,
-  inputOptions?: ValidatorExportOptions
-): void {
+export function generateRustTypes(validators: ValidatorBase[], inputOptions?: ValidatorExportOptions): string {
   const typeDefinitions: Record<string, string> = {}
 
   const options: ValidatorExportOptions = {
@@ -44,8 +37,6 @@ export function generateRustTypes(
     language: 'rust',
     typeDefinitions
   }
-  const locationStr = outputFile ? `File location: ${outputFile}` : `stdout`
-  console.log(`Generating ${validators.length} rust types: (${locationStr})`)
 
   for (const validator of validators) {
     // The type definitions gets added to the hashmap
@@ -57,7 +48,6 @@ export function generateRustTypes(
 
   let typeContent = ``
   for (const value of Object.values(typeDefinitions)) {
-    console.log(value)
     if (value.includes('DateTime') && importedDateTime === false) {
       importContent += `use chrono::{DateTime, Utc};\n`
       importedDateTime = true
@@ -68,9 +58,5 @@ export function generateRustTypes(
   importContent += `\n`
 
   const content = importContent + typeContent
-  if (outputFile === undefined) {
-    console.log(content)
-  } else {
-    writeFileSync(outputFile, content)
-  }
+  return content
 }
