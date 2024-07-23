@@ -85,7 +85,7 @@ describe('Object', () => {
   })
 
   describe('RequiredInteger', () => {
-    it('should return an function body', () => {
+    it('should return a function body', () => {
       const validator = new RequiredObject(
         {
           int: new RequiredInteger(1, 2)

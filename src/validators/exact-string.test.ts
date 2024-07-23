@@ -34,7 +34,7 @@ describe('validateExactString (optimize: %s)', () => {
   })
 
   describe('RequiredExactString', () => {
-    it('should return an function body', () => {
+    it('should return a function body', () => {
       const validator = new RequiredExactString('MyString', { optimize: false })
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })

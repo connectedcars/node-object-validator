@@ -11,7 +11,7 @@ export function isBoolean(value: unknown, context?: string): value is boolean {
 
 export function validateBoolean(value: unknown, context?: string): ValidationFailure[] {
   if (typeof value !== 'boolean') {
-    return [new NotBooleanFail(`Must be an boolean`, value, context)]
+    return [new NotBooleanFail(`Must be a boolean`, value, context)]
   }
   return []
 }
@@ -41,7 +41,7 @@ export abstract class BooleanValidator<O = never> extends ValidatorBase<boolean 
       `const ${localValueRef} = ${valueRef}`,
       ...this.nullCheckWrap([
       `  if (typeof ${localValueRef} !== 'boolean') {`,
-      `    errors.push(new NotBooleanFail(\`Must be an boolean\`, ${localValueRef}${contextStr}))`,
+      `    errors.push(new NotBooleanFail(\`Must be a boolean\`, ${localValueRef}${contextStr}))`,
       `  }`,
       ], localValueRef, contextStr),
       ...(earlyFail ? [

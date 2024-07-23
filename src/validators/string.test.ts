@@ -32,7 +32,7 @@ describe('String (optimize: %s)', () => {
   })
 
   describe('RequiredString', () => {
-    it('should return an function body', () => {
+    it('should return a function body', () => {
       const validator = new RequiredString(0, 10, { optimize: false })
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })

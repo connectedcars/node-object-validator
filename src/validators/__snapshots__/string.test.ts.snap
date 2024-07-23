@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`String (optimize: %s) RequiredString should return an function body 1`] = `
+exports[`String (optimize: %s) RequiredString should return a function body 1`] = `
 Array [
   Object {
     "NotStringFail": [Function],

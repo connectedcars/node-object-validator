@@ -27,7 +27,7 @@ describe('Null', () => {
   })
 
   describe('RequiredNull', () => {
-    it('should return an function body', () => {
+    it('should return a function body', () => {
       const validator = new RequiredNull({ optimize: false })
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
@@ -78,13 +78,13 @@ describe.each([false, true])('Null (optimize: %s)', optimize => {
     it('rejects invalid values', () => {
       const validator = new RequiredNull({ optimize })
       expect(validator.validate(null)).toStrictEqual([])
-      expect(validator.validate(false)).toStrictEqual([new NotNullFail('Must be an null', false)])
-      expect(validator.validate(1)).toStrictEqual([new NotNullFail('Must be an null', 1)])
-      expect(validator.validate(123.9)).toStrictEqual([new NotNullFail('Must be an null', 123.9)])
-      expect(validator.validate('1')).toStrictEqual([new NotNullFail('Must be an null', '1')])
-      expect(validator.validate('')).toStrictEqual([new NotNullFail('Must be an null', '')])
-      expect(validator.validate({})).toStrictEqual([new NotNullFail('Must be an null', {})])
-      expect(validator.validate([])).toStrictEqual([new NotNullFail('Must be an null', [])])
+      expect(validator.validate(false)).toStrictEqual([new NotNullFail('Must be null', false)])
+      expect(validator.validate(1)).toStrictEqual([new NotNullFail('Must be null', 1)])
+      expect(validator.validate(123.9)).toStrictEqual([new NotNullFail('Must be null', 123.9)])
+      expect(validator.validate('1')).toStrictEqual([new NotNullFail('Must be null', '1')])
+      expect(validator.validate('')).toStrictEqual([new NotNullFail('Must be null', '')])
+      expect(validator.validate({})).toStrictEqual([new NotNullFail('Must be null', {})])
+      expect(validator.validate([])).toStrictEqual([new NotNullFail('Must be null', [])])
       expect(true as AssertEqual<typeof validator.tsType, null>).toEqual(true)
     })
 

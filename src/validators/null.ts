@@ -18,7 +18,7 @@ export function isNull(value: unknown, context?: string): value is null {
 
 export function validateNull(value: unknown, context?: string): ValidationFailure[] {
   if (value !== null) {
-    return [new NotNullFail(`Must be an null`, value, context)]
+    return [new NotNullFail(`Must be null`, value, context)]
   }
   return []
 }
@@ -56,7 +56,7 @@ export abstract class NullValidator<O = never> extends ValidatorBase<null | O> {
       `const ${localValueRef} = ${valueRef}`,
       `if (${localValueRef} !== undefined) {`,
       `  if (${localValueRef} !== null) {`,
-      `    errors.push(new NotNullFail(\`Must be an null\`, ${localValueRef}${contextStr}))`,
+      `    errors.push(new NotNullFail(\`Must be null\`, ${localValueRef}${contextStr}))`,
       `  }`,
       ...(this.required ? [
       `} else {`,

@@ -33,7 +33,7 @@ describe.each([false, true])('Regex (optimize: %s)', () => {
   })
 
   describe('RequiredRegexMatch', () => {
-    it('should return an function body', () => {
+    it('should return a function body', () => {
       const validator = new RequiredRegexMatch(/hello/, { optimize: false })
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Regex (optimize: false) RequiredRegexMatch should return an function body 1`] = `
+exports[`Regex (optimize: false) RequiredRegexMatch should return a function body 1`] = `
 Array [
   Object {
     "DoesNotMatchRegexFail": [Function],
@@ -28,7 +28,7 @@ Array [
 ]
 `;
 
-exports[`Regex (optimize: true) RequiredRegexMatch should return an function body 1`] = `
+exports[`Regex (optimize: true) RequiredRegexMatch should return a function body 1`] = `
 Array [
   Object {
     "DoesNotMatchRegexFail": [Function],

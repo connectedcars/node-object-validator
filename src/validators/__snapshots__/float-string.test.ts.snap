@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`FloatString RequiredFloatString should return an function body 1`] = `
+exports[`FloatString RequiredFloatString should return a function body 1`] = `
 Array [
   Object {
     "RequiredFail": [Function],

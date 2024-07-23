@@ -86,7 +86,7 @@ describe('Union', () => {
   })
 
   describe('RequiredUnion', () => {
-    it('should return an function body', () => {
+    it('should return a function body', () => {
       const validator = new RequiredUnion([new RequiredString(), new RequiredFloat()], { optimize: false })
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
