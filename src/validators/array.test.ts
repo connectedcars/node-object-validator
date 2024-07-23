@@ -29,7 +29,7 @@ describe('Array', () => {
   })
 
   describe('RequiredArray', () => {
-    it('should return an function body', () => {
+    it('should return a function body', () => {
       const validator = new RequiredArray(new RequiredInteger(), 0, 10, { optimize: false })
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })

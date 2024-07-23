@@ -87,7 +87,7 @@ describe('Sample', () => {
 
     it('should validate null sample', () => {
       expect(validateSample(null, null)).toEqual([])
-      expect(validateSample(null, 2)).toEqual([new NotNullFail('Must be an null', 2)])
+      expect(validateSample(null, 2)).toEqual([new NotNullFail('Must be null', 2)])
     })
 
     it('should validate undefined sample', () => {
@@ -159,7 +159,7 @@ describe('Sample', () => {
   })
 
   describe('RequiredSample', () => {
-    it('should return an function body', () => {
+    it('should return a function body', () => {
       const validator = new RequiredSample(10, { optimize: false })
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })

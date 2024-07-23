@@ -34,7 +34,7 @@ describe('Record', () => {
   })
 
   describe('RequiredInteger', () => {
-    it('should return an function body', () => {
+    it('should return a function body', () => {
       const validator = new RequiredRecord(new RequiredInteger(1, 2), { optimize: false })
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })

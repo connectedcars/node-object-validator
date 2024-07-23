@@ -4,7 +4,7 @@ import { OptionalUnknown, RequiredUnknown } from './unknown'
 
 describe('Unknown', () => {
   describe('RequiredUnknown', () => {
-    it('should return an function body', () => {
+    it('should return a function body', () => {
       const validator = new RequiredUnknown({ optimize: false })
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })

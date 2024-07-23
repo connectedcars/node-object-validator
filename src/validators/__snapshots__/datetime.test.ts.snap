@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`DateTime (optimize: %s) RequiredBoolean should return an function body 1`] = `
+exports[`DateTime (optimize: %s) RequiredBoolean should return a function body 1`] = `
 Array [
   Object {
     "NotRfc3339Fail": [Function],

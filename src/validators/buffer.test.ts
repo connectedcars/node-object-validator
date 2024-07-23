@@ -78,13 +78,13 @@ describe.each([false, true])('Buffer (optimize: %s)', optimize => {
 
     it('rejects invalid values', () => {
       const validator = new RequiredBuffer({ optimize })
-      expect(validator.validate(1)).toStrictEqual([new NotBufferFail('Must be an Buffer', 1)])
-      expect(validator.validate(123.9)).toStrictEqual([new NotBufferFail('Must be an Buffer', 123.9)])
-      expect(validator.validate('1')).toStrictEqual([new NotBufferFail('Must be an Buffer', '1')])
-      expect(validator.validate('')).toStrictEqual([new NotBufferFail('Must be an Buffer', '')])
-      expect(validator.validate({})).toStrictEqual([new NotBufferFail('Must be an Buffer', {})])
-      expect(validator.validate([])).toStrictEqual([new NotBufferFail('Must be an Buffer', [])])
-      expect(validator.validate(null)).toStrictEqual([new NotBufferFail('Must be an Buffer', null)])
+      expect(validator.validate(1)).toStrictEqual([new NotBufferFail('Must be a Buffer', 1)])
+      expect(validator.validate(123.9)).toStrictEqual([new NotBufferFail('Must be a Buffer', 123.9)])
+      expect(validator.validate('1')).toStrictEqual([new NotBufferFail('Must be a Buffer', '1')])
+      expect(validator.validate('')).toStrictEqual([new NotBufferFail('Must be a Buffer', '')])
+      expect(validator.validate({})).toStrictEqual([new NotBufferFail('Must be a Buffer', {})])
+      expect(validator.validate([])).toStrictEqual([new NotBufferFail('Must be a Buffer', [])])
+      expect(validator.validate(null)).toStrictEqual([new NotBufferFail('Must be a Buffer', null)])
       expect(true as AssertEqual<typeof validator.tsType, Buffer>).toEqual(true)
     })
 
@@ -96,7 +96,7 @@ describe.each([false, true])('Buffer (optimize: %s)', optimize => {
     it('requires value to show correct context on error', () => {
       const validator = new RequiredBuffer({ optimize })
       expect(validator.validate('', 'bool').map(e => e.toString())).toStrictEqual([
-        `NotBufferFail: Field 'bool' must be an Buffer (received "")`
+        `NotBufferFail: Field 'bool' must be a Buffer (received "")`
       ])
     })
   })

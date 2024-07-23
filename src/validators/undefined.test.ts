@@ -26,7 +26,7 @@ describe('Undefined', () => {
   })
 
   describe('RequiredBoolean', () => {
-    it('should return an function body', () => {
+    it('should return a function body', () => {
       const validator = new RequiredUndefined({ optimize: false })
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
@@ -81,20 +81,20 @@ describe.each([false, true])('Undefined (optimize: %s)', optimize => {
 
     it('rejects invalid values', () => {
       const validator = new RequiredUndefined({ optimize })
-      expect(validator.validate(null)).toStrictEqual([new NotUndefinedFail('Must be an undefined', null)])
-      expect(validator.validate(false)).toStrictEqual([new NotUndefinedFail('Must be an undefined', false)])
-      expect(validator.validate(1)).toStrictEqual([new NotUndefinedFail('Must be an undefined', 1)])
-      expect(validator.validate(123.9)).toStrictEqual([new NotUndefinedFail('Must be an undefined', 123.9)])
-      expect(validator.validate('1')).toStrictEqual([new NotUndefinedFail('Must be an undefined', '1')])
-      expect(validator.validate('')).toStrictEqual([new NotUndefinedFail('Must be an undefined', '')])
-      expect(validator.validate({})).toStrictEqual([new NotUndefinedFail('Must be an undefined', {})])
-      expect(validator.validate([])).toStrictEqual([new NotUndefinedFail('Must be an undefined', [])])
+      expect(validator.validate(null)).toStrictEqual([new NotUndefinedFail('Must be undefined', null)])
+      expect(validator.validate(false)).toStrictEqual([new NotUndefinedFail('Must be undefined', false)])
+      expect(validator.validate(1)).toStrictEqual([new NotUndefinedFail('Must be undefined', 1)])
+      expect(validator.validate(123.9)).toStrictEqual([new NotUndefinedFail('Must be undefined', 123.9)])
+      expect(validator.validate('1')).toStrictEqual([new NotUndefinedFail('Must be undefined', '1')])
+      expect(validator.validate('')).toStrictEqual([new NotUndefinedFail('Must be undefined', '')])
+      expect(validator.validate({})).toStrictEqual([new NotUndefinedFail('Must be undefined', {})])
+      expect(validator.validate([])).toStrictEqual([new NotUndefinedFail('Must be undefined', [])])
     })
 
     it('requires value to show correct context on error', () => {
       const validator = new RequiredUndefined({ optimize })
       expect(validator.validate('', 'undef').map(e => e.toString())).toStrictEqual([
-        `NotUndefinedFail: Field 'undef' must be an undefined (received "")`
+        `NotUndefinedFail: Field 'undef' must be undefined (received "")`
       ])
     })
   })

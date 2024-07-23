@@ -152,7 +152,7 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
 
     let unionCode: string[] = []
 
-    // Try to find an common key for the union to skip checking all entries
+    // Try to find a common key for the union to skip checking all entries
     let unionKey: string | null = null
     let unionKeyValueRef = ''
     if (

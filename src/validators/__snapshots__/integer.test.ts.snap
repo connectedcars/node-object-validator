@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Integer RequiredInteger should return an function body 1`] = `
+exports[`Integer RequiredInteger should return a function body 1`] = `
 Array [
   Object {
     "NotIntegerFail": [Function],

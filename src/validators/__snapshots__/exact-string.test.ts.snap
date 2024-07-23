@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`validateExactString (optimize: %s) RequiredExactString should return an function body 1`] = `
+exports[`validateExactString (optimize: %s) RequiredExactString should return a function body 1`] = `
 Array [
   Object {
     "NotExactStringFail": [Function],

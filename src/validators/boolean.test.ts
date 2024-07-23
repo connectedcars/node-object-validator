@@ -33,7 +33,7 @@ describe('Boolean', () => {
   })
 
   describe('RequiredBoolean', () => {
-    it('should return an function body', () => {
+    it('should return a function body', () => {
       const validator = new RequiredBoolean({ optimize: false })
       expect(validator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
@@ -83,13 +83,13 @@ describe.each([false, true])('Boolean (optimize: %s)', optimize => {
 
     it('rejects invalid values', () => {
       const validator = new RequiredBoolean({ optimize })
-      expect(validator.validate(1)).toStrictEqual([new NotBooleanFail('Must be an boolean', 1)])
-      expect(validator.validate(123.9)).toStrictEqual([new NotBooleanFail('Must be an boolean', 123.9)])
-      expect(validator.validate('1')).toStrictEqual([new NotBooleanFail('Must be an boolean', '1')])
-      expect(validator.validate('')).toStrictEqual([new NotBooleanFail('Must be an boolean', '')])
-      expect(validator.validate({})).toStrictEqual([new NotBooleanFail('Must be an boolean', {})])
-      expect(validator.validate([])).toStrictEqual([new NotBooleanFail('Must be an boolean', [])])
-      expect(validator.validate(null)).toStrictEqual([new NotBooleanFail('Must be an boolean', null)])
+      expect(validator.validate(1)).toStrictEqual([new NotBooleanFail('Must be a boolean', 1)])
+      expect(validator.validate(123.9)).toStrictEqual([new NotBooleanFail('Must be a boolean', 123.9)])
+      expect(validator.validate('1')).toStrictEqual([new NotBooleanFail('Must be a boolean', '1')])
+      expect(validator.validate('')).toStrictEqual([new NotBooleanFail('Must be a boolean', '')])
+      expect(validator.validate({})).toStrictEqual([new NotBooleanFail('Must be a boolean', {})])
+      expect(validator.validate([])).toStrictEqual([new NotBooleanFail('Must be a boolean', [])])
+      expect(validator.validate(null)).toStrictEqual([new NotBooleanFail('Must be a boolean', null)])
       expect(true as AssertEqual<typeof validator.tsType, boolean>).toEqual(true)
     })
 
@@ -101,7 +101,7 @@ describe.each([false, true])('Boolean (optimize: %s)', optimize => {
     it('requires value to show correct context on error', () => {
       const validator = new RequiredBoolean({ optimize })
       expect(validator.validate('', 'bool').map(e => e.toString())).toStrictEqual([
-        `NotBooleanFail: Field 'bool' must be an boolean (received "")`
+        `NotBooleanFail: Field 'bool' must be a boolean (received "")`
       ])
     })
   })

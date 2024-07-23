@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Union RequiredUnion should return an function body 1`] = `
+exports[`Union RequiredUnion should return a function body 1`] = `
 Array [
   Object {
     "NotFloatFail": [Function],

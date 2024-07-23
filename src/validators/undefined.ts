@@ -18,7 +18,7 @@ export function isUndefined(value: unknown, context?: string): value is undefine
 
 export function validateUndefined(value: unknown, context?: string): ValidationFailure[] {
   if (value !== undefined) {
-    return [new NotUndefinedFail(`Must be an undefined`, value, context)]
+    return [new NotUndefinedFail(`Must be undefined`, value, context)]
   }
   return []
 }
@@ -57,7 +57,7 @@ export abstract class UndefinedValidator<O = never> extends ValidatorBase<undefi
       ...(this.nullable ? [
       `if (${localValueRef} !== null) {`] : []),
       `  if (${localValueRef} !== undefined) {`,
-      `    errors.push(new NotUndefinedFail(\`Must be an undefined\`, ${localValueRef}${contextStr}))`,
+      `    errors.push(new NotUndefinedFail(\`Must be undefined\`, ${localValueRef}${contextStr}))`,
       `  }`,
       ...(this.nullable ? [
       `}`] : []),

@@ -13,7 +13,7 @@ export function validateBuffer(value: unknown, context?: string): ValidationFail
   if (Buffer.isBuffer(value)) {
     return []
   }
-  return [new NotBufferFail(`Must be an Buffer`, value, context)]
+  return [new NotBufferFail(`Must be a Buffer`, value, context)]
 }
 
 export abstract class BufferValidator<O = never> extends ValidatorBase<Buffer | O> {

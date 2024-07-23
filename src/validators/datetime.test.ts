@@ -29,7 +29,7 @@ describe('DateTime (optimize: %s)', () => {
   })
 
   describe('RequiredBoolean', () => {
-    it('should return an function body', () => {
+    it('should return a function body', () => {
       const booleanValidator = new RequiredDateTime({ optimize: false })
       expect(booleanValidator.codeGen('value1', 'validator1')).toMatchSnapshot()
     })
