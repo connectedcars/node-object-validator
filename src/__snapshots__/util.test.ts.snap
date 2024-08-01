@@ -1,25 +1,69 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`generateRustTypes datetime & hashmap used 1`] = `
+"use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = \\"camelCase\\")]
+pub struct RustType {
+    date_time: DateTime<Utc>,
+    hash_boi: HashMap<String, bool>,
+}
+
+"
+`;
+
+exports[`generateRustTypes datetime used 1`] = `
+"use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = \\"camelCase\\")]
+pub struct RustType {
+    #[serde(with = \\"chrono::serde::ts_seconds\\")]
+    unix: DateTime<Utc>,
+    date: DateTime<Utc>,
+    date_time: DateTime<Utc>,
+}
+
+"
+`;
+
+exports[`generateRustTypes hashmap used 1`] = `
+"use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = \\"camelCase\\")]
+pub struct RustType {
+    hash_boi: HashMap<String, bool>,
+}
+
+"
+`;
+
 exports[`generateRustTypes write to file 1`] = `
 "use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = \\"camelCase\\")]
-struct TabbyData {
+pub struct TabbyData {
     weight: f64,
     age: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = \\"camelCase\\")]
-struct TuxedoData {
+pub struct TuxedoData {
     weight: f64,
     age: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = \\"camelCase\\")]
-struct MaineCoonData {
+pub struct MaineCoonData {
     weight: f64,
     age: u64,
     fur_variant: String,
@@ -28,7 +72,7 @@ struct MaineCoonData {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = \\"camelCase\\")]
 #[serde(tag = \\"type\\")]
-enum Cat {
+pub enum Cat {
     Tabby(TabbyData),
     Tuxedo(TuxedoData),
     MaineCoon(MaineCoonData),
@@ -36,11 +80,11 @@ enum Cat {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = \\"camelCase\\")]
-struct ExternalTuple(u8, u8);
+pub struct ExternalTuple(u8, u8);
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = \\"camelCase\\")]
-enum ExternalInterface {
+pub enum ExternalInterface {
     CAN0,
     CAN1,
     CAN2,
@@ -54,7 +98,7 @@ enum ExternalInterface {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = \\"camelCase\\")]
-enum Application {
+pub enum Application {
     OBD,
     UDS,
     KWP2000,
@@ -62,7 +106,7 @@ enum Application {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = \\"camelCase\\")]
-enum Transport {
+pub enum Transport {
     ISOTP,
     TP2,
     ISOTPNOPAD,
@@ -70,7 +114,7 @@ enum Transport {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = \\"camelCase\\")]
-struct RequestDID {
+pub struct RequestDID {
     adaption_setup: Vec<String>,
     adaption_teardown: Vec<String>,
     service_and_did: String,
@@ -84,22 +128,6 @@ struct RequestDID {
     tx_local_id: Option<String>,
     rx_local_id: Option<String>,
     raw: bool,
-}
-
-"
-`;
-
-exports[`generateRustTypes write to file, datetime used 1`] = `
-"use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = \\"camelCase\\")]
-struct RustType {
-    #[serde(with = \\"chrono::serde::ts_seconds\\")]
-    unix: DateTime<Utc>,
-    date: DateTime<Utc>,
-    date_time: DateTime<Utc>,
 }
 
 "

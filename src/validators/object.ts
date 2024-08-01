@@ -196,13 +196,13 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
             const [enumVariantName, enumVariantValue] = Object.entries(this.schema)[0]
             return `${toPascalCase(enumVariantName)}(${enumVariantValue.toString({ ...options, parent: this })})`
           } else {
-            const typeDef = `${serdeStr}struct ${this.typeName} {\n${lines.join('\n')}\n}\n\n`
+            const typeDef = `${serdeStr}pub struct ${this.typeName} {\n${lines.join('\n')}\n}\n\n`
             addTypeDef(this.typeName, typeDef, options?.typeDefinitions)
             return this.typeName
           }
         } else {
           // Tagged union
-          const typeDef = `${serdeStr}struct ${this.typeName} {\n${lines.join('\n')}\n}\n\n`
+          const typeDef = `${serdeStr}pub struct ${this.typeName} {\n${lines.join('\n')}\n}\n\n`
           addTypeDef(this.typeName, typeDef, options?.typeDefinitions)
         }
 

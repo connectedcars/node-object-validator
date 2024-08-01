@@ -444,7 +444,7 @@ describe('Rust Types', () => {
 
     const expectedExtra = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct Extra {
+pub struct Extra {
     tag: String,
     tagversion: i64,
     tag_depth: f64,
@@ -454,7 +454,7 @@ struct Extra {
 
     const expectedPosition = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct Position {
+pub struct Position {
     latitude: f64,
     longitude: f64,
     accuracy: i64,
@@ -465,7 +465,7 @@ struct Position {
 
     const expectedPositions = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct Positions {
+pub struct Positions {
     latitude: f64,
     longitude: f64,
     accuracy: i64,
@@ -475,7 +475,7 @@ struct Positions {
 
     const expectedTypeName = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct TypeName {
+pub struct TypeName {
     type: String,
     unit_id: String,
     recorded_at: DateTime<Utc>,
@@ -501,7 +501,7 @@ struct TypeName {
 
     const expectedExtra = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct Extra {
+pub struct Extra {
     tag: String,
     tagversion: i64,
     tag_depth: f64,
@@ -511,7 +511,7 @@ struct Extra {
 
     const expectedPosition = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct Position {
+pub struct Position {
     latitude: f64,
     longitude: f64,
     accuracy: i64,
@@ -522,7 +522,7 @@ struct Position {
 
     const expectedPositions = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct Positions {
+pub struct Positions {
     latitude: f64,
     longitude: f64,
     accuracy: i64,
@@ -532,7 +532,7 @@ struct Positions {
 
     const expectedTypeName = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct TypeName {
+pub struct TypeName {
     type: String,
     unit_id: String,
     recorded_at: DateTime<Utc>,

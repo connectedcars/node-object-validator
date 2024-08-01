@@ -221,7 +221,7 @@ describe('Rust Types', () => {
 
     const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct TypeName(i64, Option<bool>);
+pub struct TypeName(i64, Option<bool>);
 
 `
     expect(typeDefinitions).toEqual({
@@ -236,7 +236,7 @@ struct TypeName(i64, Option<bool>);
     })
     const expectedInner = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct InnerType(i64, Option<bool>);
+pub struct InnerType(i64, Option<bool>);
 
 `
     expect(innerValidator.toString(options)).toEqual('InnerType')
@@ -245,7 +245,7 @@ struct InnerType(i64, Option<bool>);
     const outerValidator = new RequiredTuple([new RequiredFloat(), innerValidator], { typeName: 'OuterType' })
     const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct OuterType(f64, InnerType);
+pub struct OuterType(f64, InnerType);
 
 `
     expect(outerValidator.toString(options)).toEqual('OuterType')
@@ -262,7 +262,7 @@ struct OuterType(f64, InnerType);
     })
     const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct TypeName(Option<bool>);
+pub struct TypeName(Option<bool>);
 
 `
     expect(validator.toString(options)).toEqual('Option<TypeName>')
@@ -278,7 +278,7 @@ struct TypeName(Option<bool>);
     })
     const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct TypeName(Option<bool>);
+pub struct TypeName(Option<bool>);
 
 `
     expect(validator.toString(options)).toEqual('Option<TypeName>')
@@ -294,7 +294,7 @@ struct TypeName(Option<bool>);
     })
     const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct TypeName(Option<bool>);
+pub struct TypeName(Option<bool>);
 
 `
     expect(validator.toString(options)).toEqual('Option<TypeName>')

@@ -353,7 +353,7 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
         if (unionKey !== undefined) {
           serdeStr += `#[serde(tag = "${unionKey}")]\n`
         }
-        const typeDef = `${serdeStr}enum ${this.typeName} {\n    ${lines.join(',\n    ')},\n}\n\n`
+        const typeDef = `${serdeStr}pub enum ${this.typeName} {\n    ${lines.join(',\n    ')},\n}\n\n`
         addTypeDef(this.typeName, typeDef, options.typeDefinitions)
 
         // Reference

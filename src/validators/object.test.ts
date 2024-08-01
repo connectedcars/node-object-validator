@@ -548,7 +548,7 @@ describe('Rust Types', () => {
 
     const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct TypeName {
+pub struct TypeName {
     prop_a: i64,
 }
 
@@ -567,14 +567,14 @@ struct TypeName {
 
     const expectedInner = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct InnerType {
+pub struct InnerType {
     inner_a: Option<bool>,
 }
 
 `
     const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct OuterType {
+pub struct OuterType {
     outer_a: f64,
     other_obj: InnerType,
 }
@@ -600,14 +600,14 @@ struct OuterType {
 
     const expectedInner = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct OtherObj {
+pub struct OtherObj {
     inner_a: Option<bool>,
 }
 
 `
     const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct OuterType {
+pub struct OuterType {
     outer_a: f64,
     other_obj: OtherObj,
 }
@@ -632,14 +632,14 @@ struct OuterType {
 
     const expectedInner = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct InnerType {
+pub struct InnerType {
     inner_a: Option<bool>,
 }
 
 `
     const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct OuterType {
+pub struct OuterType {
     outer_a: f64,
     other_obj: InnerType,
 }
@@ -662,7 +662,7 @@ struct OuterType {
 
     const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct TypeName {
+pub struct TypeName {
     #[serde(with = "chrono::serde::ts_seconds")]
     prop_a: DateTime<Utc>,
     prop_b: DateTime<Utc>,
@@ -682,7 +682,7 @@ struct TypeName {
 
       const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct TypeName {
+pub struct TypeName {
     prop_b: Option<bool>,
 }
 
@@ -699,7 +699,7 @@ struct TypeName {
 
     const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct TypeName {
+pub struct TypeName {
     prop_b: Option<bool>,
 }
 
@@ -715,7 +715,7 @@ struct TypeName {
 
     const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct TypeName {
+pub struct TypeName {
     prop_b: Option<bool>,
 }
 

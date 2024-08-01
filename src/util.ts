@@ -44,17 +44,31 @@ export function generateRustTypes(validators: ValidatorBase[], inputOptions?: Va
   }
 
   let importContent = ``
-  let importedDateTime = false
+  let shouldImportDateTime = false
+  let shouldImportHashMap = false
 
+  // Alphabetical order: chrono, serde, hashmap
   let typeContent = ``
   for (const value of Object.values(typeDefinitions)) {
-    if (value.includes('DateTime') && importedDateTime === false) {
-      importContent += `use chrono::{DateTime, Utc};\n`
-      importedDateTime = true
+    if (value.includes('DateTime')) {
+      shouldImportDateTime = true
+    }
+    if (value.includes('HashMap')) {
+      shouldImportHashMap = true
     }
     typeContent += value
   }
+
+  // Chrono (time)
+  if (shouldImportDateTime) {
+    importContent += `use chrono::{DateTime, Utc};\n`
+  }
+  // Serde
   importContent += `use serde::{Deserialize, Serialize};\n`
+  // Hashmap (Record)
+  if (shouldImportHashMap) {
+    importContent += `use std::collections::HashMap;\n`
+  }
   importContent += `\n`
 
   const content = importContent + typeContent

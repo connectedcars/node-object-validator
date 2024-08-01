@@ -193,7 +193,7 @@ describe('Rust Types', () => {
 
     const expectedNeededUnion = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-enum NeededUnion {
+pub enum NeededUnion {
     ComputerKatten,
 }
 

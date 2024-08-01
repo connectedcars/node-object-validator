@@ -102,7 +102,7 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
         const types = Object.values(this.schema).map(v => v.toString(options))
         addTypeDef(
           this.typeName,
-          `${serdeStr}struct ${this.typeName}(${types.join(', ')});\n\n`,
+          `${serdeStr}pub struct ${this.typeName}(${types.join(', ')});\n\n`,
           options.typeDefinitions
         )
 
