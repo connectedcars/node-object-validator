@@ -132,7 +132,6 @@ export abstract class SampleValidator<T extends Sample = never, O = never> exten
     switch (language) {
       case 'typescript': {
         return this.validator.toString(options)
-
       }
       case 'rust': {
         return this.validator.toString(options)
