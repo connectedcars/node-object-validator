@@ -1183,14 +1183,15 @@ pub enum RustEnum {
     const expectedKat = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct KatData {
-    ja: bool,
+    pub ja: bool,
 }
 
 `
     const expectedMis = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct MisData {
-    ja: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ja: Option<bool>,
 }
 
 `
@@ -1237,21 +1238,23 @@ pub enum RustEnum {
     const expectedOutside1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct KatData {
-    ja: bool,
+    pub ja: bool,
 }
 
 `
     const expectedOutside2 = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct MisData {
-    ja: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ja: Option<bool>,
 }
 
 `
     const expectedOutside3 = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SpecificTypeName {
-    ja: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ja: Option<bool>,
 }
 
 `
@@ -1296,6 +1299,44 @@ pub struct MisseKatTuple(u8, u8, u8);
 
 `
     const expectedEnum = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub enum RustEnum {
+    Kat(u8),
+    Mis(u8, bool),
+    MisseKat(MisseKatTuple),
+}
+
+`
+    expect(validator.toString(options)).toEqual(`RustEnum`)
+    expect(typeDefinitions).toEqual({
+      MisseKatTuple: expectedMisseKat,
+      RustEnum: expectedEnum
+    })
+  })
+
+  it('Required, overwrite Derive macro', () => {
+    const misseKatValidator = new RequiredTuple(
+      [new RequiredInteger(0, 255), new RequiredInteger(0, 255), new RequiredInteger(0, 255)],
+      { typeName: 'MisseKatTuple' }
+    )
+    const validator = new RequiredUnion(
+      [
+        new RequiredObject({ kat: new RequiredInteger(0, 255) }),
+        new RequiredObject({ mis: new RequiredTuple([new RequiredInteger(0, 255), new RequiredBoolean()]) }),
+        new RequiredObject({ misseKat: misseKatValidator })
+      ],
+      {
+        typeName: 'RustEnum',
+        deriveMacro: ['Serialize, Deserialize, Debug']
+      }
+    )
+
+    const expectedMisseKat = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct MisseKatTuple(u8, u8, u8);
+
+`
+    const expectedEnum = `#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub enum RustEnum {
     Kat(u8),

@@ -117,14 +117,16 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
   T[number]['tsType'] | O
 > {
   public schema: T
-  private every: boolean
+  public typeName?: string
 
-  private typeName?: string
+  private every: boolean
+  private deriveMacro?: string[]
 
   public constructor(schema: T, options?: UnionValidatorOptions & ValidatorBaseOptions) {
     super(options)
     this.schema = schema
     this.typeName = options?.typeName
+    this.deriveMacro = options?.deriveMacro
     this.every = options?.every ? true : false
     if (options?.optimize !== false) {
       this.optimize(schema)
@@ -321,6 +323,26 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
           )
         }
 
+        // Serde
+        let serdeStr: string
+        let deriveMacro: string[] | undefined = undefined
+
+        if (this.deriveMacro !== undefined) {
+          const deriveMacroStr = this.deriveMacro.join(', ')
+          serdeStr = `#[derive(${deriveMacroStr})]\n`
+          deriveMacro = this.deriveMacro
+        } else if (options.deriveMacro !== undefined) {
+          const deriveMacroStr = options.deriveMacro.join(', ')
+          serdeStr = `#[derive(${deriveMacroStr})]\n`
+          deriveMacro = this.deriveMacro
+        } else {
+          serdeStr = `#[derive(Serialize, Deserialize, Debug, Clone)]\n`
+        }
+        serdeStr += `#[serde(rename_all = "camelCase")]\n`
+        if (unionKey !== undefined) {
+          serdeStr += `#[serde(tag = "${unionKey}")]\n`
+        }
+
         // For a tagged union the 'line' needs to say the value of the tag as a name. Then the struct. So: Name(NameStruct)
         // BUT it CANNOT contain non structs for the value
         let typeNameFromParent: string | undefined = undefined
@@ -339,7 +361,8 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
             ...options,
             parent: this,
             taggedUnionKey: unionKey,
-            typeNameFromParent: `${typeNameFromParent}Data`
+            typeNameFromParent: `${typeNameFromParent}Data`,
+            deriveMacro
           })
 
           if (val instanceof ObjectValidator && typeNameFromParent !== undefined) {
@@ -349,10 +372,6 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
           }
         }
 
-        let serdeStr = `#[derive(Serialize, Deserialize, Debug, Clone)]\n#[serde(rename_all = "camelCase")]\n`
-        if (unionKey !== undefined) {
-          serdeStr += `#[serde(tag = "${unionKey}")]\n`
-        }
         const typeDef = `${serdeStr}pub enum ${this.typeName} {\n    ${lines.join(',\n    ')},\n}\n\n`
         addTypeDef(this.typeName, typeDef, options.typeDefinitions)
 

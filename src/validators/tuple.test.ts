@@ -229,6 +229,76 @@ pub struct TypeName(i64, Option<bool>);
     })
   })
 
+  it('Required, Overwrite Derive macro, pass on', () => {
+    // Outer
+    const outerValidator = new RequiredTuple(
+      [
+        new RequiredFloat(),
+        new RequiredTuple([new RequiredInteger(), new OptionalBoolean()], {
+          typeName: 'InnerType'
+        })
+      ],
+      {
+        typeName: 'OuterType',
+        deriveMacro: ['Serialize, Deserialize, Debug']
+      }
+    )
+    const expectedOuter = `#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct OuterType(f64, InnerType);
+
+`
+
+    expect(outerValidator.toString(options)).toEqual('OuterType')
+
+    // Inner
+    const expectedInner = `#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct InnerType(i64, Option<bool>);
+
+`
+
+    expect(typeDefinitions).toEqual({
+      InnerType: expectedInner,
+      OuterType: expectedOuter
+    })
+  })
+
+  it('Required, Overwrite Derive, pass on, but overwrite takes priority', () => {
+    // Inner
+    const expectedInner = `#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InnerType(i64, Option<bool>);
+
+`
+
+    // Outer
+    const outerValidator = new RequiredTuple(
+      [
+        new RequiredFloat(),
+        new RequiredTuple([new RequiredInteger(), new OptionalBoolean()], {
+          typeName: 'InnerType',
+          deriveMacro: ['Serialize', 'Deserialize']
+        })
+      ],
+      {
+        typeName: 'OuterType',
+        deriveMacro: ['Serialize', 'Deserialize', 'Debug']
+      }
+    )
+    const expectedOuter = `#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct OuterType(f64, InnerType);
+
+`
+    expect(outerValidator.toString(options)).toEqual('OuterType')
+
+    expect(typeDefinitions).toEqual({
+      InnerType: expectedInner,
+      OuterType: expectedOuter
+    })
+  })
+
   it('Nested', () => {
     // Inner
     const innerValidator = new RequiredTuple([new RequiredInteger(), new OptionalBoolean()], {

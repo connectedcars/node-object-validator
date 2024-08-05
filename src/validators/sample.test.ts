@@ -445,9 +445,9 @@ describe('Rust Types', () => {
     const expectedExtra = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Extra {
-    tag: String,
-    tagversion: i64,
-    tag_depth: f64,
+    pub tag: String,
+    pub tagversion: i64,
+    pub tag_depth: f64,
 }
 
 `
@@ -455,10 +455,10 @@ pub struct Extra {
     const expectedPosition = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Position {
-    latitude: f64,
-    longitude: f64,
-    accuracy: i64,
-    extra: Extra,
+    pub latitude: f64,
+    pub longitude: f64,
+    pub accuracy: i64,
+    pub extra: Extra,
 }
 
 `
@@ -466,9 +466,9 @@ pub struct Position {
     const expectedPositions = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Positions {
-    latitude: f64,
-    longitude: f64,
-    accuracy: i64,
+    pub latitude: f64,
+    pub longitude: f64,
+    pub accuracy: i64,
 }
 
 `
@@ -476,13 +476,13 @@ pub struct Positions {
     const expectedTypeName = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct TypeName {
-    type: String,
-    unit_id: String,
-    recorded_at: DateTime<Utc>,
-    trip_id: i64,
-    value: i64,
-    position: Position,
-    positions: Vec<Positions>,
+    pub type: String,
+    pub unit_id: String,
+    pub recorded_at: DateTime<Utc>,
+    pub trip_id: i64,
+    pub value: i64,
+    pub position: Position,
+    pub positions: Vec<Positions>,
 }
 
 `
@@ -502,9 +502,9 @@ pub struct TypeName {
     const expectedExtra = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Extra {
-    tag: String,
-    tagversion: i64,
-    tag_depth: f64,
+    pub tag: String,
+    pub tagversion: i64,
+    pub tag_depth: f64,
 }
 
 `
@@ -512,10 +512,10 @@ pub struct Extra {
     const expectedPosition = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Position {
-    latitude: f64,
-    longitude: f64,
-    accuracy: i64,
-    extra: Extra,
+    pub latitude: f64,
+    pub longitude: f64,
+    pub accuracy: i64,
+    pub extra: Extra,
 }
 
 `
@@ -523,9 +523,9 @@ pub struct Position {
     const expectedPositions = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Positions {
-    latitude: f64,
-    longitude: f64,
-    accuracy: i64,
+    pub latitude: f64,
+    pub longitude: f64,
+    pub accuracy: i64,
 }
 
 `
@@ -533,13 +533,13 @@ pub struct Positions {
     const expectedTypeName = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct TypeName {
-    type: String,
-    unit_id: String,
-    recorded_at: DateTime<Utc>,
-    trip_id: i64,
-    value: i64,
-    position: Position,
-    positions: Vec<Positions>,
+    pub type: String,
+    pub unit_id: String,
+    pub recorded_at: DateTime<Utc>,
+    pub trip_id: i64,
+    pub value: i64,
+    pub position: Position,
+    pub positions: Vec<Positions>,
 }
 
 `

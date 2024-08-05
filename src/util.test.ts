@@ -163,6 +163,32 @@ describe('generateRustTypes', () => {
     expect(types).toMatchSnapshot()
   })
 
+  it('optional', () => {
+    const validator = new RequiredObject(
+      {
+        valueA: new OptionalBoolean()
+      },
+      { typeName: 'RustType' }
+    )
+
+    const validators: ValidatorBase[] = [validator]
+    const types = generateRustTypes(validators)
+    expect(types).toMatchSnapshot()
+  })
+
+  it('overwrite derive macro', () => {
+    const validator = new RequiredObject(
+      {
+        valueA: new RequiredBoolean()
+      },
+      { typeName: 'RustType', deriveMacro: ['Serialize', 'Deserialize', 'Clone'] }
+    )
+
+    const validators: ValidatorBase[] = [validator]
+    const types = generateRustTypes(validators)
+    expect(types).toMatchSnapshot()
+  })
+
   // #[serde(rename_all = "camelCase")]
   // #[serde(tag = "type")]
   // enum MyEnum {

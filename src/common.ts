@@ -24,6 +24,7 @@ export type ValidatorBaseOptions = {
   nullable?: boolean
   earlyFail?: boolean
   typeName?: string
+  deriveMacro?: string[]
 }
 
 /**
@@ -36,6 +37,7 @@ export interface ValidatorOptions {
   earlyFail?: boolean
   optimize?: boolean
   typeName?: string
+  deriveMacro?: string[]
 }
 
 export interface ValidatorExportOptions {
@@ -46,6 +48,7 @@ export interface ValidatorExportOptions {
   taggedUnionKey?: string
   typeNameFromParent?: string
   typeDefinitions?: Record<string, string>
+  deriveMacro?: string[]
 }
 
 export function isValidator(value: unknown): value is ValidatorBase {
