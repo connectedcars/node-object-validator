@@ -1,5 +1,6 @@
 import { ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotObjectFail, ValidationFailure } from '../errors'
+import { TupleValidator } from './tuple'
 
 export function isRecord<T extends ValidatorBase>(
   schema: T,
@@ -85,8 +86,12 @@ export abstract class RecordValidator<T extends ValidatorBase = never, O = never
         return typeStr
       }
       case 'rust': {
+        let schemaStr = `${this.schema.toString({ ...options, parent: this })}`
+        if (this.schema instanceof TupleValidator) {
+          schemaStr = `(${schemaStr})`
+        }
+        const typeStr = `HashMap<String, ${schemaStr}>`
         const isOption = !this.required || this.nullable
-        const typeStr = `HashMap<String, ${this.schema.toString(options)}>`
         return isOption ? `Option<${typeStr}>` : typeStr
       }
       default: {

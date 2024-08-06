@@ -1,5 +1,6 @@
 import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotArrayFail, RequiredFail, ValidationFailure, WrongLengthFail } from '../errors'
+import { TupleValidator } from './tuple'
 
 export function isArray<T extends ValidatorBase>(
   schema: T,
@@ -154,7 +155,11 @@ export abstract class ArrayValidator<T extends ValidatorBase = never, O = never>
         return typeStr
       }
       case 'rust': {
-        const schemaStr = this.schema.toString(options)
+        let schemaStr = this.schema.toString({ ...options, parent: this })
+        if (this.schema instanceof TupleValidator) {
+          schemaStr = `(${schemaStr})`
+        }
+
         const isOption = !this.schema.required || this.schema.nullable
         const typeStr = `Vec<${schemaStr}>`
         return isOption ? `Option<${typeStr}>` : typeStr

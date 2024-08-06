@@ -1,4 +1,4 @@
-import { addTypeDef, ObjectValidator } from '..'
+import { addTypeDef, ArrayValidator, ObjectValidator, RecordValidator } from '..'
 import { ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotArrayFail, ValidationFailure, WrongLengthFail } from '../errors'
 
@@ -82,7 +82,12 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
       }
       case 'rust': {
         // If we are inlining, don't generate type (typeName check so objects can still use the reference)
-        if (options?.parent instanceof ObjectValidator && this.typeName === undefined) {
+        if (
+          (options?.parent instanceof ObjectValidator ||
+            options?.parent instanceof ArrayValidator ||
+            options?.parent instanceof RecordValidator) &&
+          this.typeName === undefined
+        ) {
           const types = Object.values(this.schema).map(v => v.toString(options))
           return `${types.join(', ')}`
         }
