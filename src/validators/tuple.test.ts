@@ -221,11 +221,81 @@ describe('Rust Types', () => {
 
     const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct TypeName(i64, Option<bool>);
+pub struct TypeName(i64, Option<bool>);
 
 `
     expect(typeDefinitions).toEqual({
       TypeName: expectedType
+    })
+  })
+
+  it('Required, Overwrite Derive macro, pass on', () => {
+    // Outer
+    const outerValidator = new RequiredTuple(
+      [
+        new RequiredFloat(),
+        new RequiredTuple([new RequiredInteger(), new OptionalBoolean()], {
+          typeName: 'InnerType'
+        })
+      ],
+      {
+        typeName: 'OuterType',
+        deriveMacro: ['Serialize, Deserialize, Debug']
+      }
+    )
+    const expectedOuter = `#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct OuterType(f64, InnerType);
+
+`
+
+    expect(outerValidator.toString(options)).toEqual('OuterType')
+
+    // Inner
+    const expectedInner = `#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct InnerType(i64, Option<bool>);
+
+`
+
+    expect(typeDefinitions).toEqual({
+      InnerType: expectedInner,
+      OuterType: expectedOuter
+    })
+  })
+
+  it('Required, Overwrite Derive, pass on, but overwrite takes priority', () => {
+    // Inner
+    const expectedInner = `#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InnerType(i64, Option<bool>);
+
+`
+
+    // Outer
+    const outerValidator = new RequiredTuple(
+      [
+        new RequiredFloat(),
+        new RequiredTuple([new RequiredInteger(), new OptionalBoolean()], {
+          typeName: 'InnerType',
+          deriveMacro: ['Serialize', 'Deserialize']
+        })
+      ],
+      {
+        typeName: 'OuterType',
+        deriveMacro: ['Serialize', 'Deserialize', 'Debug']
+      }
+    )
+    const expectedOuter = `#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct OuterType(f64, InnerType);
+
+`
+    expect(outerValidator.toString(options)).toEqual('OuterType')
+
+    expect(typeDefinitions).toEqual({
+      InnerType: expectedInner,
+      OuterType: expectedOuter
     })
   })
 
@@ -236,7 +306,7 @@ struct TypeName(i64, Option<bool>);
     })
     const expectedInner = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct InnerType(i64, Option<bool>);
+pub struct InnerType(i64, Option<bool>);
 
 `
     expect(innerValidator.toString(options)).toEqual('InnerType')
@@ -245,7 +315,7 @@ struct InnerType(i64, Option<bool>);
     const outerValidator = new RequiredTuple([new RequiredFloat(), innerValidator], { typeName: 'OuterType' })
     const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct OuterType(f64, InnerType);
+pub struct OuterType(f64, InnerType);
 
 `
     expect(outerValidator.toString(options)).toEqual('OuterType')
@@ -262,7 +332,7 @@ struct OuterType(f64, InnerType);
     })
     const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct TypeName(Option<bool>);
+pub struct TypeName(Option<bool>);
 
 `
     expect(validator.toString(options)).toEqual('Option<TypeName>')
@@ -278,7 +348,7 @@ struct TypeName(Option<bool>);
     })
     const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct TypeName(Option<bool>);
+pub struct TypeName(Option<bool>);
 
 `
     expect(validator.toString(options)).toEqual('Option<TypeName>')
@@ -294,7 +364,7 @@ struct TypeName(Option<bool>);
     })
     const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct TypeName(Option<bool>);
+pub struct TypeName(Option<bool>);
 
 `
     expect(validator.toString(options)).toEqual('Option<TypeName>')

@@ -15,7 +15,7 @@ import {
   validateObject
 } from './object'
 import { RequiredRegexMatch } from './regex-match'
-import { RequiredUnixDateTime } from './unixdatetime'
+import { OptionalUnixDateTime, RequiredUnixDateTime } from './unixdatetime'
 
 describe('Object', () => {
   describe('validateObject', () => {
@@ -548,8 +548,8 @@ describe('Rust Types', () => {
 
     const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct TypeName {
-    prop_a: i64,
+pub struct TypeName {
+    pub prop_a: i64,
 }
 
 `
@@ -567,16 +567,17 @@ struct TypeName {
 
     const expectedInner = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct InnerType {
-    inner_a: Option<bool>,
+pub struct InnerType {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inner_a: Option<bool>,
 }
 
 `
     const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct OuterType {
-    outer_a: f64,
-    other_obj: InnerType,
+pub struct OuterType {
+    pub outer_a: f64,
+    pub other_obj: InnerType,
 }
 
 `
@@ -600,16 +601,17 @@ struct OuterType {
 
     const expectedInner = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct OtherObj {
-    inner_a: Option<bool>,
+pub struct OtherObj {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inner_a: Option<bool>,
 }
 
 `
     const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct OuterType {
-    outer_a: f64,
-    other_obj: OtherObj,
+pub struct OuterType {
+    pub outer_a: f64,
+    pub other_obj: OtherObj,
 }
 
 `
@@ -632,16 +634,17 @@ struct OuterType {
 
     const expectedInner = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct InnerType {
-    inner_a: Option<bool>,
+pub struct InnerType {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inner_a: Option<bool>,
 }
 
 `
     const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct OuterType {
-    outer_a: f64,
-    other_obj: InnerType,
+pub struct OuterType {
+    pub outer_a: f64,
+    pub other_obj: InnerType,
 }
 
 `
@@ -662,17 +665,94 @@ struct OuterType {
 
     const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct TypeName {
+pub struct TypeName {
     #[serde(with = "chrono::serde::ts_seconds")]
-    prop_a: DateTime<Utc>,
-    prop_b: DateTime<Utc>,
-    prop_c: Option<DateTime<Utc>>,
+    pub prop_a: DateTime<Utc>,
+    pub prop_b: DateTime<Utc>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prop_c: Option<DateTime<Utc>>,
 }
 
 `
     expect(typeDefinitions).toEqual({
       TypeName: expectedType
     })
+  })
+
+  it('Required, Overwrite Derive macro, gets passed on', () => {
+    const outerValidator = new RequiredObject(
+      {
+        outerA: new RequiredFloat(),
+        otherObj: new RequiredObject({ innerA: new OptionalBoolean() }, { typeName: 'InnerType' })
+      },
+      { typeName: 'OuterType', deriveMacro: ['Serialize, Deserialize'] }
+    )
+
+    const expectedInner = `#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InnerType {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inner_a: Option<bool>,
+}
+
+`
+    const expectedOuter = `#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OuterType {
+    pub outer_a: f64,
+    pub other_obj: InnerType,
+}
+
+`
+
+    expect(outerValidator.toString(options)).toEqual('OuterType')
+    expect(typeDefinitions).toEqual({
+      InnerType: expectedInner,
+      OuterType: expectedOuter
+    })
+  })
+
+  it('Required, Overwrite Derive macro, also inline, takes priority over passed in', () => {
+    const outerValidator = new RequiredObject(
+      {
+        outerA: new RequiredFloat(),
+        otherObj: new RequiredObject(
+          { innerA: new OptionalBoolean() },
+          { typeName: 'InnerType', deriveMacro: ['Serialize', 'Deserialize', 'Debug'] }
+        )
+      },
+      { typeName: 'OuterType', deriveMacro: ['Serialize, Deserialize'] }
+    )
+
+    const expectedInner = `#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct InnerType {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inner_a: Option<bool>,
+}
+
+`
+    const expectedOuter = `#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OuterType {
+    pub outer_a: f64,
+    pub other_obj: InnerType,
+}
+
+`
+
+    expect(outerValidator.toString(options)).toEqual('OuterType')
+    expect(typeDefinitions).toEqual({
+      InnerType: expectedInner,
+      OuterType: expectedOuter
+    })
+  })
+
+  it('Required, Err, Optional unixtimestamp', () => {
+    const validator = new RequiredObject({ propA: new OptionalUnixDateTime() }, { typeName: 'TypeName' })
+    expect(() => {
+      validator.toString(options)
+    }).toThrow(`Object key cannot be an Optional UnixDateTime. (Needs custom serialization). For: propA`)
   })
 
   it('Option, OptionalObject', () => {
@@ -682,8 +762,9 @@ struct TypeName {
 
       const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct TypeName {
-    prop_b: Option<bool>,
+pub struct TypeName {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prop_b: Option<bool>,
 }
 
 `
@@ -699,8 +780,9 @@ struct TypeName {
 
     const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct TypeName {
-    prop_b: Option<bool>,
+pub struct TypeName {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prop_b: Option<bool>,
 }
 
 `
@@ -715,8 +797,9 @@ struct TypeName {
 
     const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-struct TypeName {
-    prop_b: Option<bool>,
+pub struct TypeName {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prop_b: Option<bool>,
 }
 
 `

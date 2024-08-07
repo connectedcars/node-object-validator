@@ -1,4 +1,3 @@
-
 import {
   OptionalArray,
   OptionalBoolean,
@@ -10,6 +9,7 @@ import {
   RequiredFloat,
   RequiredInteger,
   RequiredObject,
+  RequiredRecord,
   RequiredString,
   RequiredTuple,
   RequiredUnion,
@@ -121,7 +121,7 @@ describe('generateRustTypes', () => {
     expect(types).toMatchSnapshot()
   })
 
-  it('write to file, datetime used', () => {
+  it('datetime used', () => {
     const validator = new RequiredObject(
       {
         unix: new RequiredUnixDateTime(),
@@ -129,6 +129,59 @@ describe('generateRustTypes', () => {
         dateTime: new RequiredDateTime()
       },
       { typeName: 'RustType' }
+    )
+
+    const validators: ValidatorBase[] = [validator]
+    const types = generateRustTypes(validators)
+    expect(types).toMatchSnapshot()
+  })
+
+  it('hashmap used', () => {
+    const validator = new RequiredObject(
+      {
+        hashBoi: new RequiredRecord(new RequiredBoolean())
+      },
+      { typeName: 'RustType' }
+    )
+
+    const validators: ValidatorBase[] = [validator]
+    const types = generateRustTypes(validators)
+    expect(types).toMatchSnapshot()
+  })
+
+  it('datetime & hashmap used', () => {
+    const validator = new RequiredObject(
+      {
+        dateTime: new RequiredDateTime(),
+        hashBoi: new RequiredRecord(new RequiredBoolean())
+      },
+      { typeName: 'RustType' }
+    )
+
+    const validators: ValidatorBase[] = [validator]
+    const types = generateRustTypes(validators)
+    expect(types).toMatchSnapshot()
+  })
+
+  it('optional', () => {
+    const validator = new RequiredObject(
+      {
+        valueA: new OptionalBoolean()
+      },
+      { typeName: 'RustType' }
+    )
+
+    const validators: ValidatorBase[] = [validator]
+    const types = generateRustTypes(validators)
+    expect(types).toMatchSnapshot()
+  })
+
+  it('overwrite derive macro', () => {
+    const validator = new RequiredObject(
+      {
+        valueA: new RequiredBoolean()
+      },
+      { typeName: 'RustType', deriveMacro: ['Serialize', 'Deserialize', 'Clone'] }
     )
 
     const validators: ValidatorBase[] = [validator]

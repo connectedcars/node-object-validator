@@ -1,8 +1,11 @@
+import { RequiredString } from '..'
 import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotArrayFail, NotIntegerFail, RequiredFail } from '../errors'
 import { isArray, NullableArray, OptionalArray, OptionalNullableArray, RequiredArray, validateArray } from './array'
+import { RequiredBoolean } from './boolean'
 import { OptionalInteger, RequiredInteger } from './integer'
 import { RequiredObject } from './object'
+import { RequiredTuple } from './tuple'
 
 describe('Array', () => {
   describe('validateArray', () => {
@@ -232,6 +235,13 @@ describe('Rust Types', () => {
   it('Vec', () => {
     const rustType = new RequiredArray(new RequiredInteger()).toString(options)
     expect(rustType).toEqual('Vec<i64>')
+  })
+
+  it('Vec of Tuple', () => {
+    const rustType = new RequiredArray(new RequiredTuple([new RequiredString(), new RequiredBoolean()])).toString(
+      options
+    )
+    expect(rustType).toEqual('Vec<(String, bool)>')
   })
 
   it('Option<Vec>', () => {

@@ -1,3 +1,4 @@
+export { ValidatorBase } from './common'
 export * from './util'
 export * from './validators/array'
 export * from './validators/boolean'

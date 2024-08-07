@@ -1,34 +1,103 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`generateRustTypes datetime & hashmap used 1`] = `
+"use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = \\"camelCase\\")]
+pub struct RustType {
+    pub date_time: DateTime<Utc>,
+    pub hash_boi: HashMap<String, bool>,
+}
+
+"
+`;
+
+exports[`generateRustTypes datetime used 1`] = `
+"use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = \\"camelCase\\")]
+pub struct RustType {
+    #[serde(with = \\"chrono::serde::ts_seconds\\")]
+    pub unix: DateTime<Utc>,
+    pub date: DateTime<Utc>,
+    pub date_time: DateTime<Utc>,
+}
+
+"
+`;
+
+exports[`generateRustTypes hashmap used 1`] = `
+"use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = \\"camelCase\\")]
+pub struct RustType {
+    pub hash_boi: HashMap<String, bool>,
+}
+
+"
+`;
+
+exports[`generateRustTypes optional 1`] = `
+"use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = \\"camelCase\\")]
+pub struct RustType {
+    #[serde(skip_serializing_if = \\"Option::is_none\\")]
+    pub value_a: Option<bool>,
+}
+
+"
+`;
+
+exports[`generateRustTypes overwrite derive macro 1`] = `
+"use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(rename_all = \\"camelCase\\")]
+pub struct RustType {
+    pub value_a: bool,
+}
+
+"
+`;
+
 exports[`generateRustTypes write to file 1`] = `
 "use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = \\"camelCase\\")]
-struct TabbyData {
-    weight: f64,
-    age: u64,
+pub struct TabbyData {
+    pub weight: f64,
+    pub age: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = \\"camelCase\\")]
-struct TuxedoData {
-    weight: f64,
-    age: u64,
+pub struct TuxedoData {
+    pub weight: f64,
+    pub age: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = \\"camelCase\\")]
-struct MaineCoonData {
-    weight: f64,
-    age: u64,
-    fur_variant: String,
+pub struct MaineCoonData {
+    pub weight: f64,
+    pub age: u64,
+    pub fur_variant: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = \\"camelCase\\")]
 #[serde(tag = \\"type\\")]
-enum Cat {
+pub enum Cat {
     Tabby(TabbyData),
     Tuxedo(TuxedoData),
     MaineCoon(MaineCoonData),
@@ -36,11 +105,11 @@ enum Cat {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = \\"camelCase\\")]
-struct ExternalTuple(u8, u8);
+pub struct ExternalTuple(u8, u8);
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = \\"camelCase\\")]
-enum ExternalInterface {
+pub enum ExternalInterface {
     CAN0,
     CAN1,
     CAN2,
@@ -54,7 +123,7 @@ enum ExternalInterface {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = \\"camelCase\\")]
-enum Application {
+pub enum Application {
     OBD,
     UDS,
     KWP2000,
@@ -62,7 +131,7 @@ enum Application {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = \\"camelCase\\")]
-enum Transport {
+pub enum Transport {
     ISOTP,
     TP2,
     ISOTPNOPAD,
@@ -70,36 +139,27 @@ enum Transport {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = \\"camelCase\\")]
-struct RequestDID {
-    adaption_setup: Vec<String>,
-    adaption_teardown: Vec<String>,
-    service_and_did: String,
-    interface: ExternalInterface,
-    application: Application,
-    transport: Transport,
-    session_type: Option<String>,
-    use_functional_addressing: Option<bool>,
-    tx_id: String,
-    rx_id: Option<String>,
-    tx_local_id: Option<String>,
-    rx_local_id: Option<String>,
-    raw: bool,
-}
-
-"
-`;
-
-exports[`generateRustTypes write to file, datetime used 1`] = `
-"use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = \\"camelCase\\")]
-struct RustType {
-    #[serde(with = \\"chrono::serde::ts_seconds\\")]
-    unix: DateTime<Utc>,
-    date: DateTime<Utc>,
-    date_time: DateTime<Utc>,
+pub struct RequestDID {
+    #[serde(skip_serializing_if = \\"Option::is_none\\")]
+    pub adaption_setup: Vec<String>,
+    #[serde(skip_serializing_if = \\"Option::is_none\\")]
+    pub adaption_teardown: Vec<String>,
+    pub service_and_did: String,
+    pub interface: ExternalInterface,
+    pub application: Application,
+    pub transport: Transport,
+    #[serde(skip_serializing_if = \\"Option::is_none\\")]
+    pub session_type: Option<String>,
+    #[serde(skip_serializing_if = \\"Option::is_none\\")]
+    pub use_functional_addressing: Option<bool>,
+    pub tx_id: String,
+    #[serde(skip_serializing_if = \\"Option::is_none\\")]
+    pub rx_id: Option<String>,
+    #[serde(skip_serializing_if = \\"Option::is_none\\")]
+    pub tx_local_id: Option<String>,
+    #[serde(skip_serializing_if = \\"Option::is_none\\")]
+    pub rx_local_id: Option<String>,
+    pub raw: bool,
 }
 
 "

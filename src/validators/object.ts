@@ -63,10 +63,13 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
   public schema: ObjectSchema
   public typeName?: string
 
+  private deriveMacro?: string[]
+
   public constructor(schema: T, options?: ValidatorBaseOptions) {
     super(options)
     this.typeName = options?.typeName
     this.schema = schema
+    this.deriveMacro = options?.deriveMacro
     if (options?.optimize !== false) {
       this.optimize(schema)
     }
@@ -173,6 +176,23 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
           }
         }
 
+        // Serde
+        let serdeStr: string
+        let deriveMacro: string[] | undefined = undefined
+
+        if (this.deriveMacro !== undefined) {
+          const deriveMacroStr = this.deriveMacro.join(', ')
+          serdeStr = `#[derive(${deriveMacroStr})]\n`
+          deriveMacro = this.deriveMacro
+        } else if (options.deriveMacro !== undefined) {
+          const deriveMacroStr = options.deriveMacro.join(', ')
+          serdeStr = `#[derive(${deriveMacroStr})]\n`
+          deriveMacro = this.deriveMacro
+        } else {
+          serdeStr = `#[derive(Serialize, Deserialize, Debug, Clone)]\n`
+        }
+        serdeStr += `#[serde(rename_all = "camelCase")]\n`
+
         // Type definition
         const lines = Object.entries(this.schema)
           .filter(([k]) => options.taggedUnionKey === undefined || k !== options.taggedUnionKey)
@@ -180,29 +200,36 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
             let serdeWithStr = ``
             // The Date and DateTime variants uses the default
             if (v instanceof UnixDateTimeValidator) {
+              if (v.required === false || v.nullable === true) {
+                throw new Error(
+                  `Object key cannot be an Optional UnixDateTime. (Needs custom serialization). For: ${k.toString()}`
+                )
+              }
               serdeWithStr += `    #[serde(with = "chrono::serde::ts_seconds")]\n`
             }
-            return `${serdeWithStr}    ${toSnakeCase(k)}: ${v.toString({ ...options, parent: this, typeNameFromParent: k })},`
+            if (v.required === false || v.nullable === true) {
+              serdeWithStr += `    #[serde(skip_serializing_if = "Option::is_none")]\n`
+            }
+            return `${serdeWithStr}    pub ${toSnakeCase(k)}: ${v.toString({ ...options, parent: this, typeNameFromParent: k, deriveMacro })},`
           })
 
         // If part of a Union
         // Don't addTypeDef() when in an enum with wrapped values (non tagged union)
-        const serdeStr = `#[derive(Serialize, Deserialize, Debug, Clone)]\n#[serde(rename_all = "camelCase")]\n`
         if (options?.parent instanceof UnionValidator) {
           if (Object.keys(this.schema).length === 1) {
             // Rust enum with data inside
             // If there's only 1 key in this.schema, save that single key as 'enumVariantName'
             // B example: rust: Enum{A, B(u8)} -> { 'b': 85 }
             const [enumVariantName, enumVariantValue] = Object.entries(this.schema)[0]
-            return `${toPascalCase(enumVariantName)}(${enumVariantValue.toString({ ...options, parent: this })})`
+            return `${toPascalCase(enumVariantName)}(${enumVariantValue.toString({ ...options, parent: this, deriveMacro })})`
           } else {
-            const typeDef = `${serdeStr}struct ${this.typeName} {\n${lines.join('\n')}\n}\n\n`
+            const typeDef = `${serdeStr}pub struct ${this.typeName} {\n${lines.join('\n')}\n}\n\n`
             addTypeDef(this.typeName, typeDef, options?.typeDefinitions)
             return this.typeName
           }
         } else {
           // Tagged union
-          const typeDef = `${serdeStr}struct ${this.typeName} {\n${lines.join('\n')}\n}\n\n`
+          const typeDef = `${serdeStr}pub struct ${this.typeName} {\n${lines.join('\n')}\n}\n\n`
           addTypeDef(this.typeName, typeDef, options?.typeDefinitions)
         }
 

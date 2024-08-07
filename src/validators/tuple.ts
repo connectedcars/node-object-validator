@@ -1,4 +1,4 @@
-import { addTypeDef, ObjectValidator } from '..'
+import { addTypeDef, ArrayValidator, ObjectValidator, RecordValidator } from '..'
 import { ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotArrayFail, ValidationFailure, WrongLengthFail } from '../errors'
 
@@ -38,10 +38,12 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
   public schema: T
 
   private typeName?: string
+  private deriveMacro?: string[]
 
   public constructor(schema: [...T], options?: ValidatorBaseOptions) {
     super(options)
     this.typeName = options?.typeName
+    this.deriveMacro = options?.deriveMacro
     this.schema = schema
     if (options?.optimize !== false) {
       this.optimize(schema)
@@ -79,10 +81,13 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
         return typeStr
       }
       case 'rust': {
-        const serdeStr = `#[derive(Serialize, Deserialize, Debug, Clone)]\n#[serde(rename_all = "camelCase")]\n`
-
         // If we are inlining, don't generate type (typeName check so objects can still use the reference)
-        if (options?.parent instanceof ObjectValidator && this.typeName === undefined) {
+        if (
+          (options?.parent instanceof ObjectValidator ||
+            options?.parent instanceof ArrayValidator ||
+            options?.parent instanceof RecordValidator) &&
+          this.typeName === undefined
+        ) {
           const types = Object.values(this.schema).map(v => v.toString(options))
           return `${types.join(', ')}`
         }
@@ -98,11 +103,28 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
           throw new Error(`'typeName' is not set when trying to generate named tuple ${this.toString()}`)
         }
 
+        // Serde
+        let serdeStr: string
+        let deriveMacro: string[] | undefined = undefined
+
+        if (this.deriveMacro !== undefined) {
+          const deriveMacroStr = this.deriveMacro.join(', ')
+          serdeStr = `#[derive(${deriveMacroStr})]\n`
+          deriveMacro = this.deriveMacro
+        } else if (options.deriveMacro !== undefined) {
+          const deriveMacroStr = options.deriveMacro.join(', ')
+          serdeStr = `#[derive(${deriveMacroStr})]\n`
+          deriveMacro = this.deriveMacro
+        } else {
+          serdeStr = `#[derive(Serialize, Deserialize, Debug, Clone)]\n`
+        }
+        serdeStr += `#[serde(rename_all = "camelCase")]\n`
+
         // Type generation
-        const types = Object.values(this.schema).map(v => v.toString(options))
+        const types = Object.values(this.schema).map(v => v.toString({ ...options, deriveMacro }))
         addTypeDef(
           this.typeName,
-          `${serdeStr}struct ${this.typeName}(${types.join(', ')});\n\n`,
+          `${serdeStr}pub struct ${this.typeName}(${types.join(', ')});\n\n`,
           options.typeDefinitions
         )
 

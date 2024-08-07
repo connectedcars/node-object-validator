@@ -1,4 +1,4 @@
-import { RequiredFloat, RequiredInteger } from '..'
+import { OptionalBoolean, RequiredBoolean, RequiredFloat, RequiredInteger, RequiredTuple } from '..'
 import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotIntegerFail, NotObjectFail, RequiredFail } from '../errors'
 import {
@@ -219,6 +219,11 @@ describe('Rust Types', () => {
   it('Required', () => {
     const validator = new RequiredRecord(new RequiredInteger())
     expect(validator.toString(options)).toEqual(`HashMap<String, i64>`)
+  })
+
+  it('Required, with tuple', () => {
+    const validator = new RequiredRecord(new RequiredTuple([new OptionalBoolean(), new RequiredBoolean()]))
+    expect(validator.toString(options)).toEqual(`HashMap<String, (Option<bool>, bool)>`)
   })
 
   it('Option', () => {
