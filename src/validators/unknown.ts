@@ -1,8 +1,8 @@
-import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
+import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { RequiredFail, ValidationFailure } from '../errors'
 
 export abstract class UnknownValidator<O = never> extends ValidatorBase<unknown | O> {
-  public constructor(options?: ValidatorBaseOptions) {
+  public constructor(options?: ValidatorOptions) {
     super({ ...options })
     if (options?.optimize !== false) {
       this.optimize()

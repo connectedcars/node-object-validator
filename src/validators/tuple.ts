@@ -1,5 +1,5 @@
 import { addTypeDef, ArrayValidator, ObjectValidator, RecordValidator } from '..'
-import { ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
+import { ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotArrayFail, ValidationFailure, WrongLengthFail } from '../errors'
 
 export function validateTuple(
@@ -40,7 +40,7 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
   private typeName?: string
   private decorators?: string[]
 
-  public constructor(schema: [...T], options?: ValidatorBaseOptions) {
+  public constructor(schema: [...T], options?: ValidatorOptions) {
     super(options)
     this.typeName = options?.typeName
     this.decorators = options?.deriveMacro
@@ -152,19 +152,19 @@ export class RequiredTuple<T extends ValidatorBase[]> extends TupleValidator<T> 
 }
 
 export class OptionalTuple<T extends ValidatorBase[]> extends TupleValidator<T, undefined> {
-  public constructor(schema: [...T], options?: ValidatorBaseOptions) {
+  public constructor(schema: [...T], options?: ValidatorOptions) {
     super(schema, { ...options, required: false })
   }
 }
 
 export class NullableTuple<T extends ValidatorBase[]> extends TupleValidator<T, null> {
-  public constructor(schema: [...T], options?: ValidatorBaseOptions) {
+  public constructor(schema: [...T], options?: ValidatorOptions) {
     super(schema, { ...options, nullable: true })
   }
 }
 
 export class OptionalNullableTuple<T extends ValidatorBase[]> extends TupleValidator<T, null | undefined> {
-  public constructor(schema: [...T], options?: ValidatorBaseOptions) {
+  public constructor(schema: [...T], options?: ValidatorOptions) {
     super(schema, { ...options, required: false, nullable: true })
   }
 }

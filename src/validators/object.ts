@@ -1,5 +1,5 @@
 import { UnionValidator, UnixDateTimeValidator } from '..'
-import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
+import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotObjectFail, RequiredFail, ValidationFailure } from '../errors'
 import { addTypeDef, toPascalCase, toSnakeCase } from '../util'
 
@@ -65,7 +65,7 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
 
   private deriveMacro?: string[]
 
-  public constructor(schema: T, options?: ValidatorBaseOptions) {
+  public constructor(schema: T, options?: ValidatorOptions) {
     super(options)
     this.typeName = options?.typeName
     this.schema = schema

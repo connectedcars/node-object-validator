@@ -1,5 +1,5 @@
 import { ObjectValidator, toPascalCase, UnionValidator } from '..'
-import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
+import { CodeGenResult, ValidatorBase,  ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotExactStringFail, RequiredFail, ValidationFailure } from '../errors'
 
 export function isExactString<T extends string>(value: unknown, expected: T, context?: string): value is T {
@@ -23,7 +23,7 @@ export abstract class ExactStringValidator<T extends string = never, O = never> 
 
   private typeGenerated: boolean
 
-  public constructor(expected: T, options?: ValidatorBaseOptions) {
+  public constructor(expected: T, options?: ValidatorOptions) {
     super(options)
     this.typeGenerated = false
     this.expected = expected

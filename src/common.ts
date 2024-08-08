@@ -18,25 +18,23 @@ export function isValidType<T>(value: unknown, errors: ValidationFailure[]): val
 
 export type CodeGenResult = [{ [key: string]: unknown }, string[], string[]]
 
-export type ValidatorBaseOptions = {
-  optimize?: boolean
-  required?: boolean
-  nullable?: boolean
-  earlyFail?: boolean
-  comparable?: boolean
-  typeName?: string
-}
-
 /**
  * @typedef ValidatorOptions
  * @property {boolean} [earlyFail=false] Stop validation on first failure (default: false)
  * @property {boolean} [optimize=true] Generate an optimized function for doing the validation (default: true)
- * @property {string} [typeName='Something'] Required for generating rust types when referencing objects (default: undefined)
+ * @property {boolean} [required=true] Is the validator required/optional (default: false)
+ * @property {boolean} [nullable=false] Is the validator nullable/optional (default: false)
+ * @property {boolean} [comparable=false] Is the validator able to be used in comparisons in other languages (generate comparator function/decorator) (default: false)
+ * @property {boolean} [hashable=false] Is the validator able to be hashable in other languages (hashmap usage) (default: false)
+ * @property {string} [typeName='Something'] Required for generating other language types (default: undefined)
  */
 export interface ValidatorOptions {
   earlyFail?: boolean
   optimize?: boolean
+  required?: boolean
+  nullable?: boolean
   comparable?: boolean
+  hashable?: boolean
   typeName?: string
 }
 
@@ -57,19 +55,25 @@ export function isValidator(value: unknown): value is ValidatorBase {
   return false
 }
 
-export function generateOptionsString(options: ValidatorBaseOptions, defaults: ValidatorBaseOptions): string {
+export function generateOptionsString(options: ValidatorOptions, defaults: ValidatorOptions): string {
   const selectedOptions: string[] = []
+  if (options.earlyFail !== undefined && options.earlyFail !== defaults.earlyFail) {
+    selectedOptions.push(`earlyFail: ${options.earlyFail}`)
+  }
+  if (options.optimize !== undefined && options.optimize !== defaults.optimize) {
+    selectedOptions.push(`optimize: ${options.optimize}`)
+  }
   if (options.required !== undefined && options.required !== defaults.required) {
     selectedOptions.push(`required: ${options.required}`)
   }
   if (options.nullable !== undefined && options.nullable !== defaults.nullable) {
     selectedOptions.push(`nullable: ${options.nullable}`)
   }
-  if (options.earlyFail !== undefined && options.earlyFail !== defaults.earlyFail) {
-    selectedOptions.push(`earlyFail: ${options.earlyFail}`)
+  if (options.comparable !== undefined && options.comparable !== defaults.comparable) {
+    selectedOptions.push(`comparable: ${options.comparable}`)
   }
-  if (options.optimize !== undefined && options.optimize !== defaults.optimize) {
-    selectedOptions.push(`optimize: ${options.optimize}`)
+  if (options.hashable !== undefined && options.hashable !== defaults.hashable) {
+    selectedOptions.push(`hashable: ${options.hashable}`)
   }
   if (options.typeName !== undefined && options.typeName !== defaults.typeName) {
     selectedOptions.push(`typeName: ${options.typeName}`)
@@ -87,12 +91,14 @@ export abstract class ValidatorBase<T = unknown> {
   protected optimizedValidate: ((value: unknown, context?: string) => ValidationFailure[]) | null
   protected optionsString: string
 
-  public constructor(options?: ValidatorBaseOptions) {
+  public constructor(options?: ValidatorOptions) {
     const defaults = {
-      required: true,
-      nullable: false,
       earlyFail: false,
       optimize: true,
+      required: true,
+      nullable: false,
+      comparable: false,
+      hashable: false,
       typeName: undefined
     }
     const mergedOptions = { ...defaults, ...options }

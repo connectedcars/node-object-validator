@@ -2,7 +2,6 @@ import {
   CodeGenResult,
   isValidType,
   ValidatorBase,
-  ValidatorBaseOptions,
   ValidatorExportOptions,
   ValidatorOptions
 } from '../common'
@@ -31,7 +30,7 @@ export function validateRegexMatch(value: unknown, regex: RegExp, context?: stri
 export abstract class RegexMatchValidator<O = never> extends ValidatorBase<string | O> {
   private regex: RegExp
 
-  public constructor(regex: RegExp, options?: ValidatorBaseOptions) {
+  public constructor(regex: RegExp, options?: ValidatorOptions) {
     super(options)
     this.regex = regex
     if (options?.optimize !== false) {
