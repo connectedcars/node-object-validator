@@ -1,4 +1,4 @@
-import { isValidType, ValidatorBase,  ValidatorExportOptions, ValidatorOptions } from '../common'
+import { isValidType, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotIntegerStringFail, OutOfRangeFail, ValidationFailure, WrongLengthFail } from '../errors'
 import { validateString } from './string'
 

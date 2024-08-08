@@ -20,6 +20,7 @@ import {
   generateRustTypes,
   isValidRustTypeName,
   serdeDecorators,
+  serdeDecoratorsString,
   toPascalCase,
   toSnakeCase,
   validateRustTypeName
@@ -135,6 +136,15 @@ describe(`serdeDecorators`, () => {
   })
 })
 
+describe('serdeDecoratorsString', () => {
+  it(`comparable, hashable, with unionKey and renameAll`, () => {
+    const res = serdeDecoratorsString(true, true, 'type', 'snake_case')
+    expect(res).toEqual(
+      `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]\n#[serde(rename_all = "snake_case")]\n#[serde(tag = "type")]\n`
+    )
+  })
+})
+
 describe('validateRustTypeName', () => {
   it('valid', () => {
     const validator = new RequiredObject({ propA: new RequiredString() })
@@ -168,7 +178,11 @@ describe('generateRustTypes', () => {
       furVariant: new RequiredString()
     })
 
-    const catValidator = new RequiredUnion([tabbyValidator, tuxedoValidator, maineCoonValidator], { typeName: 'Cat' })
+    const catValidator = new RequiredUnion([tabbyValidator, tuxedoValidator, maineCoonValidator], {
+      typeName: 'Cat',
+      hashable: true,
+      comparable: true
+    })
 
     const externalTupleValidator = new RequiredTuple([new RequiredInteger(0, 255), new RequiredInteger(0, 255)], {
       typeName: 'ExternalTuple'
@@ -176,7 +190,7 @@ describe('generateRustTypes', () => {
 
     const externalInterfaceValidator = new RequiredUnion(
       [
-        new RequiredExactString('CAN0'),
+        new RequiredExactString('CAN0', { typeName: 'RENAMETYPENAME' }),
         new RequiredExactString('CAN1'),
         new RequiredExactString('CAN2'),
         new RequiredExactString('VCAN0'),
@@ -276,19 +290,6 @@ describe('generateRustTypes', () => {
         valueA: new OptionalBoolean()
       },
       { typeName: 'RustType' }
-    )
-
-    const validators: ValidatorBase[] = [validator]
-    const types = generateRustTypes(validators)
-    expect(types).toMatchSnapshot()
-  })
-
-  it('overwrite derive macro', () => {
-    const validator = new RequiredObject(
-      {
-        valueA: new RequiredBoolean()
-      },
-      { typeName: 'RustType', deriveMacro: ['Serialize', 'Deserialize', 'Clone'] }
     )
 
     const validators: ValidatorBase[] = [validator]

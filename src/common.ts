@@ -11,7 +11,6 @@ export type ReturnEqual<T, C> = [T, C] extends [C, T] ? C : never
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type BaseObject = Record<string, any>
 
-// TODO: Give better name
 export function isValidType<T>(value: unknown, errors: ValidationFailure[]): value is T {
   return errors.length === 0
 }
@@ -44,8 +43,8 @@ export interface ValidatorExportOptions {
   types?: boolean
   parent?: ValidatorBase
   taggedUnionKey?: string
-  typeNameFromParent?: string
   typeDefinitions?: Record<string, string>
+  typeNameFromParent?: string
 }
 
 export function isValidator(value: unknown): value is ValidatorBase {
@@ -57,26 +56,26 @@ export function isValidator(value: unknown): value is ValidatorBase {
 
 export function generateOptionsString(options: ValidatorOptions, defaults: ValidatorOptions): string {
   const selectedOptions: string[] = []
-  if (options.earlyFail !== undefined && options.earlyFail !== defaults.earlyFail) {
-    selectedOptions.push(`earlyFail: ${options.earlyFail}`)
-  }
-  if (options.optimize !== undefined && options.optimize !== defaults.optimize) {
-    selectedOptions.push(`optimize: ${options.optimize}`)
-  }
   if (options.required !== undefined && options.required !== defaults.required) {
     selectedOptions.push(`required: ${options.required}`)
   }
   if (options.nullable !== undefined && options.nullable !== defaults.nullable) {
     selectedOptions.push(`nullable: ${options.nullable}`)
   }
+  if (options.earlyFail !== undefined && options.earlyFail !== defaults.earlyFail) {
+    selectedOptions.push(`earlyFail: ${options.earlyFail}`)
+  }
+  if (options.optimize !== undefined && options.optimize !== defaults.optimize) {
+    selectedOptions.push(`optimize: ${options.optimize}`)
+  }
+  if (options.typeName !== undefined && options.typeName !== defaults.typeName) {
+    selectedOptions.push(`typeName: ${options.typeName}`)
+  }
   if (options.comparable !== undefined && options.comparable !== defaults.comparable) {
     selectedOptions.push(`comparable: ${options.comparable}`)
   }
   if (options.hashable !== undefined && options.hashable !== defaults.hashable) {
     selectedOptions.push(`hashable: ${options.hashable}`)
-  }
-  if (options.typeName !== undefined && options.typeName !== defaults.typeName) {
-    selectedOptions.push(`typeName: ${options.typeName}`)
   }
   return selectedOptions.length > 0 ? `{ ${selectedOptions.join(', ')} }` : ''
 }
@@ -86,6 +85,9 @@ export abstract class ValidatorBase<T = unknown> {
   public required: boolean
   public nullable: boolean
   public earlyFail: boolean
+  public comparable: boolean
+  public hashable: boolean
+  public typeName: string | undefined
 
   protected codeGenId = 1
   protected optimizedValidate: ((value: unknown, context?: string) => ValidationFailure[]) | null
@@ -108,6 +110,9 @@ export abstract class ValidatorBase<T = unknown> {
     this.required = mergedOptions.required
     this.earlyFail = mergedOptions.earlyFail
     this.nullable = mergedOptions.nullable
+    this.comparable = mergedOptions.comparable
+    this.hashable = mergedOptions.hashable
+    this.typeName = mergedOptions.typeName
     this.optimizedValidate = null
   }
 

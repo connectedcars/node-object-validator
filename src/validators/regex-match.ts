@@ -1,10 +1,4 @@
-import {
-  CodeGenResult,
-  isValidType,
-  ValidatorBase,
-  ValidatorExportOptions,
-  ValidatorOptions
-} from '../common'
+import { CodeGenResult, isValidType, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { DoesNotMatchRegexFail, NotStringFail, RequiredFail, ValidationFailure, WrongLengthFail } from '../errors'
 import { validateString } from './string'
 

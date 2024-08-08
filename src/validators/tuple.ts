@@ -1,4 +1,11 @@
-import { addTypeDef, ArrayValidator, ObjectValidator, RecordValidator } from '..'
+import {
+  addTypeDef,
+  ArrayValidator,
+  ObjectValidator,
+  RecordValidator,
+  serdeDecoratorsString,
+  validateRustTypeName
+} from '..'
 import { ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotArrayFail, ValidationFailure, WrongLengthFail } from '../errors'
 
@@ -37,13 +44,8 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
 > {
   public schema: T
 
-  private typeName?: string
-  private decorators?: string[]
-
   public constructor(schema: [...T], options?: ValidatorOptions) {
     super(options)
-    this.typeName = options?.typeName
-    this.decorators = options?.deriveMacro
     this.schema = schema
     if (options?.optimize !== false) {
       this.optimize(schema)
@@ -103,25 +105,20 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
           throw new Error(`'typeName' is not set when trying to generate named tuple ${this.toString()}`)
         }
 
-        // Serde
-        let serdeStr: string
-        let deriveMacro: string[] | undefined = undefined
+        validateRustTypeName(this.typeName, this)
 
-        if (this.decorators !== undefined) {
-          const deriveMacroStr = this.decorators.join(', ')
-          serdeStr = `#[derive(${deriveMacroStr})]\n`
-          deriveMacro = this.decorators
-        } else if (options.deriveMacro !== undefined) {
-          const deriveMacroStr = options.deriveMacro.join(', ')
-          serdeStr = `#[derive(${deriveMacroStr})]\n`
-          deriveMacro = this.decorators
-        } else {
-          serdeStr = `#[derive(Serialize, Deserialize, Debug, Clone)]\n`
+        // Overwrite from parent
+        if (options.parent?.hashable === true) {
+          this.hashable = true
         }
-        serdeStr += `#[serde(rename_all = "camelCase")]\n`
+        if (options.parent?.comparable === true) {
+          this.comparable = true
+        }
+
+        const serdeStr = serdeDecoratorsString(this.comparable, this.hashable)
 
         // Type generation
-        const types = Object.values(this.schema).map(v => v.toString({ ...options, deriveMacro }))
+        const types = Object.values(this.schema).map(v => v.toString({ ...options, parent: this }))
         addTypeDef(
           this.typeName,
           `${serdeStr}pub struct ${this.typeName}(${types.join(', ')});\n\n`,

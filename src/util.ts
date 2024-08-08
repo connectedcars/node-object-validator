@@ -56,7 +56,7 @@ export function serdeDecorators(
     deriveMacros.push(`Hash`)
   }
 
-decorators.push(`#[derive(${deriveMacros.join(', ')})]`)
+  decorators.push(`#[derive(${deriveMacros.join(', ')})]`)
 
   if (renameAll !== undefined) {
     decorators.push(`#[serde(rename_all = "${renameAll}")]`)
@@ -67,6 +67,18 @@ decorators.push(`#[derive(${deriveMacros.join(', ')})]`)
   }
 
   return decorators
+}
+
+export function serdeDecoratorsString(
+  comparable = false,
+  hashable = false,
+  unionKey: string | undefined = undefined,
+  renameAll: string | undefined = 'camelCase'
+): string {
+  const serdeStr = serdeDecorators(comparable, hashable, unionKey, renameAll)
+    .map(decorator => decorator + '\n')
+    .join('')
+  return serdeStr
 }
 
 export function generateRustTypes(validators: ValidatorBase[], inputOptions?: ValidatorExportOptions): string {

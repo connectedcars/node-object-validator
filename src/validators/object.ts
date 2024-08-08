@@ -1,7 +1,7 @@
 import { UnionValidator, UnixDateTimeValidator } from '..'
 import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotObjectFail, RequiredFail, ValidationFailure } from '../errors'
-import { addTypeDef, toPascalCase, toSnakeCase } from '../util'
+import { addTypeDef, serdeDecoratorsString, toPascalCase, toSnakeCase, validateRustTypeName } from '../util'
 
 export function isObject<T extends ObjectSchema>(
   schema: T,
@@ -61,15 +61,11 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
   ObjectWrap<UndefinedToOptional<{ [K in keyof T]: T[K]['tsType'] }>> | O
 > {
   public schema: ObjectSchema
-  public typeName?: string
-
-  private deriveMacro?: string[]
 
   public constructor(schema: T, options?: ValidatorOptions) {
     super(options)
     this.typeName = options?.typeName
     this.schema = schema
-    this.deriveMacro = options?.deriveMacro
     if (options?.optimize !== false) {
       this.optimize(schema)
     }
@@ -176,28 +172,21 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
           }
         }
 
-        // Serde
-        let serdeStr: string
-        let deriveMacro: string[] | undefined = undefined
+        validateRustTypeName(this.typeName, this)
 
-        if (this.deriveMacro !== undefined) {
-          const deriveMacroStr = this.deriveMacro.join(', ')
-          serdeStr = `#[derive(${deriveMacroStr})]\n`
-          deriveMacro = this.deriveMacro
-        } else if (options.deriveMacro !== undefined) {
-          const deriveMacroStr = options.deriveMacro.join(', ')
-          serdeStr = `#[derive(${deriveMacroStr})]\n`
-          deriveMacro = this.deriveMacro
-        } else {
-          serdeStr = `#[derive(Serialize, Deserialize, Debug, Clone)]\n`
+        // Overwrite from parent
+        if (options.parent?.hashable === true) {
+          this.hashable = true
         }
-        serdeStr += `#[serde(rename_all = "camelCase")]\n`
+        if (options.parent?.comparable === true) {
+          this.comparable = true
+        }
 
         // Type definition
         const lines = Object.entries(this.schema)
           .filter(([k]) => options.taggedUnionKey === undefined || k !== options.taggedUnionKey)
           .map(([k, v]) => {
-            let serdeWithStr = ``
+            let serdeMemberStr = ``
             // The Date and DateTime variants uses the default
             if (v instanceof UnixDateTimeValidator) {
               if (v.required === false || v.nullable === true) {
@@ -205,13 +194,15 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
                   `Object key cannot be an Optional UnixDateTime. (Needs custom serialization). For: ${k.toString()}`
                 )
               }
-              serdeWithStr += `    #[serde(with = "chrono::serde::ts_seconds")]\n`
+              serdeMemberStr += `    #[serde(with = "chrono::serde::ts_seconds")]\n`
             }
             if (v.required === false || v.nullable === true) {
-              serdeWithStr += `    #[serde(skip_serializing_if = "Option::is_none")]\n`
+              serdeMemberStr += `    #[serde(skip_serializing_if = "Option::is_none")]\n`
             }
-            return `${serdeWithStr}    pub ${toSnakeCase(k)}: ${v.toString({ ...options, parent: this, typeNameFromParent: k, deriveMacro })},`
+            return `${serdeMemberStr}    pub ${toSnakeCase(k)}: ${v.toString({ ...options, parent: this, typeNameFromParent: k })},`
           })
+
+        const serdeStr = serdeDecoratorsString(this.comparable, this.hashable)
 
         // If part of a Union
         // Don't addTypeDef() when in an enum with wrapped values (non tagged union)
@@ -221,7 +212,7 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
             // If there's only 1 key in this.schema, save that single key as 'enumVariantName'
             // B example: rust: Enum{A, B(u8)} -> { 'b': 85 }
             const [enumVariantName, enumVariantValue] = Object.entries(this.schema)[0]
-            return `${toPascalCase(enumVariantName)}(${enumVariantValue.toString({ ...options, parent: this, deriveMacro })})`
+            return `${toPascalCase(enumVariantName)}(${enumVariantValue.toString({ ...options, parent: this })})`
           } else {
             const typeDef = `${serdeStr}pub struct ${this.typeName} {\n${lines.join('\n')}\n}\n\n`
             addTypeDef(this.typeName, typeDef, options?.typeDefinitions)

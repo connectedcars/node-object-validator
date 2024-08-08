@@ -1,4 +1,4 @@
-import { CodeGenResult, ValidatorBase,  ValidatorExportOptions, ValidatorOptions } from '../common'
+import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotIntegerFail, OutOfRangeFail, RequiredFail, ValidationFailure } from '../errors'
 
 export const IntegerNumbers = {

@@ -204,7 +204,9 @@ pub enum NeededUnion {
   })
 
   it('Required (in a union), rename', () => {
-    const unionValidator = new RequiredUnion([new RequiredExactString(`computerKatten`, {typeName: 'JaMand'})], { typeName: 'NeededUnion' })
+    const unionValidator = new RequiredUnion([new RequiredExactString(`computerKatten`, { typeName: 'JaMand' })], {
+      typeName: 'NeededUnion'
+    })
     expect(unionValidator.toString(options)).toEqual('NeededUnion')
 
     const expectedNeededUnion = `#[derive(Serialize, Deserialize, Debug, Clone)]
