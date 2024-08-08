@@ -2,7 +2,6 @@ import {
   CodeGenResult,
   generateOptionsString,
   ValidatorBase,
-  ValidatorBaseOptions,
   ValidatorExportOptions,
   ValidatorOptions
 } from '../common'
@@ -24,7 +23,7 @@ export function validateNull(value: unknown, context?: string): ValidationFailur
 }
 
 export abstract class NullValidator<O = never> extends ValidatorBase<null | O> {
-  public constructor(options?: ValidatorBaseOptions) {
+  public constructor(options?: ValidatorOptions) {
     super({ ...options })
     this.optionsString = options
       ? generateOptionsString(options, {

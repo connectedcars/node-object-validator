@@ -10,9 +10,11 @@ import {
   RequiredFloatString,
   RequiredInteger,
   RequiredIntegerString,
-  toPascalCase
+  serdeDecoratorsString,
+  toPascalCase,
+  validateRustTypeName
 } from '..'
-import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
+import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import {
   NotDatetimeOrDateFail,
   NotFloatOrFloatStringFail,
@@ -117,16 +119,12 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
   T[number]['tsType'] | O
 > {
   public schema: T
-  public typeName?: string
 
   private every: boolean
-  private deriveMacro?: string[]
 
-  public constructor(schema: T, options?: UnionValidatorOptions & ValidatorBaseOptions) {
+  public constructor(schema: T, options?: UnionValidatorOptions & ValidatorOptions) {
     super(options)
     this.schema = schema
-    this.typeName = options?.typeName
-    this.deriveMacro = options?.deriveMacro
     this.every = options?.every ? true : false
     if (options?.optimize !== false) {
       this.optimize(schema)
@@ -299,6 +297,16 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
           }
         }
 
+        validateRustTypeName(this.typeName, this)
+
+        // Overwrite from parent
+        if (options.parent?.hashable === true) {
+          this.hashable = true
+        }
+        if (options.parent?.comparable === true) {
+          this.comparable = true
+        }
+
         let unionKey: string | undefined = undefined
         // Tagged union
         if (this.schema.every(val => val instanceof ObjectValidator)) {
@@ -323,25 +331,7 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
           )
         }
 
-        // Serde
-        let serdeStr: string
-        let deriveMacro: string[] | undefined = undefined
-
-        if (this.deriveMacro !== undefined) {
-          const deriveMacroStr = this.deriveMacro.join(', ')
-          serdeStr = `#[derive(${deriveMacroStr})]\n`
-          deriveMacro = this.deriveMacro
-        } else if (options.deriveMacro !== undefined) {
-          const deriveMacroStr = options.deriveMacro.join(', ')
-          serdeStr = `#[derive(${deriveMacroStr})]\n`
-          deriveMacro = this.deriveMacro
-        } else {
-          serdeStr = `#[derive(Serialize, Deserialize, Debug, Clone)]\n`
-        }
-        serdeStr += `#[serde(rename_all = "camelCase")]\n`
-        if (unionKey !== undefined) {
-          serdeStr += `#[serde(tag = "${unionKey}")]\n`
-        }
+        const serdeStr = serdeDecoratorsString(this.comparable, this.hashable, unionKey)
 
         // For a tagged union the 'line' needs to say the value of the tag as a name. Then the struct. So: Name(NameStruct)
         // BUT it CANNOT contain non structs for the value
@@ -357,22 +347,25 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
             }
           }
 
+          let overrideNameStr = ``
+          if (val instanceof ExactStringValidator && val.typeName !== undefined) {
+            overrideNameStr += `    #[serde(rename = "${val.typeName}")]\n`
+          }
           const typeStr = val.toString({
             ...options,
             parent: this,
             taggedUnionKey: unionKey,
-            typeNameFromParent: `${typeNameFromParent}Data`,
-            deriveMacro
+            typeNameFromParent: `${typeNameFromParent}Data`
           })
 
           if (val instanceof ObjectValidator && typeNameFromParent !== undefined) {
-            lines.push(`${typeNameFromParent}(${typeStr})`)
+            lines.push(`${overrideNameStr}    ${typeNameFromParent}(${typeStr})`)
           } else {
-            lines.push(typeStr)
+            lines.push(`${overrideNameStr}    ${typeStr}`)
           }
         }
 
-        const typeDef = `${serdeStr}pub enum ${this.typeName} {\n    ${lines.join(',\n    ')},\n}\n\n`
+        const typeDef = `${serdeStr}pub enum ${this.typeName} {\n${lines.join(',\n')},\n}\n\n`
         addTypeDef(this.typeName, typeDef, options.typeDefinitions)
 
         // Reference
@@ -420,7 +413,7 @@ export abstract class EnumValidator<T extends readonly string[], C = never> exte
   ExactStringValidator<T[number]>[],
   C
 > {
-  public constructor(schema: T, options?: ValidatorBaseOptions) {
+  public constructor(schema: T, options?: ValidatorOptions) {
     super(
       schema.map(v => new RequiredExactString(v)),
       options
@@ -456,7 +449,7 @@ export abstract class DateTimeOrDateValidator<O = never> extends UnionValidator<
   Array<RequiredDateTime | RequiredDate>,
   O
 > {
-  public constructor(options?: ValidatorBaseOptions) {
+  public constructor(options?: ValidatorOptions) {
     super([new RequiredDateTime(), new RequiredDate()], options)
   }
 
@@ -505,7 +498,7 @@ export abstract class FloatOrFloatStringValidator<O = never> extends UnionValida
 > {
   private errStr: string
 
-  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorBaseOptions) {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super([new RequiredFloat(min, max), new RequiredFloatString(min, max)], options)
     if (min === Number.MIN_SAFE_INTEGER && max !== Number.MAX_SAFE_INTEGER) {
       this.errStr = `Must be a float or a string formatted float smaller than ${max}`
@@ -557,7 +550,7 @@ export abstract class IntegerOrIntegerStringValidator<O = never> extends UnionVa
 > {
   private errStr: string
 
-  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER, options?: ValidatorBaseOptions) {
+  public constructor(min = 0, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super([new RequiredInteger(min, max), new RequiredIntegerString(min, max)], options)
     if (min === Number.MIN_SAFE_INTEGER && max !== Number.MAX_SAFE_INTEGER) {
       this.errStr = `Must be a integer or a string formatted integer smaller than ${max}`

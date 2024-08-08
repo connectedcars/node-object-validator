@@ -203,6 +203,25 @@ pub enum NeededUnion {
     })
   })
 
+  it('Required (in a union), rename', () => {
+    const unionValidator = new RequiredUnion([new RequiredExactString(`computerKatten`, { typeName: 'JaMand' })], {
+      typeName: 'NeededUnion'
+    })
+    expect(unionValidator.toString(options)).toEqual('NeededUnion')
+
+    const expectedNeededUnion = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub enum NeededUnion {
+    #[serde(rename = "JaMand")]
+    ComputerKatten,
+}
+
+`
+    expect(typeDefinitions).toEqual({
+      NeededUnion: expectedNeededUnion
+    })
+  })
+
   it('Required, Err, in object without a union (taggedunion member, no parent)', () => {
     const objValidator = new RequiredObject({ a: new RequiredExactString(`computerKatten`) }, { typeName: 'ObjName' })
 

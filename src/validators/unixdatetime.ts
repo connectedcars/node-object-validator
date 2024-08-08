@@ -1,11 +1,4 @@
-import {
-  CodeGenResult,
-  isValidType,
-  ValidatorBase,
-  ValidatorBaseOptions,
-  ValidatorExportOptions,
-  ValidatorOptions
-} from '../common'
+import { CodeGenResult, isValidType, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import {
   NotIntegerFail,
   NotStringFail,
@@ -45,7 +38,7 @@ export function validateUnixDateTime(value: unknown, context?: string): Validati
 }
 
 export abstract class UnixDateTimeValidator<O = never> extends ValidatorBase<string | O> {
-  public constructor(options?: ValidatorBaseOptions) {
+  public constructor(options?: ValidatorOptions) {
     super(options)
     if (options?.optimize !== false) {
       this.optimize()

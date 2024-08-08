@@ -1,4 +1,4 @@
-import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
+import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotArrayFail, RequiredFail, ValidationFailure, WrongLengthFail } from '../errors'
 import { TupleValidator } from './tuple'
 
@@ -56,7 +56,7 @@ export abstract class ArrayValidator<T extends ValidatorBase = never, O = never>
   private minLength: number
   private maxLength: number
 
-  public constructor(schema: T, minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorBaseOptions) {
+  public constructor(schema: T, minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super(options)
     this.schema = schema
     this.minLength = minLength

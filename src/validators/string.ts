@@ -1,4 +1,4 @@
-import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
+import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotStringFail, RequiredFail, ValidationFailure, WrongLengthFail } from '../errors'
 
 export function isString(
@@ -33,7 +33,7 @@ export abstract class StringValidator<O = never> extends ValidatorBase<string | 
   private minLength: number
   private maxLength: number
 
-  public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorBaseOptions) {
+  public constructor(minLength = 0, maxLength = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super(options)
     this.minLength = minLength
     this.maxLength = maxLength

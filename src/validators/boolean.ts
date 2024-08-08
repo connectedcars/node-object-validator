@@ -1,4 +1,4 @@
-import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
+import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotBooleanFail, RequiredFail, ValidationFailure } from '../errors'
 
 export function isBoolean(value: unknown, context?: string): value is boolean {
@@ -17,7 +17,7 @@ export function validateBoolean(value: unknown, context?: string): ValidationFai
 }
 
 export abstract class BooleanValidator<O = never> extends ValidatorBase<boolean | O> {
-  public constructor(options?: ValidatorBaseOptions) {
+  public constructor(options?: ValidatorOptions) {
     super(options)
     if (options?.optimize !== false) {
       this.optimize()

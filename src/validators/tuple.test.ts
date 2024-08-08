@@ -229,8 +229,7 @@ pub struct TypeName(i64, Option<bool>);
     })
   })
 
-  it('Required, Overwrite Derive macro, pass on', () => {
-    // Outer
+  it('Required, comparable, hashable, gets passed on', () => {
     const outerValidator = new RequiredTuple(
       [
         new RequiredFloat(),
@@ -240,23 +239,21 @@ pub struct TypeName(i64, Option<bool>);
       ],
       {
         typeName: 'OuterType',
-        deriveMacro: ['Serialize, Deserialize, Debug']
+        hashable: true,
+        comparable: true
       }
     )
-    const expectedOuter = `#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct OuterType(f64, InnerType);
-
-`
-
-    expect(outerValidator.toString(options)).toEqual('OuterType')
-
-    // Inner
-    const expectedInner = `#[derive(Serialize, Deserialize, Debug)]
+    const expectedInner = `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
 #[serde(rename_all = "camelCase")]
 pub struct InnerType(i64, Option<bool>);
 
 `
+    const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
+#[serde(rename_all = "camelCase")]
+pub struct OuterType(f64, InnerType);
+
+`
+    expect(outerValidator.toString(options)).toEqual('OuterType')
 
     expect(typeDefinitions).toEqual({
       InnerType: expectedInner,
@@ -264,29 +261,28 @@ pub struct InnerType(i64, Option<bool>);
     })
   })
 
-  it('Required, Overwrite Derive, pass on, but overwrite takes priority', () => {
-    // Inner
-    const expectedInner = `#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct InnerType(i64, Option<bool>);
-
-`
-
-    // Outer
+  it('Required, comparable, hashable, priority of true values on inner', () => {
     const outerValidator = new RequiredTuple(
       [
         new RequiredFloat(),
         new RequiredTuple([new RequiredInteger(), new OptionalBoolean()], {
           typeName: 'InnerType',
-          deriveMacro: ['Serialize', 'Deserialize']
+          hashable: true,
+          comparable: true
         })
       ],
       {
         typeName: 'OuterType',
-        deriveMacro: ['Serialize', 'Deserialize', 'Debug']
+        hashable: false,
+        comparable: false
       }
     )
-    const expectedOuter = `#[derive(Serialize, Deserialize, Debug)]
+    const expectedInner = `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
+#[serde(rename_all = "camelCase")]
+pub struct InnerType(i64, Option<bool>);
+
+`
+    const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct OuterType(f64, InnerType);
 

@@ -1,4 +1,4 @@
-import { ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
+import { ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotBufferFail, ValidationFailure } from '../errors'
 
 export function isBuffer(value: unknown, context?: string): value is Buffer {
@@ -17,7 +17,7 @@ export function validateBuffer(value: unknown, context?: string): ValidationFail
 }
 
 export abstract class BufferValidator<O = never> extends ValidatorBase<Buffer | O> {
-  public constructor(options?: ValidatorBaseOptions) {
+  public constructor(options?: ValidatorOptions) {
     super(options)
     if (options?.optimize !== false) {
       this.optimize()
