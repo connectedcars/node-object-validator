@@ -16,7 +16,14 @@ import {
   RequiredUnixDateTime
 } from '.'
 import { ValidatorBase } from './common'
-import { generateRustTypes, toPascalCase, toSnakeCase } from './util'
+import {
+  generateRustTypes,
+  isValidRustTypeName,
+  serdeDecorators,
+  toPascalCase,
+  toSnakeCase,
+  validateRustTypeName
+} from './util'
 
 describe('toSnakeCase', () => {
   it('lower case first', () => {
@@ -39,6 +46,106 @@ describe('toPascalCase', () => {
   it('upper case first', () => {
     const res = toPascalCase('KatteKilling')
     expect(res).toEqual('KatteKilling')
+  })
+})
+
+describe('isValidRustTypeName', () => {
+  it('Valid', () => {
+    expect(isValidRustTypeName('i32')).toEqual(true)
+    expect(isValidRustTypeName('mytype')).toEqual(true)
+    expect(isValidRustTypeName('String')).toEqual(true)
+    expect(isValidRustTypeName('std::io::Result')).toEqual(true)
+    expect(isValidRustTypeName('_leadingUnderscore')).toEqual(true)
+    expect(isValidRustTypeName('KatteKilling')).toEqual(true)
+    expect(isValidRustTypeName('valid::Type_Name123')).toEqual(true)
+    expect(isValidRustTypeName('MyStruct')).toEqual(true)
+    expect(isValidRustTypeName('my_module::MyStruct')).toEqual(true)
+    expect(isValidRustTypeName('Some_Type')).toEqual(true)
+    expect(isValidRustTypeName('another_module::Some_Type')).toEqual(true)
+    expect(isValidRustTypeName('A123')).toEqual(true)
+    expect(isValidRustTypeName('my_module::A123')).toEqual(true)
+  })
+
+  it('Invalid', () => {
+    expect(isValidRustTypeName('1invalid')).toEqual(false)
+    expect(isValidRustTypeName('Katte-Killing')).toEqual(false)
+    expect(isValidRustTypeName('invalid-char!')).toEqual(false)
+    expect(isValidRustTypeName('invalid::multiple::colons::')).toEqual(false)
+    expect(isValidRustTypeName('123')).toEqual(false)
+    expect(isValidRustTypeName('invalid-char')).toEqual(false)
+    expect(isValidRustTypeName('::leadingColon')).toEqual(false)
+    expect(isValidRustTypeName('trailingColon::')).toEqual(false)
+    expect(isValidRustTypeName('multiple::invalid-characters')).toEqual(false)
+    expect(isValidRustTypeName('invalid@char')).toEqual(false)
+  })
+})
+
+describe(`serdeDecorators`, () => {
+  it(`default`, () => {
+    const res = serdeDecorators()
+    expect(res).toEqual([`#[derive(Serialize, Deserialize, Debug, Clone)]`, `#[serde(rename_all = "camelCase")]`])
+  })
+
+  it(`comparable`, () => {
+    const res = serdeDecorators(true)
+    expect(res).toEqual([
+      `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]`,
+      `#[serde(rename_all = "camelCase")]`
+    ])
+  })
+
+  it(`hashable`, () => {
+    const res = serdeDecorators(false, true)
+    expect(res).toEqual([`#[derive(Serialize, Deserialize, Debug, Clone, Hash)]`, `#[serde(rename_all = "camelCase")]`])
+  })
+
+  it(`comparable and hashable`, () => {
+    const res = serdeDecorators(true, true)
+    expect(res).toEqual([
+      `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]`,
+      `#[serde(rename_all = "camelCase")]`
+    ])
+  })
+
+  it(`with unionKey`, () => {
+    const res = serdeDecorators(false, false, 'type')
+    expect(res).toEqual([
+      `#[derive(Serialize, Deserialize, Debug, Clone)]`,
+      `#[serde(rename_all = "camelCase")]`,
+      `#[serde(tag = "type")]`
+    ])
+  })
+
+  it(`with unionKey and renameAll`, () => {
+    const res = serdeDecorators(false, false, 'type', 'snake_case')
+    expect(res).toEqual([
+      `#[derive(Serialize, Deserialize, Debug, Clone)]`,
+      `#[serde(rename_all = "snake_case")]`,
+      `#[serde(tag = "type")]`
+    ])
+  })
+
+  it(`comparable, hashable, with unionKey and renameAll`, () => {
+    const res = serdeDecorators(true, true, 'type', 'snake_case')
+    expect(res).toEqual([
+      `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]`,
+      `#[serde(rename_all = "snake_case")]`,
+      `#[serde(tag = "type")]`
+    ])
+  })
+})
+
+describe('validateRustTypeName', () => {
+  it('valid', () => {
+    const validator = new RequiredObject({ propA: new RequiredString() })
+    validateRustTypeName('RustType', validator)
+  })
+
+  it('invalid', () => {
+    const validator = new RequiredObject({ propA: new RequiredString() })
+    expect(() => {
+      validateRustTypeName('-RustType', validator)
+    }).toThrow(`validateRustTypeName(): Invalid Rust Type Name: '-RustType'. In: new RequiredObject`)
   })
 })
 

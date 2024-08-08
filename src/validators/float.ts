@@ -1,6 +1,11 @@
 import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotFloatFail, OutOfRangeFail, RequiredFail, ValidationFailure } from '../errors'
 
+export const FloatNumbers = {
+  MAX_SAFE_F32: 3.4028235e38,
+  MAX_SAFE_F64: 1.7976931348623157e308
+} as const
+
 export function isFloat(
   value: unknown,
   min = Number.MIN_SAFE_INTEGER,

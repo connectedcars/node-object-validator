@@ -38,12 +38,12 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
   public schema: T
 
   private typeName?: string
-  private deriveMacro?: string[]
+  private decorators?: string[]
 
   public constructor(schema: [...T], options?: ValidatorBaseOptions) {
     super(options)
     this.typeName = options?.typeName
-    this.deriveMacro = options?.deriveMacro
+    this.decorators = options?.deriveMacro
     this.schema = schema
     if (options?.optimize !== false) {
       this.optimize(schema)
@@ -107,14 +107,14 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
         let serdeStr: string
         let deriveMacro: string[] | undefined = undefined
 
-        if (this.deriveMacro !== undefined) {
-          const deriveMacroStr = this.deriveMacro.join(', ')
+        if (this.decorators !== undefined) {
+          const deriveMacroStr = this.decorators.join(', ')
           serdeStr = `#[derive(${deriveMacroStr})]\n`
-          deriveMacro = this.deriveMacro
+          deriveMacro = this.decorators
         } else if (options.deriveMacro !== undefined) {
           const deriveMacroStr = options.deriveMacro.join(', ')
           serdeStr = `#[derive(${deriveMacroStr})]\n`
-          deriveMacro = this.deriveMacro
+          deriveMacro = this.decorators
         } else {
           serdeStr = `#[derive(Serialize, Deserialize, Debug, Clone)]\n`
         }

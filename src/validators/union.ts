@@ -357,6 +357,10 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
             }
           }
 
+          let overrideNameStr = ``
+          if (val instanceof ExactStringValidator && val.typeName !== undefined) {
+            overrideNameStr += `    #[serde(rename = "${val.typeName}")]\n`
+          }
           const typeStr = val.toString({
             ...options,
             parent: this,
@@ -366,13 +370,13 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
           })
 
           if (val instanceof ObjectValidator && typeNameFromParent !== undefined) {
-            lines.push(`${typeNameFromParent}(${typeStr})`)
+            lines.push(`${overrideNameStr}    ${typeNameFromParent}(${typeStr})`)
           } else {
-            lines.push(typeStr)
+            lines.push(`${overrideNameStr}    ${typeStr}`)
           }
         }
 
-        const typeDef = `${serdeStr}pub enum ${this.typeName} {\n    ${lines.join(',\n    ')},\n}\n\n`
+        const typeDef = `${serdeStr}pub enum ${this.typeName} {\n${lines.join(',\n')},\n}\n\n`
         addTypeDef(this.typeName, typeDef, options.typeDefinitions)
 
         // Reference

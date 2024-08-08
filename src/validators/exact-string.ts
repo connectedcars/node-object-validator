@@ -19,6 +19,7 @@ export function validateExactString(value: unknown, expected: string, context?: 
 
 export abstract class ExactStringValidator<T extends string = never, O = never> extends ValidatorBase<T | O> {
   public expected: T
+  public typeName?: string
 
   private typeGenerated: boolean
 
@@ -26,6 +27,7 @@ export abstract class ExactStringValidator<T extends string = never, O = never> 
     super(options)
     this.typeGenerated = false
     this.expected = expected
+    this.typeName = options?.typeName
     if (options?.optimize !== false) {
       this.optimize(expected)
     }

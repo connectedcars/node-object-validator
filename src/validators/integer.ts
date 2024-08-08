@@ -1,6 +1,15 @@
 import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotIntegerFail, OutOfRangeFail, RequiredFail, ValidationFailure } from '../errors'
 
+export const IntegerNumbers = {
+  MAX_SAFE_U8: 255,
+  MAX_SAFE_U16: 65535,
+  MAX_SAFE_U32: 4294967295,
+  MAX_SAFE_I8: 127,
+  MAX_SAFE_I16: 32767,
+  MAX_SAFE_I32: 2147483647
+} as const
+
 export function isInteger(
   value: unknown,
   min: number = Number.MIN_SAFE_INTEGER,
