@@ -1,5 +1,14 @@
-import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
+import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotIntegerFail, OutOfRangeFail, RequiredFail, ValidationFailure } from '../errors'
+
+export const IntegerNumbers = {
+  MAX_SAFE_U8: 255,
+  MAX_SAFE_U16: 65535,
+  MAX_SAFE_U32: 4294967295,
+  MAX_SAFE_I8: 127,
+  MAX_SAFE_I16: 32767,
+  MAX_SAFE_I32: 2147483647
+} as const
 
 export function isInteger(
   value: unknown,
@@ -33,7 +42,7 @@ export abstract class IntegerValidator<O = never> extends ValidatorBase<number |
   private min: number
   private max: number
 
-  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorBaseOptions) {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super(options)
     this.min = min
     this.max = max
@@ -113,11 +122,11 @@ export abstract class IntegerValidator<O = never> extends ValidatorBase<number |
         let typeStr
 
         if (this.min >= 0) {
-          if (this.max <= 0xff) {
+          if (this.max <= IntegerNumbers.MAX_SAFE_U8) {
             typeStr = 'u8'
-          } else if (this.max <= 0xff_ff) {
+          } else if (this.max <= IntegerNumbers.MAX_SAFE_U16) {
             typeStr = 'u16'
-          } else if (this.max <= 0xff_ff_ff_ff) {
+          } else if (this.max <= IntegerNumbers.MAX_SAFE_U32) {
             typeStr = 'u32'
           } else {
             if (options?.jsonSafeTypes) {
@@ -128,11 +137,11 @@ export abstract class IntegerValidator<O = never> extends ValidatorBase<number |
             typeStr = 'u64'
           }
         } else {
-          if (this.max <= 0x7f && this.min >= -0x80) {
+          if (this.max <= IntegerNumbers.MAX_SAFE_I8 && this.min >= -IntegerNumbers.MAX_SAFE_I8 - 1) {
             typeStr = 'i8'
-          } else if (this.max <= 0x7f_ff && this.min >= -0x80_00) {
+          } else if (this.max <= IntegerNumbers.MAX_SAFE_I16 && this.min >= -IntegerNumbers.MAX_SAFE_I16 - 1) {
             typeStr = 'i16'
-          } else if (this.max <= 0x7f_ff_ff_ff && this.min >= -0x80_00_00_00) {
+          } else if (this.max <= IntegerNumbers.MAX_SAFE_I32 && this.min >= -IntegerNumbers.MAX_SAFE_I32 - 1) {
             typeStr = 'i32'
           } else {
             if (options?.jsonSafeTypes) {

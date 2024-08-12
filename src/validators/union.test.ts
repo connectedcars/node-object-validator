@@ -1314,7 +1314,7 @@ pub enum RustEnum {
     })
   })
 
-  it('Required, overwrite Derive macro', () => {
+  it('Required, comparable, hashable', () => {
     const misseKatValidator = new RequiredTuple(
       [new RequiredInteger(0, 255), new RequiredInteger(0, 255), new RequiredInteger(0, 255)],
       { typeName: 'MisseKatTuple' }
@@ -1327,16 +1327,17 @@ pub enum RustEnum {
       ],
       {
         typeName: 'RustEnum',
-        deriveMacro: ['Serialize, Deserialize, Debug']
+        hashable: true,
+        comparable: true
       }
     )
 
-    const expectedMisseKat = `#[derive(Serialize, Deserialize, Debug, Clone)]
+    const expectedMisseKat = `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
 #[serde(rename_all = "camelCase")]
 pub struct MisseKatTuple(u8, u8, u8);
 
 `
-    const expectedEnum = `#[derive(Serialize, Deserialize, Debug)]
+    const expectedEnum = `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
 #[serde(rename_all = "camelCase")]
 pub enum RustEnum {
     Kat(u8),

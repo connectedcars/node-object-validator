@@ -447,7 +447,7 @@ describe('Rust Types', () => {
 pub struct Extra {
     pub tag: String,
     pub tagversion: i64,
-    pub tag_depth: f64,
+    pub tag_depth: f32,
 }
 
 `
@@ -455,8 +455,8 @@ pub struct Extra {
     const expectedPosition = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Position {
-    pub latitude: f64,
-    pub longitude: f64,
+    pub latitude: f32,
+    pub longitude: f32,
     pub accuracy: i64,
     pub extra: Extra,
 }
@@ -466,8 +466,8 @@ pub struct Position {
     const expectedPositions = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Positions {
-    pub latitude: f64,
-    pub longitude: f64,
+    pub latitude: f32,
+    pub longitude: f32,
     pub accuracy: i64,
 }
 
@@ -504,7 +504,7 @@ pub struct TypeName {
 pub struct Extra {
     pub tag: String,
     pub tagversion: i64,
-    pub tag_depth: f64,
+    pub tag_depth: f32,
 }
 
 `
@@ -512,8 +512,8 @@ pub struct Extra {
     const expectedPosition = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Position {
-    pub latitude: f64,
-    pub longitude: f64,
+    pub latitude: f32,
+    pub longitude: f32,
     pub accuracy: i64,
     pub extra: Extra,
 }
@@ -523,8 +523,8 @@ pub struct Position {
     const expectedPositions = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Positions {
-    pub latitude: f64,
-    pub longitude: f64,
+    pub latitude: f32,
+    pub longitude: f32,
     pub accuracy: i64,
 }
 

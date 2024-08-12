@@ -1,4 +1,4 @@
-import { ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
+import { ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotObjectFail, ValidationFailure } from '../errors'
 import { TupleValidator } from './tuple'
 
@@ -50,7 +50,7 @@ export abstract class RecordValidator<T extends ValidatorBase = never, O = never
 > {
   public schema: T
 
-  public constructor(schema: T, options?: ValidatorBaseOptions) {
+  public constructor(schema: T, options?: ValidatorOptions) {
     super(options)
     this.schema = schema
     if (options?.optimize !== false) {

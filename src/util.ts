@@ -28,6 +28,59 @@ export function addTypeDef(typeName: string, typeValue: string, record: Record<s
   }
 }
 
+const rustTypeNameRegex = /^(?:[A-Za-z_][A-Za-z0-9_]*)(?:::[A-Za-z_][A-Za-z0-9_]*)*$/
+export function isValidRustTypeName(typeName: string): boolean {
+  return rustTypeNameRegex.test(typeName)
+}
+
+export function validateRustTypeName(typeName: string, context: ValidatorBase): void {
+  if (isValidRustTypeName(typeName) === false) {
+    throw new Error(`validateRustTypeName(): Invalid Rust Type Name: '${typeName}'. In: ${context.toString()}`)
+  }
+}
+
+export function serdeDecorators(
+  comparable = false,
+  hashable = false,
+  unionKey: string | undefined = undefined,
+  renameAll: string | undefined = 'camelCase'
+): string[] {
+  const decorators = []
+
+  const deriveMacros = [`Serialize`, `Deserialize`, `Debug`, `Clone`]
+  if (comparable === true) {
+    deriveMacros.push(`PartialEq`)
+    deriveMacros.push(`Eq`)
+  }
+  if (hashable === true) {
+    deriveMacros.push(`Hash`)
+  }
+
+  decorators.push(`#[derive(${deriveMacros.join(', ')})]`)
+
+  if (renameAll !== undefined) {
+    decorators.push(`#[serde(rename_all = "${renameAll}")]`)
+  }
+
+  if (unionKey !== undefined) {
+    decorators.push(`#[serde(tag = "${unionKey}")]`)
+  }
+
+  return decorators
+}
+
+export function serdeDecoratorsString(
+  comparable = false,
+  hashable = false,
+  unionKey: string | undefined = undefined,
+  renameAll: string | undefined = 'camelCase'
+): string {
+  const serdeStr = serdeDecorators(comparable, hashable, unionKey, renameAll)
+    .map(decorator => decorator + '\n')
+    .join('')
+  return serdeStr
+}
+
 export function generateRustTypes(validators: ValidatorBase[], inputOptions?: ValidatorExportOptions): string {
   const typeDefinitions: Record<string, string> = {}
 

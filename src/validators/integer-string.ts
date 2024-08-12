@@ -1,4 +1,4 @@
-import { isValidType, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
+import { isValidType, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotIntegerStringFail, OutOfRangeFail, ValidationFailure, WrongLengthFail } from '../errors'
 import { validateString } from './string'
 
@@ -42,7 +42,7 @@ export abstract class IntegerStringValidator<O = never> extends ValidatorBase<st
   private min: number
   private max: number
 
-  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorBaseOptions) {
+  public constructor(min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER, options?: ValidatorOptions) {
     super(options)
     this.min = min
     this.max = max

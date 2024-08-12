@@ -1,5 +1,5 @@
-import { ObjectValidator, toPascalCase, UnionValidator } from '..'
-import { CodeGenResult, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
+import { ObjectValidator, toPascalCase, UnionValidator, validateRustTypeName } from '..'
+import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotExactStringFail, RequiredFail, ValidationFailure } from '../errors'
 
 export function isExactString<T extends string>(value: unknown, expected: T, context?: string): value is T {
@@ -20,11 +20,8 @@ export function validateExactString(value: unknown, expected: string, context?: 
 export abstract class ExactStringValidator<T extends string = never, O = never> extends ValidatorBase<T | O> {
   public expected: T
 
-  private typeGenerated: boolean
-
-  public constructor(expected: T, options?: ValidatorBaseOptions) {
+  public constructor(expected: T, options?: ValidatorOptions) {
     super(options)
-    this.typeGenerated = false
     this.expected = expected
     if (options?.optimize !== false) {
       this.optimize(expected)
@@ -100,6 +97,8 @@ export abstract class ExactStringValidator<T extends string = never, O = never> 
         if (isOption) {
           throw new Error(`Rust does not support optional ExactString. For: ${this.toString()}`)
         }
+
+        validateRustTypeName(this.expected, this)
 
         const isValidParent = options?.parent instanceof UnionValidator || options?.parent instanceof ObjectValidator
         if (isValidParent === false) {

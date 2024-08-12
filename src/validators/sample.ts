@@ -1,4 +1,4 @@
-import { isValidator, ValidatorBase, ValidatorBaseOptions, ValidatorExportOptions, ValidatorOptions } from '../common'
+import { isValidator, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { ValidationFailure } from '../errors'
 import { RequiredArray } from './array'
 import { RequiredBoolean } from './boolean'
@@ -24,7 +24,7 @@ export type Sample =
   | undefined
   | { [prop: string]: Sample | undefined }
 
-export function sampleToValidator(sample: Sample, options?: ValidatorBaseOptions): ValidatorBase {
+export function sampleToValidator(sample: Sample, options?: ValidatorOptions): ValidatorBase {
   if (sample === null) {
     return new RequiredNull(options)
   }
@@ -109,7 +109,7 @@ export abstract class SampleValidator<T extends Sample = never, O = never> exten
   public schema: T
   private validator: ValidatorBase
 
-  public constructor(sample: T, options?: ValidatorBaseOptions) {
+  public constructor(sample: T, options?: ValidatorOptions) {
     super(options)
     this.schema = sample
     this.validator = sampleToValidator(this.schema, options)

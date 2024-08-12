@@ -1,6 +1,14 @@
 import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotFloatFail, OutOfRangeFail, RequiredFail } from '../errors'
-import { isFloat, NullableFloat, OptionalFloat, OptionalNullableFloat, RequiredFloat, validateFloat } from './float'
+import {
+  FloatNumbers,
+  isFloat,
+  NullableFloat,
+  OptionalFloat,
+  OptionalNullableFloat,
+  RequiredFloat,
+  validateFloat
+} from './float'
 
 describe('Float', () => {
   describe('validateFloat', () => {
@@ -203,18 +211,23 @@ describe('Rust Types', () => {
 
   it('Required', () => {
     const rustType = new RequiredFloat().toString(options)
+    expect(rustType).toEqual('f32')
+  })
+
+  it('Required, f64', () => {
+    const rustType = new RequiredFloat(0, FloatNumbers.MAX_SAFE_F64).toString(options)
     expect(rustType).toEqual('f64')
   })
 
   it('Option', () => {
     const rustType1 = new OptionalFloat().toString(options)
-    expect(rustType1).toEqual('Option<f64>')
+    expect(rustType1).toEqual('Option<f32>')
 
     const rustType2 = new NullableFloat().toString(options)
-    expect(rustType2).toEqual('Option<f64>')
+    expect(rustType2).toEqual('Option<f32>')
 
     const rustType3 = new OptionalNullableFloat().toString(options)
-    expect(rustType3).toEqual('Option<f64>')
+    expect(rustType3).toEqual('Option<f32>')
   })
 
   it('Unknown Language', () => {

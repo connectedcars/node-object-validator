@@ -2,7 +2,6 @@ import {
   CodeGenResult,
   generateOptionsString,
   ValidatorBase,
-  ValidatorBaseOptions,
   ValidatorExportOptions,
   ValidatorOptions
 } from '../common'
@@ -24,7 +23,7 @@ export function validateUndefined(value: unknown, context?: string): ValidationF
 }
 
 export abstract class UndefinedValidator<O = never> extends ValidatorBase<undefined | O> {
-  public constructor(options?: ValidatorBaseOptions) {
+  public constructor(options?: ValidatorOptions) {
     super({ ...options, required: false })
     this.optionsString = options
       ? generateOptionsString(options, {
