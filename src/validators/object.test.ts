@@ -576,7 +576,7 @@ pub struct InnerType {
     const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct OuterType {
-    pub outer_a: f64,
+    pub outer_a: f32,
     pub other_obj: InnerType,
 }
 
@@ -610,7 +610,7 @@ pub struct OtherObj {
     const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct OuterType {
-    pub outer_a: f64,
+    pub outer_a: f32,
     pub other_obj: OtherObj,
 }
 
@@ -643,7 +643,7 @@ pub struct InnerType {
     const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct OuterType {
-    pub outer_a: f64,
+    pub outer_a: f32,
     pub other_obj: InnerType,
 }
 
@@ -699,7 +699,7 @@ pub struct InnerType {
     const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
 #[serde(rename_all = "camelCase")]
 pub struct OuterType {
-    pub outer_a: f64,
+    pub outer_a: f32,
     pub other_obj: InnerType,
 }
 
@@ -735,7 +735,7 @@ pub struct InnerType {
     const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct OuterType {
-    pub outer_a: f64,
+    pub outer_a: f32,
     pub other_obj: InnerType,
 }
 

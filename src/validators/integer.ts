@@ -122,11 +122,11 @@ export abstract class IntegerValidator<O = never> extends ValidatorBase<number |
         let typeStr
 
         if (this.min >= 0) {
-          if (this.max <= 0xff) {
+          if (this.max <= IntegerNumbers.MAX_SAFE_U8) {
             typeStr = 'u8'
-          } else if (this.max <= 0xff_ff) {
+          } else if (this.max <= IntegerNumbers.MAX_SAFE_U16) {
             typeStr = 'u16'
-          } else if (this.max <= 0xff_ff_ff_ff) {
+          } else if (this.max <= IntegerNumbers.MAX_SAFE_U32) {
             typeStr = 'u32'
           } else {
             if (options?.jsonSafeTypes) {
@@ -137,11 +137,11 @@ export abstract class IntegerValidator<O = never> extends ValidatorBase<number |
             typeStr = 'u64'
           }
         } else {
-          if (this.max <= 0x7f && this.min >= -0x80) {
+          if (this.max <= IntegerNumbers.MAX_SAFE_I8 && this.min >= -IntegerNumbers.MAX_SAFE_I8 - 1) {
             typeStr = 'i8'
-          } else if (this.max <= 0x7f_ff && this.min >= -0x80_00) {
+          } else if (this.max <= IntegerNumbers.MAX_SAFE_I16 && this.min >= -IntegerNumbers.MAX_SAFE_I16 - 1) {
             typeStr = 'i16'
-          } else if (this.max <= 0x7f_ff_ff_ff && this.min >= -0x80_00_00_00) {
+          } else if (this.max <= IntegerNumbers.MAX_SAFE_I32 && this.min >= -IntegerNumbers.MAX_SAFE_I32 - 1) {
             typeStr = 'i32'
           } else {
             if (options?.jsonSafeTypes) {

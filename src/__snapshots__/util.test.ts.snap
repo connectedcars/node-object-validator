@@ -63,21 +63,21 @@ exports[`generateRustTypes write to file 1`] = `
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
 #[serde(rename_all = \\"camelCase\\")]
 pub struct TabbyData {
-    pub weight: f64,
+    pub weight: f32,
     pub age: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
 #[serde(rename_all = \\"camelCase\\")]
 pub struct TuxedoData {
-    pub weight: f64,
+    pub weight: f32,
     pub age: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
 #[serde(rename_all = \\"camelCase\\")]
 pub struct MaineCoonData {
-    pub weight: f64,
+    pub weight: f32,
     pub age: u64,
     pub fur_variant: String,
 }

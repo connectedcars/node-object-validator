@@ -115,7 +115,14 @@ export abstract class FloatValidator<O = never> extends ValidatorBase<number | O
         return typeStr
       }
       case 'rust': {
-        const typeStr = 'f64'
+        let typeStr: string
+
+        if (this.max <= FloatNumbers.MAX_SAFE_F32) {
+          typeStr = 'f32'
+        } else {
+          typeStr = 'f64'
+        }
+
         const isOption = !this.required || this.nullable
         return isOption ? `Option<${typeStr}>` : `${typeStr}`
       }

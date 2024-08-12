@@ -250,7 +250,7 @@ pub struct InnerType(i64, Option<bool>);
 `
     const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
 #[serde(rename_all = "camelCase")]
-pub struct OuterType(f64, InnerType);
+pub struct OuterType(f32, InnerType);
 
 `
     expect(outerValidator.toString(options)).toEqual('OuterType')
@@ -284,7 +284,7 @@ pub struct InnerType(i64, Option<bool>);
 `
     const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct OuterType(f64, InnerType);
+pub struct OuterType(f32, InnerType);
 
 `
     expect(outerValidator.toString(options)).toEqual('OuterType')
@@ -311,7 +311,7 @@ pub struct InnerType(i64, Option<bool>);
     const outerValidator = new RequiredTuple([new RequiredFloat(), innerValidator], { typeName: 'OuterType' })
     const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct OuterType(f64, InnerType);
+pub struct OuterType(f32, InnerType);
 
 `
     expect(outerValidator.toString(options)).toEqual('OuterType')
