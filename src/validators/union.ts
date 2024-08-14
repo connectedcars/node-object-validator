@@ -331,7 +331,7 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
           )
         }
 
-        const serdeStr = serdeDecoratorsString(this.comparable, this.hashable, unionKey)
+        const serdeStr = serdeDecoratorsString(this.comparable, this.hashable, this.defaultable, unionKey)
 
         // For a tagged union the 'line' needs to say the value of the tag as a name. Then the struct. So: Name(NameStruct)
         // BUT it CANNOT contain non structs for the value

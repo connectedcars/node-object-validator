@@ -57,6 +57,19 @@ pub struct RustType {
 "
 `;
 
+exports[`generateRustTypes optional, extra decorators 1`] = `
+"use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash, Default)]
+#[serde(rename_all = \\"camelCase\\")]
+pub struct RustType {
+    #[serde(skip_serializing_if = \\"Option::is_none\\")]
+    pub value_a: Option<bool>,
+}
+
+"
+`;
+
 exports[`generateRustTypes write to file 1`] = `
 "use serde::{Deserialize, Serialize};
 

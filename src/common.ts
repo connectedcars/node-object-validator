@@ -25,6 +25,7 @@ export type CodeGenResult = [{ [key: string]: unknown }, string[], string[]]
  * @property {boolean} [nullable=false] Is the validator nullable/optional (default: false)
  * @property {boolean} [comparable=false] Is the validator able to be used in comparisons in other languages (generate comparator function/decorator) (default: false)
  * @property {boolean} [hashable=false] Is the validator able to be hashable in other languages (hashmap usage) (default: false)
+ * @property {boolean} [defaultable=false] Is the validator able to be created with default values in other languages (default: false)
  * @property {string} [typeName='Something'] Required for generating other language types (default: undefined)
  */
 export interface ValidatorOptions {
@@ -34,6 +35,7 @@ export interface ValidatorOptions {
   nullable?: boolean
   comparable?: boolean
   hashable?: boolean
+  defaultable?: boolean
   typeName?: string
 }
 
@@ -74,6 +76,9 @@ export function generateOptionsString(options: ValidatorOptions, defaults: Valid
   if (options.comparable !== undefined && options.comparable !== defaults.comparable) {
     selectedOptions.push(`comparable: ${options.comparable}`)
   }
+  if (options.defaultable !== undefined && options.defaultable !== defaults.defaultable) {
+    selectedOptions.push(`defaultable: ${options.defaultable}`)
+  }
   if (options.hashable !== undefined && options.hashable !== defaults.hashable) {
     selectedOptions.push(`hashable: ${options.hashable}`)
   }
@@ -87,6 +92,7 @@ export abstract class ValidatorBase<T = unknown> {
   public earlyFail: boolean
   public comparable: boolean
   public hashable: boolean
+  public defaultable: boolean
   public typeName: string | undefined
 
   protected codeGenId = 1
@@ -101,6 +107,7 @@ export abstract class ValidatorBase<T = unknown> {
       nullable: false,
       comparable: false,
       hashable: false,
+      defaultable: false,
       typeName: undefined
     }
     const mergedOptions = { ...defaults, ...options }
@@ -112,6 +119,7 @@ export abstract class ValidatorBase<T = unknown> {
     this.nullable = mergedOptions.nullable
     this.comparable = mergedOptions.comparable
     this.hashable = mergedOptions.hashable
+    this.defaultable = mergedOptions.defaultable
     this.typeName = mergedOptions.typeName
     this.optimizedValidate = null
   }
