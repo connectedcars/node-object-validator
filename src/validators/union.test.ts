@@ -1277,6 +1277,106 @@ pub enum RustEnum {
     })
   })
 
+  it('Required exactstring (in a union), rename', () => {
+    const unionValidator = new RequiredUnion(
+      [new RequiredExactString('bingo1'), new RequiredExactString('bingo2', { typeName: 'BINGO-2' })],
+      {
+        typeName: 'UnionName'
+      }
+    )
+    expect(unionValidator.toString(options)).toEqual('UnionName')
+
+    const expectedNeededUnion = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub enum UnionName {
+    Bingo1,
+    #[serde(rename = "BINGO-2")]
+    Bingo2,
+}
+
+`
+    expect(typeDefinitions).toEqual({
+      UnionName: expectedNeededUnion
+    })
+  })
+
+  it('Required object (in a union), rename', () => {
+    const unionValidator = new RequiredUnion(
+      [
+        new RequiredObject({
+          bingo: new RequiredExactString(`computerKatten`, { typeName: 'Ja-Mand' }),
+          hello: new OptionalBoolean()
+        })
+      ],
+      {
+        typeName: 'UnionName'
+      }
+    )
+    expect(unionValidator.toString(options)).toEqual('UnionName')
+
+    const expectedComputerKatten = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ComputerKattenData {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hello: Option<bool>,
+}
+
+`
+    const expectedNeededUnion = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+#[serde(tag = "bingo")]
+pub enum UnionName {
+    #[serde(rename = "Ja-Mand")]
+    ComputerKatten(ComputerKattenData),
+}
+
+`
+    expect(typeDefinitions).toEqual({
+      ComputerKattenData: expectedComputerKatten,
+      UnionName: expectedNeededUnion
+    })
+  })
+
+  it('Required object (in a union), double rename', () => {
+    const unionValidator = new RequiredUnion(
+      [
+        new RequiredObject(
+          {
+            bingo: new RequiredExactString(`computerKatten`, { typeName: 'Ja-Mand' }),
+            hello: new OptionalBoolean()
+          },
+          { typeName: 'DoubleRenameFun' }
+        )
+      ],
+      {
+        typeName: 'UnionName'
+      }
+    )
+    expect(unionValidator.toString(options)).toEqual('UnionName')
+
+    const expectedDoubleRenameFun = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DoubleRenameFun {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hello: Option<bool>,
+}
+
+`
+    const expectedNeededUnion = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+#[serde(tag = "bingo")]
+pub enum UnionName {
+    #[serde(rename = "Ja-Mand")]
+    ComputerKatten(DoubleRenameFun),
+}
+
+`
+    expect(typeDefinitions).toEqual({
+      DoubleRenameFun: expectedDoubleRenameFun,
+      UnionName: expectedNeededUnion
+    })
+  })
+
   it('Required, Inline data types (single value, tuple inside, tuple outside)', () => {
     const misseKatValidator = new RequiredTuple(
       [new RequiredInteger(0, 255), new RequiredInteger(0, 255), new RequiredInteger(0, 255)],

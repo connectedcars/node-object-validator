@@ -347,10 +347,17 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
             }
           }
 
+          // Override tag/name
           let overrideNameStr = ``
+          // ExactString
           if (val instanceof ExactStringValidator && val.typeName !== undefined) {
             overrideNameStr += `    #[serde(rename = "${val.typeName}")]\n`
           }
+          // Object
+          if (val instanceof ObjectValidator && unionKey !== undefined && val.schema[unionKey].typeName !== undefined) {
+            overrideNameStr += `    #[serde(rename = "${val.schema[unionKey].typeName}")]\n`
+          }
+
           const typeStr = val.toString({
             ...options,
             parent: this,
