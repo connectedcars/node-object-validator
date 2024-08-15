@@ -1,4 +1,4 @@
-import { RequiredObject, RequiredUnion } from '..'
+import { OptionalBoolean, RequiredObject, RequiredUnion } from '..'
 import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotExactStringFail, RequiredFail } from '../errors'
 import {
