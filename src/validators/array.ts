@@ -160,7 +160,7 @@ export abstract class ArrayValidator<T extends ValidatorBase = never, O = never>
           schemaStr = `(${schemaStr})`
         }
 
-        const isOption = !this.schema.required || this.schema.nullable
+        const isOption = !this.required || this.nullable
         const typeStr = `Vec<${schemaStr}>`
         return isOption ? `Option<${typeStr}>` : typeStr
       }
