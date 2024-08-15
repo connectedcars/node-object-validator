@@ -143,9 +143,9 @@ pub enum Transport {
 #[serde(rename_all = \\"camelCase\\")]
 pub struct RequestDID {
     #[serde(skip_serializing_if = \\"Option::is_none\\")]
-    pub adaption_setup: Vec<String>,
+    pub adaption_setup: Option<Vec<String>>,
     #[serde(skip_serializing_if = \\"Option::is_none\\")]
-    pub adaption_teardown: Vec<String>,
+    pub adaption_teardown: Option<Vec<String>>,
     pub service_and_did: String,
     pub interface: ExternalInterface,
     pub application: Application,

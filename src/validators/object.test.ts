@@ -1,3 +1,4 @@
+import { OptionalString, RequiredExactString, RequiredString } from '..'
 import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotArrayFail, NotFloatFail, NotIntegerFail, NotObjectFail, RequiredFail } from '../errors'
 import { OptionalArray, RequiredArray } from './array'
@@ -745,6 +746,32 @@ pub struct OuterType {
     expect(typeDefinitions).toEqual({
       InnerType: expectedInner,
       OuterType: expectedOuter
+    })
+  })
+
+  it('Required, with an optional array', () => {
+    const validator = new RequiredObject(
+      {
+        a: new OptionalArray(new RequiredString()),
+        b: new OptionalArray(new OptionalString())
+      },
+      { typeName: 'TypeName' }
+    )
+
+    const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct TypeName {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub a: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub b: Option<Vec<Option<String>>>,
+}
+
+`
+
+    expect(validator.toString(options)).toEqual('TypeName')
+    expect(typeDefinitions).toEqual({
+      TypeName: expectedType
     })
   })
 
