@@ -115,7 +115,7 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
           this.comparable = true
         }
 
-        const serdeStr = serdeDecoratorsString(this.comparable, this.hashable)
+        const serdeStr = serdeDecoratorsString(this.comparable, this.hashable, this.defaultable)
 
         // Type generation
         const types = Object.values(this.schema).map(v => v.toString({ ...options, parent: this }))

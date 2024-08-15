@@ -202,7 +202,7 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
             return `${serdeMemberStr}    pub ${toSnakeCase(k)}: ${v.toString({ ...options, parent: this, typeNameFromParent: k })},`
           })
 
-        const serdeStr = serdeDecoratorsString(this.comparable, this.hashable)
+        const serdeStr = serdeDecoratorsString(this.comparable, this.hashable, this.defaultable)
 
         // If part of a Union
         // Don't addTypeDef() when in an enum with wrapped values (non tagged union)

@@ -42,6 +42,7 @@ export function validateRustTypeName(typeName: string, context: ValidatorBase): 
 export function serdeDecorators(
   comparable = false,
   hashable = false,
+  defaultable = false,
   unionKey: string | undefined = undefined,
   renameAll: string | undefined = 'camelCase'
 ): string[] {
@@ -54,6 +55,9 @@ export function serdeDecorators(
   }
   if (hashable === true) {
     deriveMacros.push(`Hash`)
+  }
+  if (defaultable === true) {
+    deriveMacros.push(`Default`)
   }
 
   decorators.push(`#[derive(${deriveMacros.join(', ')})]`)
@@ -72,10 +76,11 @@ export function serdeDecorators(
 export function serdeDecoratorsString(
   comparable = false,
   hashable = false,
+  defaultable = false,
   unionKey: string | undefined = undefined,
   renameAll: string | undefined = 'camelCase'
 ): string {
-  const serdeStr = serdeDecorators(comparable, hashable, unionKey, renameAll)
+  const serdeStr = serdeDecorators(comparable, hashable, defaultable, unionKey, renameAll)
     .map(decorator => decorator + '\n')
     .join('')
   return serdeStr
