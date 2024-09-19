@@ -181,6 +181,9 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
         if (options.parent?.comparable === true) {
           this.comparable = true
         }
+        if (options.parent?.defaultable === true) {
+          this.defaultable = true
+        }
 
         // Type definition
         const lines = Object.entries(this.schema)

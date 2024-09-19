@@ -229,7 +229,7 @@ pub struct TypeName(i64, Option<bool>);
     })
   })
 
-  it('Required, comparable, hashable, gets passed on', () => {
+  it('Required, comparable, hashable, default, gets passed on', () => {
     const outerValidator = new RequiredTuple(
       [
         new RequiredFloat(),
@@ -240,15 +240,16 @@ pub struct TypeName(i64, Option<bool>);
       {
         typeName: 'OuterType',
         hashable: true,
-        comparable: true
+        comparable: true,
+        defaultable: true
       }
     )
-    const expectedInner = `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
+    const expectedInner = `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct InnerType(i64, Option<bool>);
 
 `
-    const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
+    const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct OuterType(f32, InnerType);
 
@@ -268,16 +269,18 @@ pub struct OuterType(f32, InnerType);
         new RequiredTuple([new RequiredInteger(), new OptionalBoolean()], {
           typeName: 'InnerType',
           hashable: true,
-          comparable: true
+          comparable: true,
+          defaultable: true
         })
       ],
       {
         typeName: 'OuterType',
         hashable: false,
-        comparable: false
+        comparable: false,
+        defaultable: false
       }
     )
-    const expectedInner = `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
+    const expectedInner = `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct InnerType(i64, Option<bool>);
 
