@@ -114,6 +114,9 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
         if (options.parent?.comparable === true) {
           this.comparable = true
         }
+        if (options.parent?.defaultable === true) {
+          this.defaultable = true
+        }
 
         const serdeStr = serdeDecoratorsString(this.comparable, this.hashable, this.defaultable)
 

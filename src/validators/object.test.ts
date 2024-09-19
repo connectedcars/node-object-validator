@@ -680,16 +680,16 @@ pub struct TypeName {
     })
   })
 
-  it('Required, comparable, hashable, gets passed on', () => {
+  it('Required, comparable, hashable, defaultable, gets passed on', () => {
     const outerValidator = new RequiredObject(
       {
         outerA: new RequiredFloat(),
         otherObj: new RequiredObject({ innerA: new OptionalBoolean() }, { typeName: 'InnerType' })
       },
-      { typeName: 'OuterType', hashable: true, comparable: true }
+      { typeName: 'OuterType', hashable: true, comparable: true, defaultable: true }
     )
 
-    const expectedInner = `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
+    const expectedInner = `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct InnerType {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -697,7 +697,7 @@ pub struct InnerType {
 }
 
 `
-    const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
+    const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct OuterType {
     pub outer_a: f32,
@@ -713,19 +713,19 @@ pub struct OuterType {
     })
   })
 
-  it('Required, comparable, hashable, also inline, takes priority over passed in', () => {
+  it('Required, comparable, hashable, defaultable, also inline, takes priority over passed in', () => {
     const outerValidator = new RequiredObject(
       {
         outerA: new RequiredFloat(),
         otherObj: new RequiredObject(
           { innerA: new OptionalBoolean() },
-          { typeName: 'InnerType', hashable: true, comparable: true }
+          { typeName: 'InnerType', hashable: true, comparable: true, defaultable: true }
         )
       },
-      { typeName: 'OuterType', hashable: false, comparable: false }
+      { typeName: 'OuterType', hashable: false, comparable: false, defaultable: false }
     )
 
-    const expectedInner = `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
+    const expectedInner = `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct InnerType {
     #[serde(skip_serializing_if = "Option::is_none")]

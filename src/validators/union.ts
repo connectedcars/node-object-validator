@@ -306,6 +306,7 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
         if (options.parent?.comparable === true) {
           this.comparable = true
         }
+        // Don't support defaultable on union/enums as you would have to explicitly state the default (And Optional does the same job, where the recepient can select the default)
 
         let unionKey: string | undefined = undefined
         // Tagged union
