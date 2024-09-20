@@ -1,4 +1,4 @@
-import { OptionalBoolean, RequiredObject, RequiredUnion } from '..'
+import { RequiredObject, RequiredUnion } from '..'
 import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotExactStringFail, RequiredFail } from '../errors'
 import {
@@ -194,6 +194,7 @@ describe('Rust Types', () => {
     const expectedNeededUnion = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum NeededUnion {
+    #[serde(rename = "computerKatten")]
     ComputerKatten,
 }
 
@@ -212,8 +213,8 @@ pub enum NeededUnion {
     const expectedNeededUnion = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum NeededUnion {
-    #[serde(rename = "JaMand")]
-    ComputerKatten,
+    #[serde(rename = "computerKatten")]
+    JaMand,
 }
 
 `

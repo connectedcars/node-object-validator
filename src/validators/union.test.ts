@@ -1024,6 +1024,7 @@ describe.each([false, true])('Union (optimize: %s)', optimize => {
           new NotIntegerOrIntegerStringFail('Must be a integer or a string formatted integer between -500 and 1', '2')
         ])
       })
+
       it('rejects empty value', () => {
         const validator = new RequiredIntegerOrIntegerString(0, Number.MAX_SAFE_INTEGER, { optimize })
         expect(validator.validate(null)).toStrictEqual([
@@ -1152,13 +1153,16 @@ describe('Rust Types', () => {
   })
 
   it('Required, only ExactString', () => {
-    const validator = new RequiredUnion([new RequiredExactString('Sut'), new RequiredExactString('Sut2')], {
+    // Big 'S', and small 's'
+    const validator = new RequiredUnion([new RequiredExactString('Sut'), new RequiredExactString('sut2')], {
       typeName: 'RustEnum'
     })
     const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum RustEnum {
+    #[serde(rename = "Sut")]
     Sut,
+    #[serde(rename = "sut2")]
     Sut2,
 }
 
@@ -1199,7 +1203,9 @@ pub struct MisData {
 #[serde(rename_all = "camelCase")]
 #[serde(tag = "bingoTag")]
 pub enum RustEnum {
+    #[serde(rename = "kat")]
     Kat(KatData),
+    #[serde(rename = "mis")]
     Mis(MisData),
 }
 
@@ -1262,8 +1268,11 @@ pub struct SpecificTypeName {
 #[serde(rename_all = "camelCase")]
 #[serde(tag = "bingoTag")]
 pub enum RustEnum {
+    #[serde(rename = "Kat")]
     Kat(KatData),
+    #[serde(rename = "Mis")]
     Mis(MisData),
+    #[serde(rename = "Specific")]
     Specific(SpecificTypeName),
 }
 
@@ -1279,7 +1288,7 @@ pub enum RustEnum {
 
   it('Required exactstring (in a union), rename', () => {
     const unionValidator = new RequiredUnion(
-      [new RequiredExactString('bingo1'), new RequiredExactString('bingo2', { typeName: 'BINGO-2' })],
+      [new RequiredExactString('bingo1'), new RequiredExactString('bIngo2-yes', { typeName: 'Bingo2' })],
       {
         typeName: 'UnionName'
       }
@@ -1289,8 +1298,9 @@ pub enum RustEnum {
     const expectedNeededUnion = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum UnionName {
+    #[serde(rename = "bingo1")]
     Bingo1,
-    #[serde(rename = "BINGO-2")]
+    #[serde(rename = "bIngo2-yes")]
     Bingo2,
 }
 
@@ -1304,7 +1314,7 @@ pub enum UnionName {
     const unionValidator = new RequiredUnion(
       [
         new RequiredObject({
-          bingo: new RequiredExactString(`computerKatten`, { typeName: 'Ja-Mand' }),
+          bingo: new RequiredExactString(`computerKatten`, { typeName: 'JaMand' }),
           hello: new OptionalBoolean()
         })
       ],
@@ -1314,9 +1324,9 @@ pub enum UnionName {
     )
     expect(unionValidator.toString(options)).toEqual('UnionName')
 
-    const expectedComputerKatten = `#[derive(Serialize, Deserialize, Debug, Clone)]
+    const expectedJaMand = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct ComputerKattenData {
+pub struct JaMandData {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hello: Option<bool>,
 }
@@ -1326,33 +1336,35 @@ pub struct ComputerKattenData {
 #[serde(rename_all = "camelCase")]
 #[serde(tag = "bingo")]
 pub enum UnionName {
-    #[serde(rename = "Ja-Mand")]
-    ComputerKatten(ComputerKattenData),
+    #[serde(rename = "computerKatten")]
+    JaMand(JaMandData),
 }
 
 `
     expect(typeDefinitions).toEqual({
-      ComputerKattenData: expectedComputerKatten,
+      JaMandData: expectedJaMand,
       UnionName: expectedNeededUnion
     })
   })
 
   it('Required object (in a union), double rename', () => {
-    const unionValidator = new RequiredUnion(
+    const unionValidator1 = new RequiredUnion(
       [
         new RequiredObject(
           {
-            bingo: new RequiredExactString(`computerKatten`, { typeName: 'Ja-Mand' }),
+            bingo: new RequiredExactString(`computerKatten`, { typeName: 'JaMand' }),
             hello: new OptionalBoolean()
           },
           { typeName: 'DoubleRenameFun' }
-        )
+        ),
+        new RequiredObject({ bingo: new RequiredExactString('computerHunden'), hej: new RequiredBoolean() })
       ],
       {
         typeName: 'UnionName'
       }
     )
-    expect(unionValidator.toString(options)).toEqual('UnionName')
+    type UnionValidatorType = typeof unionValidator1.tsType
+    expect(unionValidator1.toString(options)).toEqual('UnionName')
 
     const expectedDoubleRenameFun = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -1362,19 +1374,36 @@ pub struct DoubleRenameFun {
 }
 
 `
+
+    const expectedAutoNaming = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ComputerHundenData {
+    pub hej: bool,
+}
+
+`
+
     const expectedNeededUnion = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 #[serde(tag = "bingo")]
 pub enum UnionName {
-    #[serde(rename = "Ja-Mand")]
-    ComputerKatten(DoubleRenameFun),
+    #[serde(rename = "computerKatten")]
+    JaMand(DoubleRenameFun),
+    #[serde(rename = "computerHunden")]
+    ComputerHunden(ComputerHundenData),
 }
 
 `
     expect(typeDefinitions).toEqual({
       DoubleRenameFun: expectedDoubleRenameFun,
+      ComputerHundenData: expectedAutoNaming,
       UnionName: expectedNeededUnion
     })
+
+    // Also make sure that the TypeScript type validates on computerKatten
+    const obj1: UnionValidatorType = { bingo: 'computerKatten' }
+    const validationErrors1 = unionValidator1.validate(obj1)
+    expect(validationErrors1.length).toEqual(0)
   })
 
   it('Required, Inline data types (single value, tuple inside, tuple outside)', () => {
@@ -1401,8 +1430,11 @@ pub struct MisseKatTuple(u8, u8, u8);
     const expectedEnum = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum RustEnum {
+    #[serde(rename = "kat")]
     Kat(u8),
+    #[serde(rename = "mis")]
     Mis(u8, bool),
+    #[serde(rename = "misseKat")]
     MisseKat(MisseKatTuple),
 }
 
@@ -1440,8 +1472,11 @@ pub struct MisseKatTuple(u8, u8, u8);
     const expectedEnum = `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
 #[serde(rename_all = "camelCase")]
 pub enum RustEnum {
+    #[serde(rename = "kat")]
     Kat(u8),
+    #[serde(rename = "mis")]
     Mis(u8, bool),
+    #[serde(rename = "misseKat")]
     MisseKat(MisseKatTuple),
 }
 
@@ -1460,7 +1495,9 @@ pub enum RustEnum {
     const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum RustEnum {
+    #[serde(rename = "Sut")]
     Sut,
+    #[serde(rename = "Sut2")]
     Sut2,
 }
 
