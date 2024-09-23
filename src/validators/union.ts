@@ -337,27 +337,37 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
         // For a tagged union the 'line' needs to say the value of the tag as a name. Then the struct. So: Name(NameStruct)
         // BUT it CANNOT contain non structs for the value
         let typeNameFromParent: string | undefined = undefined
+        let tagValue: string | undefined = undefined
+
         const lines = []
         for (const val of this.schema) {
-          if (unionKey !== undefined && val instanceof ObjectValidator) {
-            const tagValidator = val.schema[unionKey]
-            if (tagValidator instanceof ExactStringValidator) {
-              typeNameFromParent = toPascalCase(tagValidator.expected)
-            } else if (val.typeName !== undefined) {
-              typeNameFromParent = undefined
+          if (val instanceof ObjectValidator) {
+            if (unionKey === undefined) {
+              // If unionKey is undefined, we validated earlier that there's 1 element
+              tagValue = Object.keys(val.schema)[0]
+            } else {
+              const tagValidator = val.schema[unionKey]
+
+              if (tagValidator instanceof ExactStringValidator) {
+                tagValue = tagValidator.expected
+
+                if (tagValidator.typeName !== undefined) {
+                  typeNameFromParent = tagValidator.typeName
+                } else {
+                  typeNameFromParent = toPascalCase(tagValidator.expected)
+                }
+              }
             }
+          } else if (val instanceof ExactStringValidator) {
+            tagValue = val.expected
+          } else {
+            throw new Error(
+              `Unsupported case for UnionValidator, even though we validated earlier (should not happen). schema.toString(): ${this.schema.toString()})`
+            )
           }
 
           // Override tag/name
-          let overrideNameStr = ``
-          // ExactString
-          if (val instanceof ExactStringValidator && val.typeName !== undefined) {
-            overrideNameStr += `    #[serde(rename = "${val.typeName}")]\n`
-          }
-          // Object
-          if (val instanceof ObjectValidator && unionKey !== undefined && val.schema[unionKey].typeName !== undefined) {
-            overrideNameStr += `    #[serde(rename = "${val.schema[unionKey].typeName}")]\n`
-          }
+          const overrideNameStr = `    #[serde(rename = "${tagValue}")]\n`
 
           const typeStr = val.toString({
             ...options,

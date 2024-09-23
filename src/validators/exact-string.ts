@@ -98,8 +98,6 @@ export abstract class ExactStringValidator<T extends string = never, O = never> 
           throw new Error(`Rust does not support optional ExactString. For: ${this.toString()}`)
         }
 
-        validateRustTypeName(this.expected, this)
-
         const isValidParent = options?.parent instanceof UnionValidator || options?.parent instanceof ObjectValidator
         if (isValidParent === false) {
           throw new Error(`ExactString has to be in an object/union. str: ${this.expected}`)
@@ -108,7 +106,14 @@ export abstract class ExactStringValidator<T extends string = never, O = never> 
           throw new Error(`ExactString in an object, has to be part of a taggedUnion. str: ${this.expected}`)
         }
 
-        return toPascalCase(this.expected)
+        // Used in unions/enums, the union/enum adds the rename
+        if (this.typeName === undefined) {
+          validateRustTypeName(this.expected, this)
+          return toPascalCase(this.expected)
+        } else {
+          validateRustTypeName(this.typeName, this)
+          return this.typeName
+        }
       }
       default: {
         throw new Error(`Language: '${options?.language}' unknown`)
