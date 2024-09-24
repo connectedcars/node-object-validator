@@ -1,4 +1,4 @@
-import { OptionalString, RequiredExactString, RequiredString } from '..'
+import { OptionalString, RequiredExactString, RequiredString, RequiredTuple, RequiredUnion } from '..'
 import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotArrayFail, NotFloatFail, NotIntegerFail, NotObjectFail, RequiredFail } from '../errors'
 import { OptionalArray, RequiredArray } from './array'
@@ -772,6 +772,57 @@ pub struct TypeName {
     expect(validator.toString(options)).toEqual('TypeName')
     expect(typeDefinitions).toEqual({
       TypeName: expectedType
+    })
+  })
+
+  it('Required, tuple reference, make sure we dont have an extra unneeded "()"', () => {
+    const externalInterfaceValidator = new RequiredUnion([
+      new RequiredExactString('CAN0'),
+      new RequiredExactString('CAN1')
+    ])
+    // Typename from type below (key name)
+    const expectedExternalInterfaceValidator = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub enum Ecus {
+    #[serde(rename = "CAN0")]
+    CAN0,
+    #[serde(rename = "CAN1")]
+    CAN1,
+}
+
+`
+
+    const diagnosticEcuValidator = new RequiredTuple(
+      [new RequiredString(), new RequiredString(), new OptionalArray(externalInterfaceValidator)],
+      { typeName: 'DiagnosticEcu' }
+    )
+    const expectedDiagnosticEcu = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DiagnosticEcu(String, String, Option<Vec<Ecus>>);
+
+`
+
+    const setDiagnosticEcusValidator = new RequiredObject(
+      {
+        id: new RequiredString(),
+        ecus: new RequiredArray(diagnosticEcuValidator)
+      },
+      { typeName: 'SetDiagnosticEcus' }
+    )
+    const expectedSetDiagnosticEcus = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct SetDiagnosticEcus {
+    pub id: String,
+    pub ecus: Vec<DiagnosticEcu>,
+}
+
+`
+
+    expect(setDiagnosticEcusValidator.toString(options)).toEqual('SetDiagnosticEcus')
+    expect(typeDefinitions).toEqual({
+      Ecus: expectedExternalInterfaceValidator,
+      DiagnosticEcu: expectedDiagnosticEcu,
+      SetDiagnosticEcus: expectedSetDiagnosticEcus
     })
   })
 
