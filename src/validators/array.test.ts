@@ -244,6 +244,29 @@ describe('Rust Types', () => {
     expect(rustType).toEqual('Vec<(String, bool)>')
   })
 
+  it('Vec of Tuple, not inlined', () => {
+    const typeDefinitions: Record<string, string> = {}
+    const optionsLocal: ValidatorExportOptions = {
+      types: true,
+      language: 'rust',
+      typeDefinitions
+    }
+
+    const bingoValidator = new RequiredTuple([new RequiredString(), new RequiredBoolean()], { typeName: 'Bingo' })
+    const expectedBingo = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct Bingo(String, bool);
+
+`
+
+    const rustType = new RequiredArray(bingoValidator).toString(optionsLocal)
+    expect(rustType).toEqual('Vec<Bingo>')
+
+    expect(typeDefinitions).toEqual({
+      Bingo: expectedBingo
+    })
+  })
+
   it('Option<Vec>', () => {
     const rustType = new OptionalArray(new OptionalInteger()).toString(options)
     expect(rustType).toEqual('Option<Vec<Option<i64>>>')

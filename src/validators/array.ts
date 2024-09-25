@@ -156,7 +156,7 @@ export abstract class ArrayValidator<T extends ValidatorBase = never, O = never>
       }
       case 'rust': {
         let schemaStr = this.schema.toString({ ...options, parent: this })
-        if (this.schema instanceof TupleValidator) {
+        if (this.schema instanceof TupleValidator && this.schema.typeName === undefined) {
           schemaStr = `(${schemaStr})`
         }
 

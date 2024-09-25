@@ -202,7 +202,10 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
             if (v.required === false || v.nullable === true) {
               serdeMemberStr += `    #[serde(skip_serializing_if = "Option::is_none")]\n`
             }
-            return `${serdeMemberStr}    pub ${toSnakeCase(k)}: ${v.toString({ ...options, parent: this, typeNameFromParent: k })},`
+
+            const propName = toSnakeCase(k)
+            const valueStr = v.toString({ ...options, parent: this, typeNameFromParent: k })
+            return `${serdeMemberStr}    pub ${propName}: ${valueStr},`
           })
 
         const serdeStr = serdeDecoratorsString(this.comparable, this.hashable, this.defaultable)
