@@ -7,7 +7,10 @@ export const IntegerNumbers = {
   MAX_SAFE_U32: 4294967295,
   MAX_SAFE_I8: 127,
   MAX_SAFE_I16: 32767,
-  MAX_SAFE_I32: 2147483647
+  MAX_SAFE_I32: 2147483647,
+  MIN_SAFE_I8: -128,
+  MIN_SAFE_I16: -32768,
+  MIN_SAFE_I32: -2147483648
 } as const
 
 export function isInteger(
