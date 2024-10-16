@@ -3,7 +3,9 @@ import { NotFloatFail, OutOfRangeFail, RequiredFail, ValidationFailure } from '.
 
 export const FloatNumbers = {
   MAX_SAFE_F32: 3.4028235e38,
-  MAX_SAFE_F64: 1.7976931348623157e308
+  MAX_SAFE_F64: 1.7976931348623157e308,
+  MIN_SAFE_F32: 1.17549435e-38,
+  MIN_SAFE_F64: 2.2250738585072014e-308
 } as const
 
 export function isFloat(
