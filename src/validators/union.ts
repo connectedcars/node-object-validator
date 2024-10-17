@@ -351,8 +351,7 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
               if (tagValidator instanceof ExactStringValidator) {
                 tagValue = tagValidator.expected
 
-                // If there's only 1 element & it's in a tagged union(unionKey !== undefined) & it's an ExactStringValidator, it's an enum variant without any data (so just the name/variant)
-                if (tagValidator.typeName !== undefined || Object.keys(val.schema).length === 1) {
+                if (tagValidator.typeName !== undefined) {
                   typeNameFromParent = tagValidator.typeName
                 } else {
                   typeNameFromParent = toPascalCase(tagValidator.expected)
@@ -377,7 +376,11 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
             typeNameFromParent: `${typeNameFromParent}Data`
           })
 
-          if (val instanceof ObjectValidator && typeNameFromParent !== undefined) {
+          if (
+            val instanceof ObjectValidator &&
+            typeNameFromParent !== undefined &&
+            Object.keys(val.schema).length > 1
+          ) {
             lines.push(`${overrideNameStr}    ${typeNameFromParent}(${typeStr})`)
           } else {
             lines.push(`${overrideNameStr}    ${typeStr}`)

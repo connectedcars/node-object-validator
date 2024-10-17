@@ -219,8 +219,11 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
             // B example: rust: Enum{A, B(u8)} -> { 'b': 85 }
             const [enumVariantName, enumVariantValue] = Object.entries(this.schema)[0]
 
-            // BUT: If it's an exact string, we'll treat it like an enum variant without any data, but in a tagged union
+            // If it's an exact string, we'll treat it like an enum variant without any data, but in a tagged union
             if (enumVariantValue instanceof ExactStringValidator) {
+              if (enumVariantValue.typeName !== undefined) {
+                return toPascalCase(enumVariantValue.typeName)
+              }
               return toPascalCase(enumVariantValue.expected)
             }
             return `${toPascalCase(enumVariantName)}(${enumVariantValue.toString({ ...options, parent: this })})`
