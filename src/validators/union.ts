@@ -376,7 +376,11 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
             typeNameFromParent: `${typeNameFromParent}Data`
           })
 
-          if (val instanceof ObjectValidator && typeNameFromParent !== undefined) {
+          if (
+            val instanceof ObjectValidator &&
+            typeNameFromParent !== undefined &&
+            Object.keys(val.schema).length > 1
+          ) {
             lines.push(`${overrideNameStr}    ${typeNameFromParent}(${typeStr})`)
           } else {
             lines.push(`${overrideNameStr}    ${typeStr}`)

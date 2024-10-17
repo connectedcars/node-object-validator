@@ -1218,6 +1218,137 @@ pub enum RustEnum {
     })
   })
 
+  it('Required, tag with empty objects', () => {
+    const validator = new RequiredUnion(
+      [
+        new RequiredObject({ bingoTag: new RequiredExactString('kat') }),
+        new RequiredObject({ bingoTag: new RequiredExactString('mis') })
+      ],
+      {
+        typeName: 'RustEnum'
+      }
+    )
+
+    const expectedEnum = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+#[serde(tag = "bingoTag")]
+pub enum RustEnum {
+    #[serde(rename = "kat")]
+    Kat,
+    #[serde(rename = "mis")]
+    Mis,
+}
+
+`
+
+    expect(validator.toString(options)).toEqual(`RustEnum`)
+    expect(typeDefinitions).toEqual({
+      RustEnum: expectedEnum
+    })
+  })
+
+  it('Required, tag with empty objects, mixed with 1 object', () => {
+    const validator = new RequiredUnion(
+      [
+        new RequiredObject({ bingoTag: new RequiredExactString('kat') }),
+        new RequiredObject({ bingoTag: new RequiredExactString('mis'), a: new RequiredBoolean() })
+      ],
+      {
+        typeName: 'RustEnum'
+      }
+    )
+
+    const expectedMis = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct MisData {
+    pub a: bool,
+}
+
+`
+    const expectedEnum = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+#[serde(tag = "bingoTag")]
+pub enum RustEnum {
+    #[serde(rename = "kat")]
+    Kat,
+    #[serde(rename = "mis")]
+    Mis(MisData),
+}
+
+`
+    expect(validator.toString(options)).toEqual(`RustEnum`)
+    expect(typeDefinitions).toEqual({
+      MisData: expectedMis,
+      RustEnum: expectedEnum
+    })
+  })
+
+  it('Required, tag with empty objects, mixed with 1 object, with renaming', () => {
+    const validator = new RequiredUnion(
+      [
+        new RequiredObject(
+          { bingoTag: new RequiredExactString('kat', { typeName: 'Renamed1' }) },
+          { typeName: 'Renamed2' } // Should get ignored
+        ),
+        new RequiredObject(
+          { bingoTag: new RequiredExactString('mis', { typeName: 'Renamed3' }), a: new RequiredBoolean() },
+          { typeName: 'Renamed4' }
+        )
+      ],
+      {
+        typeName: 'RustEnum'
+      }
+    )
+
+    const expectedRenamed4 = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct Renamed4 {
+    pub a: bool,
+}
+
+`
+    const expectedEnum = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+#[serde(tag = "bingoTag")]
+pub enum RustEnum {
+    #[serde(rename = "kat")]
+    Renamed1,
+    #[serde(rename = "mis")]
+    Renamed3(Renamed4),
+}
+
+`
+    expect(validator.toString(options)).toEqual(`RustEnum`)
+    expect(typeDefinitions).toEqual({
+      Renamed4: expectedRenamed4,
+      RustEnum: expectedEnum
+    })
+  })
+
+  it('Required, no tags, still with values', () => {
+    const validator = new RequiredUnion(
+      [new RequiredObject({ kat: new RequiredBoolean() }), new RequiredObject({ mis: new RequiredBoolean() })],
+      {
+        typeName: 'RustEnum'
+      }
+    )
+
+    const expectedEnum = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub enum RustEnum {
+    #[serde(rename = "kat")]
+    Kat(bool),
+    #[serde(rename = "mis")]
+    Mis(bool),
+}
+
+`
+    expect(validator.toString(options)).toEqual(`RustEnum`)
+    expect(typeDefinitions).toEqual({
+      RustEnum: expectedEnum
+    })
+  })
+
   it('Required, tagged union, outside, and overwrite typename', () => {
     const outside1Validator = new RequiredObject({
       bingoTag: new RequiredExactString('Kat'),
