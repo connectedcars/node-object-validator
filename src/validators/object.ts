@@ -167,7 +167,16 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
             if (options.typeNameFromParent === undefined) {
               throw new Error(`'typeName' option is not set, and 'options.objectKey' is not set on ${this.toString()}`)
             } else {
-              this.typeName = toPascalCase(`${options.typeNameFromParent}`)
+              let firstPart = ``
+              if (options.parent.typeName !== undefined) {
+                firstPart += toPascalCase(options.parent.typeName!)
+              } else {
+                console.log(`shitty dooo`)
+                // throw new Error(`Should not shiggy diggy do for: ${options.parent.typeName}`)
+              }
+              const secondPart = toPascalCase(options.typeNameFromParent)
+              const generatedTypeName = `${firstPart}${secondPart}`
+              this.typeName = generatedTypeName
             }
           }
         }

@@ -600,9 +600,9 @@ pub struct OuterType {
       { typeName: 'OuterType' }
     )
 
-    const expectedInner = `#[derive(Serialize, Deserialize, Debug, Clone)]
+    const expectedOther = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct OtherObj {
+pub struct OuterTypeOtherObj {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub inner_a: Option<bool>,
 }
@@ -612,14 +612,14 @@ pub struct OtherObj {
 #[serde(rename_all = "camelCase")]
 pub struct OuterType {
     pub outer_a: f32,
-    pub other_obj: OtherObj,
+    pub other_obj: OuterTypeOtherObj,
 }
 
 `
 
     expect(outerValidator.toString(options)).toEqual('OuterType')
     expect(typeDefinitions).toEqual({
-      OtherObj: expectedInner,
+      OuterTypeOtherObj: expectedOther,
       OuterType: expectedOuter
     })
   })
