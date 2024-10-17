@@ -1,4 +1,4 @@
-import { UnionValidator, UnixDateTimeValidator } from '..'
+import { ExactStringValidator, UnionValidator, UnixDateTimeValidator } from '..'
 import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotObjectFail, RequiredFail, ValidationFailure } from '../errors'
 import { addTypeDef, serdeDecoratorsString, toPascalCase, toSnakeCase, validateRustTypeName } from '../util'
@@ -218,6 +218,11 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
             // If there's only 1 key in this.schema, save that single key as 'enumVariantName'
             // B example: rust: Enum{A, B(u8)} -> { 'b': 85 }
             const [enumVariantName, enumVariantValue] = Object.entries(this.schema)[0]
+
+            // BUT: If it's an exact string, we'll treat it like an enum variant without any data, but in a tagged union
+            if (enumVariantValue instanceof ExactStringValidator) {
+              return toPascalCase(enumVariantValue.expected)
+            }
             return `${toPascalCase(enumVariantName)}(${enumVariantValue.toString({ ...options, parent: this })})`
           } else {
             const typeDef = `${serdeStr}pub struct ${this.typeName} {\n${lines.join('\n')}\n}\n\n`
