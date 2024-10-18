@@ -2,7 +2,7 @@ import { OptionalString, RequiredExactString, RequiredString, RequiredTuple, Req
 import { AssertEqual, ValidatorExportOptions } from '../common'
 import { NotArrayFail, NotFloatFail, NotIntegerFail, NotObjectFail, RequiredFail } from '../errors'
 import { OptionalArray, RequiredArray } from './array'
-import { OptionalBoolean } from './boolean'
+import { OptionalBoolean, RequiredBoolean } from './boolean'
 import { OptionalDate, RequiredDate } from './date'
 import { OptionalDateTime } from './datetime'
 import { RequiredFloat } from './float'
@@ -624,6 +624,49 @@ pub struct OuterType {
     })
   })
 
+  it('Required, has array with nested type, automatic naming', () => {
+    const outerValidator = new RequiredObject(
+      {
+        a: new RequiredArray(new RequiredObject({ a_inner: new RequiredBoolean() })),
+        b: new RequiredObject({ b_inner: new OptionalBoolean() })
+      },
+      { typeName: 'MainType' }
+    )
+
+    const expectedA = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct MainTypeA {
+    pub a_inner: bool,
+}
+
+`
+
+    const expectedB = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct MainTypeB {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub b_inner: Option<bool>,
+}
+
+`
+
+    const expectedOuter = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct MainType {
+    pub a: Vec<MainTypeA>,
+    pub b: MainTypeB,
+}
+
+`
+
+    expect(outerValidator.toString(options)).toEqual('MainType')
+    expect(typeDefinitions).toEqual({
+      MainTypeB: expectedB,
+      MainTypeA: expectedA,
+      MainType: expectedOuter
+    })
+  })
+
   it('Required, Nested, type definition nested, manual name', () => {
     const outerValidator = new RequiredObject(
       {
@@ -776,10 +819,10 @@ pub struct TypeName {
   })
 
   it('Required, tuple reference, make sure we dont have an extra unneeded "()"', () => {
-    const externalInterfaceValidator = new RequiredUnion([
-      new RequiredExactString('CAN0'),
-      new RequiredExactString('CAN1')
-    ])
+    const externalInterfaceValidator = new RequiredUnion(
+      [new RequiredExactString('CAN0'), new RequiredExactString('CAN1')],
+      { typeName: 'Ecus' }
+    )
     // Typename from type below (key name)
     const expectedExternalInterfaceValidator = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]

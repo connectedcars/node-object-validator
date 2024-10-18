@@ -169,10 +169,7 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
             } else {
               let firstPart = ``
               if (options.parent.typeName !== undefined) {
-                firstPart += toPascalCase(options.parent.typeName!)
-              } else {
-                console.log(`shitty dooo`)
-                // throw new Error(`Should not shiggy diggy do for: ${options.parent.typeName}`)
+                firstPart += toPascalCase(options.parent.typeName)
               }
               const secondPart = toPascalCase(options.typeNameFromParent)
               const generatedTypeName = `${firstPart}${secondPart}`

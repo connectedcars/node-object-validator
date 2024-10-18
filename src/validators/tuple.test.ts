@@ -1,4 +1,4 @@
-import { OptionalBoolean, RequiredFloat } from '..'
+import { OptionalBoolean, RequiredBoolean, RequiredFloat, RequiredObject } from '..'
 import { ValidatorExportOptions } from '../common'
 import { NotArrayFail, NotIntegerFail, NotStringFail, RequiredFail, WrongLengthFail } from '../errors'
 import { OptionalArray } from './array'
@@ -226,6 +226,44 @@ pub struct TypeName(i64, Option<bool>);
 `
     expect(typeDefinitions).toEqual({
       TypeName: expectedType
+    })
+  })
+
+  it('Required, inner types, cannot automatically name (no key names in tuples)', () => {
+    const validator = new RequiredTuple(
+      [
+        new RequiredObject({ a: new RequiredBoolean() }, { typeName: 'InnerObj' }),
+        new OptionalTuple([new RequiredString(), new RequiredString()], { typeName: 'InnerTuple' })
+      ],
+      {
+        typeName: 'TypeName'
+      }
+    )
+    expect(validator.toString(options)).toEqual(`TypeName`)
+
+    const expectedInnerObj = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct InnerObj {
+    pub a: bool,
+}
+
+`
+
+    const expectedInnerTuple = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct InnerTuple(String, String);
+
+`
+
+    const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct TypeName(InnerObj, Option<InnerTuple>);
+
+`
+    expect(typeDefinitions).toEqual({
+      TypeName: expectedType,
+      InnerObj: expectedInnerObj,
+      InnerTuple: expectedInnerTuple
     })
   })
 
