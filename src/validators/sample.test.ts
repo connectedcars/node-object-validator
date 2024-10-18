@@ -417,7 +417,7 @@ describe('Rust Types', () => {
         tagDepth: 3.1416
       }
     },
-    positions: [
+    positionNoExtra: [
       {
         latitude: 55.332131,
         longitude: 12.54454,
@@ -444,7 +444,7 @@ describe('Rust Types', () => {
 
     const expectedExtra = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct Extra {
+pub struct TypeNamePositionExtra {
     pub tag: String,
     pub tagversion: i64,
     pub tag_depth: f32,
@@ -454,18 +454,18 @@ pub struct Extra {
 
     const expectedPosition = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct Position {
+pub struct TypeNamePosition {
     pub latitude: f32,
     pub longitude: f32,
     pub accuracy: i64,
-    pub extra: Extra,
+    pub extra: TypeNamePositionExtra,
 }
 
 `
 
-    const expectedPositions = `#[derive(Serialize, Deserialize, Debug, Clone)]
+    const expectedPositionNoExtra = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct Positions {
+pub struct TypeNamePositionNoExtra {
     pub latitude: f32,
     pub longitude: f32,
     pub accuracy: i64,
@@ -481,16 +481,16 @@ pub struct TypeName {
     pub recorded_at: DateTime<Utc>,
     pub trip_id: i64,
     pub value: i64,
-    pub position: Position,
-    pub positions: Vec<Positions>,
+    pub position: TypeNamePosition,
+    pub position_no_extra: Vec<TypeNamePositionNoExtra>,
 }
 
 `
 
     expect(typeDefinitions).toEqual({
-      Extra: expectedExtra,
-      Position: expectedPosition,
-      Positions: expectedPositions,
+      TypeNamePosition: expectedPosition,
+      TypeNamePositionExtra: expectedExtra,
+      TypeNamePositionNoExtra: expectedPositionNoExtra,
       TypeName: expectedTypeName
     })
   })
@@ -501,7 +501,7 @@ pub struct TypeName {
 
     const expectedExtra = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct Extra {
+pub struct TypeNamePositionExtra {
     pub tag: String,
     pub tagversion: i64,
     pub tag_depth: f32,
@@ -511,18 +511,18 @@ pub struct Extra {
 
     const expectedPosition = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct Position {
+pub struct TypeNamePosition {
     pub latitude: f32,
     pub longitude: f32,
     pub accuracy: i64,
-    pub extra: Extra,
+    pub extra: TypeNamePositionExtra,
 }
 
 `
 
-    const expectedPositions = `#[derive(Serialize, Deserialize, Debug, Clone)]
+    const expectedPositionNoExtra = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct Positions {
+pub struct TypeNamePositionNoExtra {
     pub latitude: f32,
     pub longitude: f32,
     pub accuracy: i64,
@@ -538,16 +538,16 @@ pub struct TypeName {
     pub recorded_at: DateTime<Utc>,
     pub trip_id: i64,
     pub value: i64,
-    pub position: Position,
-    pub positions: Vec<Positions>,
+    pub position: TypeNamePosition,
+    pub position_no_extra: Vec<TypeNamePositionNoExtra>,
 }
 
 `
 
     expect(typeDefinitions).toEqual({
-      Extra: expectedExtra,
-      Position: expectedPosition,
-      Positions: expectedPositions,
+      TypeNamePosition: expectedPosition,
+      TypeNamePositionExtra: expectedExtra,
+      TypeNamePositionNoExtra: expectedPositionNoExtra,
       TypeName: expectedTypeName
     })
   })

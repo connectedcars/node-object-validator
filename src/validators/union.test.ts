@@ -1186,14 +1186,14 @@ pub enum RustEnum {
 
     const expectedKat = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct KatData {
+pub struct RustEnumKatData {
     pub ja: bool,
 }
 
 `
     const expectedMis = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct MisData {
+pub struct RustEnumMisData {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ja: Option<bool>,
 }
@@ -1204,16 +1204,16 @@ pub struct MisData {
 #[serde(tag = "bingoTag")]
 pub enum RustEnum {
     #[serde(rename = "kat")]
-    Kat(KatData),
+    Kat(RustEnumKatData),
     #[serde(rename = "mis")]
-    Mis(MisData),
+    Mis(RustEnumMisData),
 }
 
 `
     expect(validator.toString(options)).toEqual(`RustEnum`)
     expect(typeDefinitions).toEqual({
-      KatData: expectedKat,
-      MisData: expectedMis,
+      RustEnumKatData: expectedKat,
+      RustEnumMisData: expectedMis,
       RustEnum: expectedEnum
     })
   })
@@ -1260,7 +1260,7 @@ pub enum RustEnum {
 
     const expectedMis = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct MisData {
+pub struct RustEnumMisData {
     pub a: bool,
 }
 
@@ -1272,13 +1272,13 @@ pub enum RustEnum {
     #[serde(rename = "kat")]
     Kat,
     #[serde(rename = "mis")]
-    Mis(MisData),
+    Mis(RustEnumMisData),
 }
 
 `
     expect(validator.toString(options)).toEqual(`RustEnum`)
     expect(typeDefinitions).toEqual({
-      MisData: expectedMis,
+      RustEnumMisData: expectedMis,
       RustEnum: expectedEnum
     })
   })
@@ -1374,14 +1374,14 @@ pub enum RustEnum {
 
     const expectedOutside1 = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct KatData {
+pub struct RustEnumKatData {
     pub ja: bool,
 }
 
 `
     const expectedOutside2 = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct MisData {
+pub struct RustEnumMisData {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ja: Option<bool>,
 }
@@ -1400,9 +1400,9 @@ pub struct SpecificTypeName {
 #[serde(tag = "bingoTag")]
 pub enum RustEnum {
     #[serde(rename = "Kat")]
-    Kat(KatData),
+    Kat(RustEnumKatData),
     #[serde(rename = "Mis")]
-    Mis(MisData),
+    Mis(RustEnumMisData),
     #[serde(rename = "Specific")]
     Specific(SpecificTypeName),
 }
@@ -1410,8 +1410,8 @@ pub enum RustEnum {
 `
     expect(validator.toString(options)).toEqual(`RustEnum`)
     expect(typeDefinitions).toEqual({
-      KatData: expectedOutside1,
-      MisData: expectedOutside2,
+      RustEnumKatData: expectedOutside1,
+      RustEnumMisData: expectedOutside2,
       SpecificTypeName: expectedOutside3,
       RustEnum: expectedEnum
     })
@@ -1457,7 +1457,7 @@ pub enum UnionName {
 
     const expectedJaMand = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct JaMandData {
+pub struct UnionNameJaMandData {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hello: Option<bool>,
 }
@@ -1468,12 +1468,12 @@ pub struct JaMandData {
 #[serde(tag = "bingo")]
 pub enum UnionName {
     #[serde(rename = "computerKatten")]
-    JaMand(JaMandData),
+    JaMand(UnionNameJaMandData),
 }
 
 `
     expect(typeDefinitions).toEqual({
-      JaMandData: expectedJaMand,
+      UnionNameJaMandData: expectedJaMand,
       UnionName: expectedNeededUnion
     })
   })
@@ -1508,7 +1508,7 @@ pub struct DoubleRenameFun {
 
     const expectedAutoNaming = `#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct ComputerHundenData {
+pub struct UnionNameComputerHundenData {
     pub hej: bool,
 }
 
@@ -1521,13 +1521,13 @@ pub enum UnionName {
     #[serde(rename = "computerKatten")]
     JaMand(DoubleRenameFun),
     #[serde(rename = "computerHunden")]
-    ComputerHunden(ComputerHundenData),
+    ComputerHunden(UnionNameComputerHundenData),
 }
 
 `
     expect(typeDefinitions).toEqual({
       DoubleRenameFun: expectedDoubleRenameFun,
-      ComputerHundenData: expectedAutoNaming,
+      UnionNameComputerHundenData: expectedAutoNaming,
       UnionName: expectedNeededUnion
     })
 

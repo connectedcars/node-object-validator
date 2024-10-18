@@ -1,5 +1,6 @@
 import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotArrayFail, RequiredFail, ValidationFailure, WrongLengthFail } from '../errors'
+import { toPascalCase } from '../util'
 import { TupleValidator } from './tuple'
 
 export function isArray<T extends ValidatorBase>(
@@ -155,7 +156,29 @@ export abstract class ArrayValidator<T extends ValidatorBase = never, O = never>
         return typeStr
       }
       case 'rust': {
-        let schemaStr = this.schema.toString({ ...options, parent: this })
+        let generatedTypeName: string | undefined = undefined
+        if (options !== undefined) {
+          let firstPart = ``
+          let secondPart = ``
+
+          if (options.parent !== undefined) {
+            if (options.parent.typeName !== undefined) {
+              firstPart += toPascalCase(options.parent.typeName)
+            }
+          }
+
+          if (options.typeNameFromParent !== undefined) {
+            secondPart = toPascalCase(options.typeNameFromParent)
+          }
+
+          generatedTypeName = `${firstPart}${secondPart}`
+        }
+
+        let schemaStr = this.schema.toString({
+          ...options,
+          parent: this,
+          typeNameFromParent: generatedTypeName
+        })
         if (this.schema instanceof TupleValidator && this.schema.typeName === undefined) {
           schemaStr = `(${schemaStr})`
         }
