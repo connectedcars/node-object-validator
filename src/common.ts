@@ -24,6 +24,8 @@ export type CodeGenResult = [{ [key: string]: unknown }, string[], string[]]
  * @property {boolean} [required=true] Is the validator required/optional (default: false)
  * @property {boolean} [nullable=false] Is the validator nullable/optional (default: false)
  * @property {boolean} [comparable=false] Is the validator able to be used in comparisons in other languages (generate comparator function/decorator) (default: false)
+ * @property {boolean} [partialComparable=false] Is the validator able to be used in partial comparisons in other languages (floats which can't do a normal Eq etc) (generate comparator function/decorator) (default: false)
+ * @property {boolean} [copyable=false] Is the validator able to be copied when passed around as a reference (like basic types (integers etc)) instead of objects, in other languages (default: false)
  * @property {boolean} [hashable=false] Is the validator able to be hashable in other languages (hashmap usage) (default: false)
  * @property {boolean} [defaultable=false] Is the validator able to be created with default values in other languages (default: false)
  * @property {string} [typeName='Something'] Required for generating other language types (default: undefined)
@@ -34,6 +36,7 @@ export interface ValidatorOptions {
   required?: boolean
   nullable?: boolean
   comparable?: boolean
+  partialComparable?: boolean
   copyable?: boolean
   hashable?: boolean
   defaultable?: boolean
@@ -78,6 +81,9 @@ export function generateOptionsString(options: ValidatorOptions, defaults: Valid
   if (options.comparable !== undefined && options.comparable !== defaults.comparable) {
     selectedOptions.push(`comparable: ${options.comparable}`)
   }
+  if (options.partialComparable !== undefined && options.partialComparable !== defaults.partialComparable) {
+    selectedOptions.push(`partialComparable: ${options.partialComparable}`)
+  }
   if (options.defaultable !== undefined && options.defaultable !== defaults.defaultable) {
     selectedOptions.push(`defaultable: ${options.defaultable}`)
   }
@@ -96,6 +102,7 @@ export abstract class ValidatorBase<T = unknown> {
   public nullable: boolean
   public earlyFail: boolean
   public comparable: boolean
+  public partialComparable: boolean
   public hashable: boolean
   public defaultable: boolean
   public copyable: boolean
@@ -112,6 +119,7 @@ export abstract class ValidatorBase<T = unknown> {
       required: true,
       nullable: false,
       comparable: false,
+      partialComparable: false,
       hashable: false,
       defaultable: false,
       copyable: false,
@@ -125,6 +133,7 @@ export abstract class ValidatorBase<T = unknown> {
     this.earlyFail = mergedOptions.earlyFail
     this.nullable = mergedOptions.nullable
     this.comparable = mergedOptions.comparable
+    this.partialComparable = mergedOptions.partialComparable
     this.hashable = mergedOptions.hashable
     this.defaultable = mergedOptions.defaultable
     this.typeName = mergedOptions.typeName
