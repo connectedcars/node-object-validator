@@ -49,6 +49,7 @@ export function decoratorsString(
       copyable: validator.copyable,
       hashable: validator.hashable,
       comparable: validator.comparable,
+      partialComparable: validator.partialComparable,
       defaultable: validator.defaultable,
       unionKey: unionKey,
       renameAll: 'camelCase'
@@ -64,6 +65,7 @@ export function decoratorsString(
 
 export interface SerdeDecoratorsOptions {
   comparable: boolean
+  partialComparable: boolean
   hashable: boolean
   defaultable: boolean
   copyable: boolean
@@ -74,8 +76,13 @@ export function serdeDecorators(options: SerdeDecoratorsOptions): string[] {
   const decorators = []
 
   const deriveMacros = [`Serialize`, `Deserialize`, `Debug`, `Clone`]
-  if (options.comparable === true) {
+  if (options.partialComparable) {
     deriveMacros.push(`PartialEq`)
+  }
+  if (options.comparable) {
+    if (!options.partialComparable) {
+      deriveMacros.push(`PartialEq`)
+    }
     deriveMacros.push(`Eq`)
   }
   if (options.hashable === true) {

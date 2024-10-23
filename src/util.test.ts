@@ -142,6 +142,22 @@ describe(`serdeDecorators`, () => {
     ])
   })
 
+  it(`partialComparable and hashable`, () => {
+    const res = serdeDecorators({ ...options, hashable: true, partialComparable: true })
+    expect(res).toEqual([
+      `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Hash)]`,
+      `#[serde(rename_all = "camelCase")]`
+    ])
+  })
+
+  it(`partialComparable and comparable (make sure there's no duplicates)`, () => {
+    const res = serdeDecorators({ ...options, partialComparable: true, comparable: true })
+    expect(res).toEqual([
+      `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]`,
+      `#[serde(rename_all = "camelCase")]`
+    ])
+  })
+
   it(`with unionKey`, () => {
     const res = serdeDecorators({ ...options, unionKey: 'type' })
     expect(res).toEqual([
