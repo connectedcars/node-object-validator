@@ -34,13 +34,15 @@ export interface ValidatorOptions {
   required?: boolean
   nullable?: boolean
   comparable?: boolean
+  copyable?: boolean
   hashable?: boolean
   defaultable?: boolean
   typeName?: string
 }
 
+export type SupportedLanguages = 'typescript' | 'rust'
 export interface ValidatorExportOptions {
-  language?: 'typescript' | 'rust'
+  language?: SupportedLanguages
   jsonSafeTypes?: boolean
   types?: boolean
   parent?: ValidatorBase
@@ -82,6 +84,9 @@ export function generateOptionsString(options: ValidatorOptions, defaults: Valid
   if (options.hashable !== undefined && options.hashable !== defaults.hashable) {
     selectedOptions.push(`hashable: ${options.hashable}`)
   }
+  if (options.copyable !== undefined && options.copyable !== defaults.copyable) {
+    selectedOptions.push(`copyable: ${options.copyable}`)
+  }
   return selectedOptions.length > 0 ? `{ ${selectedOptions.join(', ')} }` : ''
 }
 
@@ -93,6 +98,7 @@ export abstract class ValidatorBase<T = unknown> {
   public comparable: boolean
   public hashable: boolean
   public defaultable: boolean
+  public copyable: boolean
   public typeName: string | undefined
 
   protected codeGenId = 1
@@ -108,6 +114,7 @@ export abstract class ValidatorBase<T = unknown> {
       comparable: false,
       hashable: false,
       defaultable: false,
+      copyable: false,
       typeName: undefined
     }
     const mergedOptions = { ...defaults, ...options }
@@ -121,6 +128,7 @@ export abstract class ValidatorBase<T = unknown> {
     this.hashable = mergedOptions.hashable
     this.defaultable = mergedOptions.defaultable
     this.typeName = mergedOptions.typeName
+    this.copyable = mergedOptions.copyable
     this.optimizedValidate = null
   }
 

@@ -1,11 +1,4 @@
-import {
-  addTypeDef,
-  ArrayValidator,
-  ObjectValidator,
-  RecordValidator,
-  serdeDecoratorsString,
-  validateRustTypeName
-} from '..'
+import { addTypeDef, ArrayValidator, decoratorsString, ObjectValidator, RecordValidator, validateRustTypeName } from '..'
 import { ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotArrayFail, ValidationFailure, WrongLengthFail } from '../errors'
 
@@ -118,7 +111,7 @@ export abstract class TupleValidator<T extends ValidatorBase[], O = never> exten
           this.defaultable = true
         }
 
-        const serdeStr = serdeDecoratorsString(this.comparable, this.hashable, this.defaultable)
+        const serdeStr = decoratorsString(this, language, undefined)
 
         // Type generation
         const types = Object.values(this.schema).map(v => v.toString({ ...options, parent: this }))

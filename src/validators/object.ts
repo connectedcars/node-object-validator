@@ -1,7 +1,7 @@
 import { ExactStringValidator, UnionValidator, UnixDateTimeValidator } from '..'
 import { CodeGenResult, ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotObjectFail, RequiredFail, ValidationFailure } from '../errors'
-import { addTypeDef, serdeDecoratorsString, toPascalCase, toSnakeCase, validateRustTypeName } from '../util'
+import { addTypeDef, decoratorsString, toPascalCase, toSnakeCase, validateRustTypeName } from '../util'
 
 export function isObject<T extends ObjectSchema>(
   schema: T,
@@ -214,7 +214,7 @@ export abstract class ObjectValidator<T extends ObjectSchema = never, O = never>
             return `${serdeMemberStr}    pub ${propName}: ${valueStr},`
           })
 
-        const serdeStr = serdeDecoratorsString(this.comparable, this.hashable, this.defaultable)
+        const serdeStr = decoratorsString(this, language, undefined)
 
         // If part of a Union
         // Don't addTypeDef() when in an enum with wrapped values (non tagged union)

@@ -1,4 +1,4 @@
-import { ValidatorBase, ValidatorExportOptions } from './common'
+import { SupportedLanguages, ValidatorBase, ValidatorExportOptions } from './common'
 
 export function toSnakeCase(str: string): string {
   // Check if the entire string is capitalized
@@ -39,51 +39,66 @@ export function validateRustTypeName(typeName: string, context: ValidatorBase): 
   }
 }
 
-export function serdeDecorators(
-  comparable = false,
-  hashable = false,
-  defaultable = false,
-  unionKey: string | undefined = undefined,
-  renameAll: string | undefined = 'camelCase'
-): string[] {
+export function decoratorsString(
+  validator: ValidatorBase,
+  typeLanguage: SupportedLanguages,
+  unionKey: string | undefined
+): string {
+  if (typeLanguage === 'rust') {
+    const options: SerdeDecoratorsOptions = {
+      copyable: validator.copyable,
+      hashable: validator.hashable,
+      comparable: validator.comparable,
+      defaultable: validator.defaultable,
+      unionKey: unionKey,
+      renameAll: 'camelCase'
+    }
+    const serdeStr = serdeDecorators(options)
+      .map(decorator => decorator + '\n')
+      .join('')
+    return serdeStr
+  } else {
+    throw new Error(`decoratorsString() called with unsupported language: ${typeLanguage}`)
+  }
+}
+
+export interface SerdeDecoratorsOptions {
+  comparable: boolean
+  hashable: boolean
+  defaultable: boolean
+  copyable: boolean
+  unionKey?: string
+  renameAll?: string
+}
+export function serdeDecorators(options: SerdeDecoratorsOptions): string[] {
   const decorators = []
 
   const deriveMacros = [`Serialize`, `Deserialize`, `Debug`, `Clone`]
-  if (comparable === true) {
+  if (options.comparable === true) {
     deriveMacros.push(`PartialEq`)
     deriveMacros.push(`Eq`)
   }
-  if (hashable === true) {
+  if (options.hashable === true) {
     deriveMacros.push(`Hash`)
   }
-  if (defaultable === true) {
+  if (options.defaultable === true) {
     deriveMacros.push(`Default`)
+  }
+  if (options.copyable === true) {
+    deriveMacros.push(`Copy`)
   }
 
   decorators.push(`#[derive(${deriveMacros.join(', ')})]`)
 
-  if (renameAll !== undefined) {
-    decorators.push(`#[serde(rename_all = "${renameAll}")]`)
+  if (options.renameAll !== undefined) {
+    decorators.push(`#[serde(rename_all = "${options.renameAll}")]`)
   }
 
-  if (unionKey !== undefined) {
-    decorators.push(`#[serde(tag = "${unionKey}")]`)
+  if (options.unionKey !== undefined) {
+    decorators.push(`#[serde(tag = "${options.unionKey}")]`)
   }
 
   return decorators
-}
-
-export function serdeDecoratorsString(
-  comparable = false,
-  hashable = false,
-  defaultable = false,
-  unionKey: string | undefined = undefined,
-  renameAll: string | undefined = 'camelCase'
-): string {
-  const serdeStr = serdeDecorators(comparable, hashable, defaultable, unionKey, renameAll)
-    .map(decorator => decorator + '\n')
-    .join('')
-  return serdeStr
 }
 
 export function generateRustTypes(validators: ValidatorBase[], inputOptions?: ValidatorExportOptions): string {
