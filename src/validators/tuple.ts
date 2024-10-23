@@ -1,4 +1,11 @@
-import { addTypeDef, ArrayValidator, decoratorsString, ObjectValidator, RecordValidator, validateRustTypeName } from '..'
+import {
+  addTypeDef,
+  ArrayValidator,
+  decoratorsString,
+  ObjectValidator,
+  RecordValidator,
+  validateRustTypeName
+} from '..'
 import { ValidatorBase, ValidatorExportOptions, ValidatorOptions } from '../common'
 import { NotArrayFail, ValidationFailure, WrongLengthFail } from '../errors'
 

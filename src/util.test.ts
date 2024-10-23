@@ -90,6 +90,7 @@ describe(`serdeDecorators`, () => {
       comparable: false,
       hashable: false,
       copyable: false,
+      partialComparable: false,
       renameAll: 'camelCase',
       unionKey: undefined
     }
