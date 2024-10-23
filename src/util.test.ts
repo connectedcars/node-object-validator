@@ -20,7 +20,7 @@ import {
   generateRustTypes,
   isValidRustTypeName,
   serdeDecorators,
-  serdeDecoratorsString,
+  SerdeDecoratorsOptions,
   toPascalCase,
   toSnakeCase,
   validateRustTypeName
@@ -82,13 +82,26 @@ describe('isValidRustTypeName', () => {
 })
 
 describe(`serdeDecorators`, () => {
+  let options: SerdeDecoratorsOptions
+
+  beforeEach(() => {
+    options = {
+      defaultable: false,
+      comparable: false,
+      hashable: false,
+      copyable: false,
+      renameAll: 'camelCase',
+      unionKey: undefined
+    }
+  })
+
   it(`default`, () => {
-    const res = serdeDecorators()
+    const res = serdeDecorators(options)
     expect(res).toEqual([`#[derive(Serialize, Deserialize, Debug, Clone)]`, `#[serde(rename_all = "camelCase")]`])
   })
 
   it(`comparable`, () => {
-    const res = serdeDecorators(true)
+    const res = serdeDecorators({ ...options, comparable: true })
     expect(res).toEqual([
       `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]`,
       `#[serde(rename_all = "camelCase")]`
@@ -96,20 +109,25 @@ describe(`serdeDecorators`, () => {
   })
 
   it(`hashable`, () => {
-    const res = serdeDecorators(false, true)
+    const res = serdeDecorators({ ...options, hashable: true })
     expect(res).toEqual([`#[derive(Serialize, Deserialize, Debug, Clone, Hash)]`, `#[serde(rename_all = "camelCase")]`])
   })
 
   it(`defaultable`, () => {
-    const res = serdeDecorators(false, false, true)
+    const res = serdeDecorators({ ...options, defaultable: true })
     expect(res).toEqual([
       `#[derive(Serialize, Deserialize, Debug, Clone, Default)]`,
       `#[serde(rename_all = "camelCase")]`
     ])
   })
 
+  it(`copyable`, () => {
+    const res = serdeDecorators({ ...options, copyable: true })
+    expect(res).toEqual([`#[derive(Serialize, Deserialize, Debug, Clone, Copy)]`, `#[serde(rename_all = "camelCase")]`])
+  })
+
   it(`hashable, defaultable`, () => {
-    const res = serdeDecorators(false, true, true)
+    const res = serdeDecorators({ ...options, hashable: true, defaultable: true })
     expect(res).toEqual([
       `#[derive(Serialize, Deserialize, Debug, Clone, Hash, Default)]`,
       `#[serde(rename_all = "camelCase")]`
@@ -117,7 +135,7 @@ describe(`serdeDecorators`, () => {
   })
 
   it(`comparable and hashable`, () => {
-    const res = serdeDecorators(true, true)
+    const res = serdeDecorators({ ...options, hashable: true, comparable: true })
     expect(res).toEqual([
       `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]`,
       `#[serde(rename_all = "camelCase")]`
@@ -125,7 +143,7 @@ describe(`serdeDecorators`, () => {
   })
 
   it(`with unionKey`, () => {
-    const res = serdeDecorators(false, false, false, 'type')
+    const res = serdeDecorators({ ...options, unionKey: 'type' })
     expect(res).toEqual([
       `#[derive(Serialize, Deserialize, Debug, Clone)]`,
       `#[serde(rename_all = "camelCase")]`,
@@ -134,7 +152,7 @@ describe(`serdeDecorators`, () => {
   })
 
   it(`with unionKey and renameAll`, () => {
-    const res = serdeDecorators(false, false, false, 'type', 'snake_case')
+    const res = serdeDecorators({ ...options, unionKey: 'type', renameAll: 'snake_case' })
     expect(res).toEqual([
       `#[derive(Serialize, Deserialize, Debug, Clone)]`,
       `#[serde(rename_all = "snake_case")]`,
@@ -143,21 +161,18 @@ describe(`serdeDecorators`, () => {
   })
 
   it(`comparable, hashable, with unionKey and renameAll`, () => {
-    const res = serdeDecorators(true, true, false, 'type', 'snake_case')
+    const res = serdeDecorators({
+      ...options,
+      comparable: true,
+      hashable: true,
+      unionKey: 'bingo',
+      renameAll: 'snake_case'
+    })
     expect(res).toEqual([
       `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]`,
       `#[serde(rename_all = "snake_case")]`,
-      `#[serde(tag = "type")]`
+      `#[serde(tag = "bingo")]`
     ])
-  })
-})
-
-describe('serdeDecoratorsString', () => {
-  it(`comparable, hashable, with unionKey and renameAll`, () => {
-    const res = serdeDecoratorsString(true, true, false, 'type', 'snake_case')
-    expect(res).toEqual(
-      `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]\n#[serde(rename_all = "snake_case")]\n#[serde(tag = "type")]\n`
-    )
   })
 })
 

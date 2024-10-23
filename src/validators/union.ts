@@ -1,5 +1,6 @@
 import {
   addTypeDef,
+  decoratorsString,
   ExactStringValidator,
   isPlainObject,
   ObjectValidator,
@@ -10,7 +11,6 @@ import {
   RequiredFloatString,
   RequiredInteger,
   RequiredIntegerString,
-  serdeDecoratorsString,
   toPascalCase,
   validateRustTypeName
 } from '..'
@@ -332,7 +332,7 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
           )
         }
 
-        const serdeStr = serdeDecoratorsString(this.comparable, this.hashable, this.defaultable, unionKey)
+        const serdeStr = decoratorsString(this, language, unionKey)
 
         // For a tagged union the 'line' needs to say the value of the tag as a name. Then the struct. So: Name(NameStruct)
         // BUT it CANNOT contain non structs for the value
