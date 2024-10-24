@@ -51,6 +51,9 @@ export function decoratorsString(
       comparable: validator.comparable,
       partialComparable: validator.partialComparable,
       defaultable: validator.defaultable,
+      parseable: validator.parseable,
+      orderable: validator.orderable,
+      partialOrderable: validator.partialOrderable,
       unionKey: unionKey,
       renameAll: 'camelCase'
     }
@@ -71,20 +74,36 @@ export interface SerdeDecoratorsOptions {
   copyable: boolean
   unionKey?: string
   renameAll?: string
+  parseable: boolean
+  orderable: boolean
+  partialOrderable: boolean
 }
 export function serdeDecorators(options: SerdeDecoratorsOptions): string[] {
   const decorators = []
 
   const deriveMacros = [`Serialize`, `Deserialize`, `Debug`, `Clone`]
-  if (options.partialComparable) {
+
+  // If orderable -> eq needs to also be true (same with partialOrderable -> partialEq)
+  if (options.partialComparable || options.partialOrderable) {
     deriveMacros.push(`PartialEq`)
   }
-  if (options.comparable) {
-    if (!options.partialComparable) {
+  if (options.comparable || options.orderable) {
+    if (!options.partialComparable && !options.partialOrderable) {
       deriveMacros.push(`PartialEq`)
     }
     deriveMacros.push(`Eq`)
   }
+
+  if (options.partialOrderable) {
+    deriveMacros.push(`PartialOrd`)
+  }
+  if (options.orderable) {
+    if (!options.partialOrderable) {
+      deriveMacros.push(`PartialOrd`)
+    }
+    deriveMacros.push(`Ord`)
+  }
+
   if (options.hashable === true) {
     deriveMacros.push(`Hash`)
   }
@@ -93,6 +112,9 @@ export function serdeDecorators(options: SerdeDecoratorsOptions): string[] {
   }
   if (options.copyable === true) {
     deriveMacros.push(`Copy`)
+  }
+  if (options.parseable === true) {
+    deriveMacros.push(`Parser`)
   }
 
   decorators.push(`#[derive(${deriveMacros.join(', ')})]`)
@@ -126,6 +148,7 @@ export function generateRustTypes(validators: ValidatorBase[], inputOptions?: Va
   let importContent = ``
   let shouldImportDateTime = false
   let shouldImportHashMap = false
+  let shouldImportClapParser = false
 
   // Alphabetical order: chrono, serde, hashmap
   let typeContent = ``
@@ -136,12 +159,19 @@ export function generateRustTypes(validators: ValidatorBase[], inputOptions?: Va
     if (value.includes('HashMap')) {
       shouldImportHashMap = true
     }
+    if (value.includes('Parser')) {
+      shouldImportClapParser = true
+    }
     typeContent += value
   }
 
   // Chrono (time)
   if (shouldImportDateTime) {
     importContent += `use chrono::{DateTime, Utc};\n`
+  }
+  // Clap (Parser)
+  if (shouldImportClapParser) {
+    importContent += `use clap::Parser;\n`
   }
   // Serde
   importContent += `use serde::{Deserialize, Serialize};\n`
