@@ -28,6 +28,9 @@ export type CodeGenResult = [{ [key: string]: unknown }, string[], string[]]
  * @property {boolean} [copyable=false] Is the validator able to be copied when passed around as a reference (like basic types (integers etc)) instead of objects, in other languages (default: false)
  * @property {boolean} [hashable=false] Is the validator able to be hashable in other languages (hashmap usage) (default: false)
  * @property {boolean} [defaultable=false] Is the validator able to be created with default values in other languages (default: false)
+ * @property {boolean} [parseable=false] Is the validator able to be parsed in CLI's in other languages (default: false)
+ * @property {boolean} [orderable=false] Is the validator able to be ordered/sorted in other languages (default: false)
+ * @property {boolean} [partialOrderable=false] Is the validator able to be partially ordered/sorted in other languages (default: false)
  * @property {string} [typeName='Something'] Required for generating other language types (default: undefined)
  */
 export interface ValidatorOptions {
@@ -40,6 +43,9 @@ export interface ValidatorOptions {
   copyable?: boolean
   hashable?: boolean
   defaultable?: boolean
+  parseable?: boolean
+  orderable?: boolean
+  partialOrderable?: boolean
   typeName?: string
 }
 
@@ -93,6 +99,15 @@ export function generateOptionsString(options: ValidatorOptions, defaults: Valid
   if (options.copyable !== undefined && options.copyable !== defaults.copyable) {
     selectedOptions.push(`copyable: ${options.copyable}`)
   }
+  if (options.parseable !== undefined && options.parseable !== defaults.parseable) {
+    selectedOptions.push(`parseable: ${options.parseable}`)
+  }
+  if (options.orderable !== undefined && options.orderable !== defaults.orderable) {
+    selectedOptions.push(`orderable: ${options.orderable}`)
+  }
+  if (options.partialOrderable !== undefined && options.partialOrderable !== defaults.partialOrderable) {
+    selectedOptions.push(`partialOrderable: ${options.partialOrderable}`)
+  }
   return selectedOptions.length > 0 ? `{ ${selectedOptions.join(', ')} }` : ''
 }
 
@@ -106,6 +121,9 @@ export abstract class ValidatorBase<T = unknown> {
   public hashable: boolean
   public defaultable: boolean
   public copyable: boolean
+  public parseable: boolean
+  public orderable: boolean
+  public partialOrderable: boolean
   public typeName: string | undefined
 
   protected codeGenId = 1
@@ -123,6 +141,9 @@ export abstract class ValidatorBase<T = unknown> {
       hashable: false,
       defaultable: false,
       copyable: false,
+      parseable: false,
+      orderable: false,
+      partialOrderable: false,
       typeName: undefined
     }
     const mergedOptions = { ...defaults, ...options }
@@ -138,6 +159,9 @@ export abstract class ValidatorBase<T = unknown> {
     this.defaultable = mergedOptions.defaultable
     this.typeName = mergedOptions.typeName
     this.copyable = mergedOptions.copyable
+    this.parseable = mergedOptions.parseable
+    this.orderable = mergedOptions.orderable
+    this.partialOrderable = mergedOptions.partialOrderable
     this.optimizedValidate = null
   }
 

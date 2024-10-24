@@ -91,6 +91,9 @@ describe(`serdeDecorators`, () => {
       hashable: false,
       copyable: false,
       partialComparable: false,
+      partialOrderable: false,
+      orderable: false,
+      parseable: false,
       renameAll: 'camelCase',
       unionKey: undefined
     }
@@ -159,6 +162,38 @@ describe(`serdeDecorators`, () => {
     ])
   })
 
+  it(`parseable`, () => {
+    const res = serdeDecorators({ ...options, parseable: true })
+    expect(res).toEqual([
+      `#[derive(Serialize, Deserialize, Debug, Clone, Parser)]`,
+      `#[serde(rename_all = "camelCase")]`
+    ])
+  })
+
+  it(`orderable`, () => {
+    const res = serdeDecorators({ ...options, orderable: true })
+    expect(res).toEqual([
+      `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]`,
+      `#[serde(rename_all = "camelCase")]`
+    ])
+  })
+
+  it(`partialOrderable (also enables partialEq)`, () => {
+    const res = serdeDecorators({ ...options, partialOrderable: true })
+    expect(res).toEqual([
+      `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, PartialOrd)]`,
+      `#[serde(rename_all = "camelCase")]`
+    ])
+  })
+
+  it(`partialOrderable and orderable (make sure there's no duplicates) (also enables eq)`, () => {
+    const res = serdeDecorators({ ...options, partialOrderable: true, orderable: true })
+    expect(res).toEqual([
+      `#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]`,
+      `#[serde(rename_all = "camelCase")]`
+    ])
+  })
+
   it(`with unionKey`, () => {
     const res = serdeDecorators({ ...options, unionKey: 'type' })
     expect(res).toEqual([
@@ -211,25 +246,27 @@ describe('generateRustTypes', () => {
   it('write to file', () => {
     const tabbyValidator = new RequiredObject({
       type: new RequiredExactString('tabby'),
-      weight: new RequiredFloat(),
       age: new RequiredInteger(0)
     })
-    const tuxedoValidator = new RequiredObject({
-      type: new RequiredExactString('tuxedo'),
-      weight: new RequiredFloat(),
-      age: new RequiredInteger(0)
-    })
-    const maineCoonValidator = new RequiredObject({
-      type: new RequiredExactString('maineCoon'),
-      weight: new RequiredFloat(),
-      age: new RequiredInteger(0),
-      furVariant: new RequiredString()
-    })
+    const tuxedoValidator = new RequiredObject(
+      {
+        type: new RequiredExactString('tuxedo'),
+        age: new RequiredInteger(0)
+      },
+      { orderable: true, parseable: true }
+    )
+    const maineCoonValidator = new RequiredObject(
+      {
+        type: new RequiredExactString('maineCoon'),
+        weight: new RequiredFloat(),
+        age: new RequiredInteger(0),
+        furVariant: new RequiredString()
+      },
+      { comparable: false, hashable: false }
+    )
 
     const catValidator = new RequiredUnion([tabbyValidator, tuxedoValidator, maineCoonValidator], {
-      typeName: 'Cat',
-      hashable: true,
-      comparable: true
+      typeName: 'Cat'
     })
 
     const externalTupleValidator = new RequiredTuple([new RequiredInteger(0, 255), new RequiredInteger(0, 255)], {
