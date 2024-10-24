@@ -113,6 +113,7 @@ export function validateUnion(
 
 export interface UnionValidatorOptions extends ValidatorOptions {
   every?: boolean
+  defaultVariant?: string
 }
 
 export abstract class UnionValidator<T extends ValidatorBase[], O = never> extends ValidatorBase<
@@ -121,11 +122,13 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
   public schema: T
 
   private every: boolean
+  private defaultVariant: string | undefined
 
   public constructor(schema: T, options?: UnionValidatorOptions & ValidatorOptions) {
     super(options)
     this.schema = schema
     this.every = options?.every ? true : false
+    this.defaultVariant = options?.defaultVariant ? options.defaultVariant : undefined
     if (options?.optimize !== false) {
       this.optimize(schema)
     }
@@ -306,7 +309,12 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
         if (options.parent?.comparable === true) {
           this.comparable = true
         }
-        // Don't support defaultable on union/enums as you would have to explicitly state the default (And Optional does the same job, where the recepient can select the default)
+        if (options.parent?.defaultable === true) {
+          this.defaultable = true
+        }
+        if (this.defaultable === true && this.defaultVariant === undefined) {
+          throw new Error(`'defaultVariant' not set on union with defaultable set to true. On: ${this.toString()}`)
+        }
 
         let unionKey: string | undefined = undefined
         // Tagged union
@@ -338,6 +346,7 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
         // BUT it CANNOT contain non structs for the value
         let typeNameFromParent: string | undefined = undefined
         let tagValue: string | undefined = undefined
+        let foundDefaultVariant = false
 
         const lines = []
         for (const val of this.schema) {
@@ -367,7 +376,15 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
           }
 
           // Override tag/name
-          const overrideNameStr = `    #[serde(rename = "${tagValue}")]\n`
+          let overrideNameStr = ``
+
+          // Validate the default expected actually exists
+          if (tagValue === this.defaultVariant) {
+            foundDefaultVariant = true
+            overrideNameStr += `    #[default]\n`
+          }
+
+          overrideNameStr += `    #[serde(rename = "${tagValue}")]\n`
 
           const typeStr = val.toString({
             ...options,
@@ -385,6 +402,10 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
           } else {
             lines.push(`${overrideNameStr}    ${typeStr}`)
           }
+        }
+
+        if (this.defaultVariant !== undefined && foundDefaultVariant === false) {
+          throw new Error(`Union/Enum: Failed finding "${this.defaultVariant}" enum variant in: ${this.toString()}`)
         }
 
         const typeDef = `${serdeStr}pub enum ${this.typeName} {\n${lines.join(',\n')},\n}\n\n`

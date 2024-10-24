@@ -266,8 +266,8 @@ describe('generateRustTypes', () => {
     )
 
     const catValidator = new RequiredUnion([tabbyValidator, tuxedoValidator, maineCoonValidator], {
-      typeName: 'Cat'
-    })
+      typeName: 'Cat', defaultable: true, defaultVariant: 'tuxedo'
+    }, )
 
     const externalTupleValidator = new RequiredTuple([new RequiredInteger(0, 255), new RequiredInteger(0, 255)], {
       typeName: 'ExternalTuple'

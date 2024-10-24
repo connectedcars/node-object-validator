@@ -1173,6 +1173,52 @@ pub enum RustEnum {
     })
   })
 
+  it('Required, only ExactString, default, valid', () => {
+    const validator = new RequiredUnion([new RequiredExactString('a'), new RequiredExactString('b')], {
+      typeName: 'RustEnum',
+      defaultable: true,
+      defaultVariant: 'b'
+    })
+    const expectedType = `#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(rename_all = "camelCase")]
+pub enum RustEnum {
+    #[serde(rename = "a")]
+    A,
+    #[default]
+    #[serde(rename = "b")]
+    B,
+}
+
+`
+    expect(validator.toString(options)).toEqual(`RustEnum`)
+    expect(typeDefinitions).toEqual({
+      RustEnum: expectedType
+    })
+  })
+
+  it('Required, only ExactString, default, invalid', () => {
+    const validator = new RequiredUnion([new RequiredExactString('a'), new RequiredExactString('b')], {
+      typeName: 'RustEnum',
+      defaultable: true,
+      defaultVariant: 'c'
+    })
+
+    expect(() => {
+      validator.toString(options)
+    }).toThrow(`Union/Enum: Failed finding "c" enum variant in`)
+  })
+
+  it('Required, only ExactString, default, not specified', () => {
+    const validator = new RequiredUnion([new RequiredExactString('a'), new RequiredExactString('b')], {
+      typeName: 'RustEnum',
+      defaultable: true
+    })
+
+    expect(() => {
+      validator.toString(options)
+    }).toThrow(`'defaultVariant' not set on union with defaultable set to true.`)
+  })
+
   it('Required, tagged union, inline', () => {
     const validator = new RequiredUnion(
       [

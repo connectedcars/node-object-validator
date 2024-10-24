@@ -74,19 +74,19 @@ exports[`generateRustTypes write to file 1`] = `
 "use clap::Parser;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = \\"camelCase\\")]
 pub struct CatTabbyData {
     pub age: u64,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Parser)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Parser)]
 #[serde(rename_all = \\"camelCase\\")]
 pub struct CatTuxedoData {
     pub age: u64,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = \\"camelCase\\")]
 pub struct CatMaineCoonData {
     pub weight: f32,
@@ -94,12 +94,13 @@ pub struct CatMaineCoonData {
     pub fur_variant: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = \\"camelCase\\")]
 #[serde(tag = \\"type\\")]
 pub enum Cat {
     #[serde(rename = \\"tabby\\")]
     Tabby(CatTabbyData),
+    #[default]
     #[serde(rename = \\"tuxedo\\")]
     Tuxedo(CatTuxedoData),
     #[serde(rename = \\"maineCoon\\")]
