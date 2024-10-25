@@ -159,7 +159,8 @@ export function generateRustTypes(validators: ValidatorBase[], inputOptions?: Va
     if (value.includes('HashMap')) {
       shouldImportHashMap = true
     }
-    if (value.includes('Parser')) {
+    // To not import on types with the name, but only when used in derive
+    if (value.includes(', Parser')) {
       shouldImportClapParser = true
     }
     typeContent += value
