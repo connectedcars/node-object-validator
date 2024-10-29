@@ -1218,6 +1218,54 @@ pub enum RustEnum {
     })
   })
 
+  it('Required, tagged union, forceHeap', () => {
+    const validator = new RequiredUnion(
+      [
+        new RequiredObject(
+          { bingoTag: new RequiredExactString('kat'), ja: new RequiredBoolean() },
+          { forceHeap: true }
+        ),
+        new RequiredObject({ bingoTag: new RequiredExactString('mis'), ja: new OptionalBoolean() })
+      ],
+      {
+        typeName: 'RustEnum'
+      }
+    )
+
+    const expectedKat = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct RustEnumKatData {
+    pub ja: bool,
+}
+
+`
+    const expectedMis = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct RustEnumMisData {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ja: Option<bool>,
+}
+
+`
+    const expectedEnum = `#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+#[serde(tag = "bingoTag")]
+pub enum RustEnum {
+    #[serde(rename = "kat")]
+    Kat(Box<RustEnumKatData>),
+    #[serde(rename = "mis")]
+    Mis(RustEnumMisData),
+}
+
+`
+    expect(validator.toString(options)).toEqual(`RustEnum`)
+    expect(typeDefinitions).toEqual({
+      RustEnumKatData: expectedKat,
+      RustEnumMisData: expectedMis,
+      RustEnum: expectedEnum
+    })
+  })
+
   it('Required, tag with empty objects', () => {
     const validator = new RequiredUnion(
       [

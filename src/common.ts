@@ -31,6 +31,7 @@ export type CodeGenResult = [{ [key: string]: unknown }, string[], string[]]
  * @property {boolean} [parseable=false] Is the validator able to be parsed in CLI's in other languages (default: false)
  * @property {boolean} [orderable=false] Is the validator able to be ordered/sorted in other languages (default: false)
  * @property {boolean} [partialOrderable=false] Is the validator able to be partially ordered/sorted in other languages (default: false)
+ * @property {boolean} [forceHeap=false] Should the validator be forced to be heap allocated (pointer) in other languages when appropriate (default: false)
  * @property {string} [typeName='Something'] Required for generating other language types (default: undefined)
  */
 export interface ValidatorOptions {
@@ -46,6 +47,7 @@ export interface ValidatorOptions {
   parseable?: boolean
   orderable?: boolean
   partialOrderable?: boolean
+  forceHeap?: boolean
   typeName?: string
 }
 
@@ -108,6 +110,9 @@ export function generateOptionsString(options: ValidatorOptions, defaults: Valid
   if (options.partialOrderable !== undefined && options.partialOrderable !== defaults.partialOrderable) {
     selectedOptions.push(`partialOrderable: ${options.partialOrderable}`)
   }
+  if (options.forceHeap !== undefined && options.forceHeap !== defaults.forceHeap) {
+    selectedOptions.push(`forceHeap: ${options.forceHeap}`)
+  }
   return selectedOptions.length > 0 ? `{ ${selectedOptions.join(', ')} }` : ''
 }
 
@@ -124,6 +129,7 @@ export abstract class ValidatorBase<T = unknown> {
   public parseable: boolean
   public orderable: boolean
   public partialOrderable: boolean
+  public forceHeap: boolean
   public typeName: string | undefined
 
   protected codeGenId = 1
@@ -144,6 +150,7 @@ export abstract class ValidatorBase<T = unknown> {
       parseable: false,
       orderable: false,
       partialOrderable: false,
+      forceHeap: false,
       typeName: undefined
     }
     const mergedOptions = { ...defaults, ...options }
@@ -162,6 +169,7 @@ export abstract class ValidatorBase<T = unknown> {
     this.parseable = mergedOptions.parseable
     this.orderable = mergedOptions.orderable
     this.partialOrderable = mergedOptions.partialOrderable
+    this.forceHeap = mergedOptions.forceHeap
     this.optimizedValidate = null
   }
 

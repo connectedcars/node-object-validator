@@ -369,7 +369,7 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
           // Override tag/name
           const overrideNameStr = `    #[serde(rename = "${tagValue}")]\n`
 
-          const typeStr = val.toString({
+          let typeStr = val.toString({
             ...options,
             parent: this,
             taggedUnionKey: unionKey,
@@ -381,6 +381,10 @@ export abstract class UnionValidator<T extends ValidatorBase[], O = never> exten
             typeNameFromParent !== undefined &&
             Object.keys(val.schema).length > 1
           ) {
+            if (val.forceHeap === true) {
+              typeStr = `Box<${typeStr}>`
+            }
+
             lines.push(`${overrideNameStr}    ${typeNameFromParent}(${typeStr})`)
           } else {
             lines.push(`${overrideNameStr}    ${typeStr}`)
