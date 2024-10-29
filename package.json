@@ -1,6 +1,6 @@
 {
   "name": "@connectedcars/object-validator",
-  "version": "2.8.4",
+  "version": "2.8.5",
   "description": "Object validator",
   "main": "build/dist/src/index.js",
   "types": "build/dist/src/index.d.ts",
